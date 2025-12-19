@@ -1,0 +1,22 @@
+{
+  "id": "passage_1737309600000",
+  "startTime": "2025-01-19T18:00:00Z",
+  "endTime": "2025-01-19T19:00:00Z",
+  "duration": 1,
+  "avgSpeed": 2.4934470834234386,
+  "maxSpeed": 2.540789045553116,
+  "distance": 2.9960541035864616,
+  "startLocation": {
+    "lat": 22.294928064336204,
+    "lon": -75.82390884029853
+  },
+  "endLocation": {
+    "lat": 22.315615283198213,
+    "lon": -75.77482575613185
+  },
+  "description": "Passage from 2025-01-19T18:00:00.000Z to 2025-01-19T19:00:00.000Z",
+  "name": "Passage passage_1737309600000",
+  "route": "22.29, -75.82 → 22.32, -75.77",
+  "exportTimestamp": "2025-08-15T18:56:05.764Z",
+  "filename": "passage_2025-01-19_passage_1737309600000.json"
+}

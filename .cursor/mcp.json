@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "project-docs": {
+      "command": "npx",
+      "args": ["-y", "mcp-project-docs"],
+      "env": {
+        "PROJECT_PATH": "/Users/narduk/code/passage-map"
+      }
+    }
+  }
+}

@@ -1,0 +1,50 @@
+@import 'tailwindcss';
+@import '@nuxt/ui';
+
+/* Mobile UX improvements */
+@media (max-width: 640px) {
+  /* Improve touch targets */
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Better scrolling on mobile */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Prevent text selection on interactive elements */
+.cursor-pointer {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* Touch manipulation for better performance */
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
+/* Vessel position annotation styling */
+.vessel-position-annotation {
+  /* Ensure the annotation doesn't interfere with map interactions */
+  pointer-events: auto;
+  /* Prevent text selection */
+  user-select: none;
+  /* Smooth rendering */
+  will-change: transform;
+}
+
+.vessel-position-annotation img {
+  /* Ensure image doesn't block pointer events */
+  pointer-events: none;
+}
+
+/* Debug border styling - make it more visible */
+.vessel-position-annotation[data-debug-border="true"] {
+  /* Add a subtle shadow to make border stand out */
+  box-shadow: 0 0 0 1px rgba(255, 0, 0, 0.3),
+              0 2px 4px rgba(0, 0, 0, 0.2);
+}
+

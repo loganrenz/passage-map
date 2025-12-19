@@ -1,0 +1,18 @@
+{
+  "packages": [
+    {
+      "name": "@apple/mapkit-js",
+      "docsUrl": "https://developer.apple.com/documentation/mapkitjs",
+      "description": "Apple MapKit JS - Interactive maps for web applications",
+      "version": "latest"
+    },
+    {
+      "name": "aishub-api",
+      "docsUrl": "https://www.aishub.net/api",
+      "description": "AISHub AIS Data Exchange API - Access AIS vessel data in XML, JSON or CSV format",
+      "version": "latest"
+    }
+  ]
+}
+
+

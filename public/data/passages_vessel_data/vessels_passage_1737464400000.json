@@ -1,0 +1,2751 @@
+{
+  "vessels": [
+    {
+      "vessel": {
+        "id": "309653000",
+        "name": "Vessel 309653000",
+        "type": "vessel",
+        "color": "#3B82F6",
+        "description": "vessel - Unknown",
+        "beam": 20,
+        "length": "100",
+        "visible": true,
+        "flag": "Unknown",
+        "mmsi": "309653000"
+      },
+      "track": [
+        {
+          "coordinate": {
+            "latitude": 21.53141,
+            "longitude": -76.4554115
+          },
+          "timestamp": "2025-01-21T16:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 21.527745,
+            "longitude": -76.4461482
+          },
+          "timestamp": "2025-01-21T16:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        }
+      ]
+    },
+    {
+      "vessel": {
+        "id": "338243827",
+        "name": "Vessel 338243827",
+        "type": "vessel",
+        "color": "#3B82F6",
+        "description": "vessel - Unknown",
+        "beam": 20,
+        "length": "100",
+        "visible": true,
+        "flag": "Unknown",
+        "mmsi": "338243827"
+      },
+      "track": [
+        {
+          "coordinate": {
+            "latitude": 23.02905835,
+            "longitude": -75.715674
+          },
+          "timestamp": "2025-01-21T17:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        }
+      ]
+    },
+    {
+      "vessel": {
+        "id": "338328209",
+        "name": "Vessel 338328209",
+        "type": "vessel",
+        "color": "#3B82F6",
+        "description": "vessel - Unknown",
+        "beam": 20,
+        "length": "100",
+        "visible": true,
+        "flag": "Unknown",
+        "mmsi": "338328209"
+      },
+      "track": [
+        {
+          "coordinate": {
+            "latitude": 23.021771364705877,
+            "longitude": -75.73056889411764
+          },
+          "timestamp": "2025-01-21T17:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 23.027507946153847,
+            "longitude": -75.72123102307691
+          },
+          "timestamp": "2025-01-21T18:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 23.0276578,
+            "longitude": -75.7161582
+          },
+          "timestamp": "2025-01-21T18:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 23.02767085,
+            "longitude": -75.71613905
+          },
+          "timestamp": "2025-01-21T18:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 23.027665,
+            "longitude": -75.7161565
+          },
+          "timestamp": "2025-01-21T18:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.93039298571429,
+            "longitude": -75.74155272142858
+          },
+          "timestamp": "2025-01-21T17:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.953451675000004,
+            "longitude": -75.74120529500001
+          },
+          "timestamp": "2025-01-21T17:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.988646051851855,
+            "longitude": -75.73897122592591
+          },
+          "timestamp": "2025-01-21T17:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 23.010561862499998,
+            "longitude": -75.73439173749999
+          },
+          "timestamp": "2025-01-21T17:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.8365173,
+            "longitude": -75.74500255384615
+          },
+          "timestamp": "2025-01-21T16:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.859582186363635,
+            "longitude": -75.74512168636362
+          },
+          "timestamp": "2025-01-21T16:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.892446875999998,
+            "longitude": -75.743576864
+          },
+          "timestamp": "2025-01-21T16:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.91400305,
+            "longitude": -75.74197986666667
+          },
+          "timestamp": "2025-01-21T17:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.743435472727274,
+            "longitude": -75.74894455454546
+          },
+          "timestamp": "2025-01-21T15:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.765800482352944,
+            "longitude": -75.74744221764706
+          },
+          "timestamp": "2025-01-21T15:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.798671480769233,
+            "longitude": -75.74582987307691
+          },
+          "timestamp": "2025-01-21T16:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.81982618,
+            "longitude": -75.7453702
+          },
+          "timestamp": "2025-01-21T16:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.31614665,
+            "longitude": -75.76721570000001
+          },
+          "timestamp": "2025-01-21T12:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.321676673076926,
+            "longitude": -75.77561378846154
+          },
+          "timestamp": "2025-01-21T12:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.34582523333334,
+            "longitude": -75.7838319111111
+          },
+          "timestamp": "2025-01-21T12:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.3653233,
+            "longitude": -75.78279570000001
+          },
+          "timestamp": "2025-01-21T13:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.382907991666674,
+            "longitude": -75.780719375
+          },
+          "timestamp": "2025-01-21T13:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.417969570370364,
+            "longitude": -75.77592708888889
+          },
+          "timestamp": "2025-01-21T13:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.44794000588235,
+            "longitude": -75.77242672941176
+          },
+          "timestamp": "2025-01-21T13:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.4656287,
+            "longitude": -75.76983708888888
+          },
+          "timestamp": "2025-01-21T13:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.49016974814815,
+            "longitude": -75.7663269
+          },
+          "timestamp": "2025-01-21T13:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.52617692307692,
+            "longitude": -75.7639381346154
+          },
+          "timestamp": "2025-01-21T14:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.547301683333334,
+            "longitude": -75.76291680000001
+          },
+          "timestamp": "2025-01-21T14:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.566336109523807,
+            "longitude": -75.76176708095237
+          },
+          "timestamp": "2025-01-21T14:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.598209042307687,
+            "longitude": -75.75913761153846
+          },
+          "timestamp": "2025-01-21T14:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.629729685714285,
+            "longitude": -75.75602677142858
+          },
+          "timestamp": "2025-01-21T14:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.64683102,
+            "longitude": -75.75425556
+          },
+          "timestamp": "2025-01-21T14:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.669199743999997,
+            "longitude": -75.75247193199999
+          },
+          "timestamp": "2025-01-21T15:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.702700125925933,
+            "longitude": -75.7509676962963
+          },
+          "timestamp": "2025-01-21T15:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.726930638461543,
+            "longitude": -75.7499155
+          },
+          "timestamp": "2025-01-21T15:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        }
+      ]
+    },
+    {
+      "vessel": {
+        "id": "338491909",
+        "name": "Vessel 338491909",
+        "type": "vessel",
+        "color": "#3B82F6",
+        "description": "vessel - Unknown",
+        "beam": 20,
+        "length": "100",
+        "visible": true,
+        "flag": "Unknown",
+        "mmsi": "338491909"
+      },
+      "track": [
+        {
+          "coordinate": {
+            "latitude": 22.33658734,
+            "longitude": -75.78031786
+          },
+          "timestamp": "2025-01-21T12:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.336591,
+            "longitude": -75.7803202
+          },
+          "timestamp": "2025-01-21T12:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.336583,
+            "longitude": -75.7803442
+          },
+          "timestamp": "2025-01-21T12:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.336619660000004,
+            "longitude": -75.78033388
+          },
+          "timestamp": "2025-01-21T13:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.336652660000002,
+            "longitude": -75.78033020000001
+          },
+          "timestamp": "2025-01-21T13:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.33663632,
+            "longitude": -75.78031052
+          },
+          "timestamp": "2025-01-21T13:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.336632,
+            "longitude": -75.78028752
+          },
+          "timestamp": "2025-01-21T13:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.33662768,
+            "longitude": -75.78027188
+          },
+          "timestamp": "2025-01-21T14:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.33658932,
+            "longitude": -75.78028752
+          },
+          "timestamp": "2025-01-21T14:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.336596640000003,
+            "longitude": -75.7802939
+          },
+          "timestamp": "2025-01-21T14:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.336618325,
+            "longitude": -75.78028152499999
+          },
+          "timestamp": "2025-01-21T14:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.336635,
+            "longitude": -75.7802832
+          },
+          "timestamp": "2025-01-21T15:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        }
+      ]
+    },
+    {
+      "vessel": {
+        "id": "338495774",
+        "name": "Vessel 338495774",
+        "type": "vessel",
+        "color": "#3B82F6",
+        "description": "vessel - Unknown",
+        "beam": 20,
+        "length": "100",
+        "visible": true,
+        "flag": "Unknown",
+        "mmsi": "338495774"
+      },
+      "track": [
+        {
+          "coordinate": {
+            "latitude": 22.859928333333333,
+            "longitude": -75.8978268
+          },
+          "timestamp": "2025-01-21T18:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.881069368965516,
+            "longitude": -75.88902153448274
+          },
+          "timestamp": "2025-01-21T18:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.912512186206893,
+            "longitude": -75.87252860689657
+          },
+          "timestamp": "2025-01-21T19:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.75946416428571,
+            "longitude": -75.91538869285715
+          },
+          "timestamp": "2025-01-21T17:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.78572636785714,
+            "longitude": -75.92252123571429
+          },
+          "timestamp": "2025-01-21T18:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.818162927586204,
+            "longitude": -75.9214811275862
+          },
+          "timestamp": "2025-01-21T18:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.838296525000004,
+            "longitude": -75.91007626666666
+          },
+          "timestamp": "2025-01-21T18:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.85052289090909,
+            "longitude": -75.90299578181818
+          },
+          "timestamp": "2025-01-21T18:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.477856915,
+            "longitude": -75.867530195
+          },
+          "timestamp": "2025-01-21T15:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.501857472413793,
+            "longitude": -75.88154537931032
+          },
+          "timestamp": "2025-01-21T15:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.525929924999996,
+            "longitude": -75.894900875
+          },
+          "timestamp": "2025-01-21T16:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.431725,
+            "longitude": -75.8338265
+          },
+          "timestamp": "2025-01-21T13:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.43172532,
+            "longitude": -75.83382320000001
+          },
+          "timestamp": "2025-01-21T14:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.43173264,
+            "longitude": -75.8338102
+          },
+          "timestamp": "2025-01-21T14:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.431765000000002,
+            "longitude": -75.8337822
+          },
+          "timestamp": "2025-01-21T14:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.431748799999998,
+            "longitude": -75.83382057142856
+          },
+          "timestamp": "2025-01-21T14:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.43744023928571,
+            "longitude": -75.84069874285716
+          },
+          "timestamp": "2025-01-21T15:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.444723100000004,
+            "longitude": -75.84848693793103
+          },
+          "timestamp": "2025-01-21T15:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.463026477777778,
+            "longitude": -75.85860393333333
+          },
+          "timestamp": "2025-01-21T15:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.54031166666667,
+            "longitude": -75.90292670000001
+          },
+          "timestamp": "2025-01-21T16:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.555362325,
+            "longitude": -75.91102578
+          },
+          "timestamp": "2025-01-21T16:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.570067966666663,
+            "longitude": -75.91842152222223
+          },
+          "timestamp": "2025-01-21T16:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.592193446666666,
+            "longitude": -75.92279381666667
+          },
+          "timestamp": "2025-01-21T16:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.624648814285713,
+            "longitude": -75.92699493214285
+          },
+          "timestamp": "2025-01-21T16:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.64997066666667,
+            "longitude": -75.92970298
+          },
+          "timestamp": "2025-01-21T17:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.666020900000003,
+            "longitude": -75.9312994090909
+          },
+          "timestamp": "2025-01-21T17:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.689655804000004,
+            "longitude": -75.933135792
+          },
+          "timestamp": "2025-01-21T17:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.72248417333333,
+            "longitude": -75.92461465000001
+          },
+          "timestamp": "2025-01-21T17:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.743528475,
+            "longitude": -75.91235515
+          },
+          "timestamp": "2025-01-21T17:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        }
+      ]
+    },
+    {
+      "vessel": {
+        "id": "367533360",
+        "name": "Vessel 367533360",
+        "type": "vessel",
+        "color": "#3B82F6",
+        "description": "vessel - Unknown",
+        "beam": 20,
+        "length": "100",
+        "visible": true,
+        "flag": "Unknown",
+        "mmsi": "367533360"
+      },
+      "track": [
+        {
+          "coordinate": {
+            "latitude": 22.2472983,
+            "longitude": -75.7529165
+          },
+          "timestamp": "2025-01-21T12:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.247306979999998,
+            "longitude": -75.75291288
+          },
+          "timestamp": "2025-01-21T12:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.2473375,
+            "longitude": -75.75290735
+          },
+          "timestamp": "2025-01-21T12:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        }
+      ]
+    },
+    {
+      "vessel": {
+        "id": "368018330",
+        "name": "Vessel 368018330",
+        "type": "vessel",
+        "color": "#3B82F6",
+        "description": "vessel - Unknown",
+        "beam": 20,
+        "length": "100",
+        "visible": true,
+        "flag": "Unknown",
+        "mmsi": "368018330"
+      },
+      "track": [
+        {
+          "coordinate": {
+            "latitude": 22.42545165,
+            "longitude": -75.83548404999999
+          },
+          "timestamp": "2025-01-21T14:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.42543832,
+            "longitude": -75.8354722
+          },
+          "timestamp": "2025-01-21T14:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.42365984761905,
+            "longitude": -75.84110478571428
+          },
+          "timestamp": "2025-01-21T14:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.41159728181818,
+            "longitude": -75.84298804545455
+          },
+          "timestamp": "2025-01-21T15:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        }
+      ]
+    },
+    {
+      "vessel": {
+        "id": "368067750",
+        "name": "Vessel 368067750",
+        "type": "vessel",
+        "color": "#3B82F6",
+        "description": "vessel - Unknown",
+        "beam": 20,
+        "length": "100",
+        "visible": true,
+        "flag": "Unknown",
+        "mmsi": "368067750"
+      },
+      "track": [
+        {
+          "coordinate": {
+            "latitude": 22.247769433333335,
+            "longitude": -75.75171323333333
+          },
+          "timestamp": "2025-01-21T12:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.24778002,
+            "longitude": -75.75170254000001
+          },
+          "timestamp": "2025-01-21T12:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.247785399999998,
+            "longitude": -75.75169987500001
+          },
+          "timestamp": "2025-01-21T12:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        }
+      ]
+    },
+    {
+      "vessel": {
+        "id": "368077210",
+        "name": "Vessel 368077210",
+        "type": "vessel",
+        "color": "#3B82F6",
+        "description": "vessel - Unknown",
+        "beam": 20,
+        "length": "100",
+        "visible": true,
+        "flag": "Unknown",
+        "mmsi": "368077210"
+      },
+      "track": [
+        {
+          "coordinate": {
+            "latitude": 22.881416675,
+            "longitude": -75.87016861666667
+          },
+          "timestamp": "2025-01-21T17:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.884123337500004,
+            "longitude": -75.8695196625
+          },
+          "timestamp": "2025-01-21T17:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.884144149999997,
+            "longitude": -75.8695699
+          },
+          "timestamp": "2025-01-21T17:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        }
+      ]
+    },
+    {
+      "vessel": {
+        "id": "368109310",
+        "name": "Vessel 368109310",
+        "type": "vessel",
+        "color": "#3B82F6",
+        "description": "vessel - Unknown",
+        "beam": 20,
+        "length": "100",
+        "visible": true,
+        "flag": "Unknown",
+        "mmsi": "368109310"
+      },
+      "track": [
+        {
+          "coordinate": {
+            "latitude": 22.980209113333334,
+            "longitude": -75.80133453999998
+          },
+          "timestamp": "2025-01-21T18:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.992609596551723,
+            "longitude": -75.78476170689656
+          },
+          "timestamp": "2025-01-21T18:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 23.007574811111116,
+            "longitude": -75.76704633333333
+          },
+          "timestamp": "2025-01-21T18:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.9387427125,
+            "longitude": -75.846600375
+          },
+          "timestamp": "2025-01-21T17:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.955906841379306,
+            "longitude": -75.8297799862069
+          },
+          "timestamp": "2025-01-21T18:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.971742257142854,
+            "longitude": -75.81299069285714
+          },
+          "timestamp": "2025-01-21T18:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.88378,
+            "longitude": -75.8695332
+          },
+          "timestamp": "2025-01-21T16:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.88377668,
+            "longitude": -75.8695462
+          },
+          "timestamp": "2025-01-21T16:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.883768319999998,
+            "longitude": -75.86957886
+          },
+          "timestamp": "2025-01-21T17:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.891805940000005,
+            "longitude": -75.87448547599999
+          },
+          "timestamp": "2025-01-21T17:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.912286662068965,
+            "longitude": -75.87149228620687
+          },
+          "timestamp": "2025-01-21T17:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.92698152307692,
+            "longitude": -75.8581858923077
+          },
+          "timestamp": "2025-01-21T17:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        }
+      ]
+    },
+    {
+      "vessel": {
+        "id": "368214210",
+        "name": "Vessel 368214210",
+        "type": "vessel",
+        "color": "#3B82F6",
+        "description": "vessel - Unknown",
+        "beam": 20,
+        "length": "100",
+        "visible": true,
+        "flag": "Unknown",
+        "mmsi": "368214210"
+      },
+      "track": [
+        {
+          "coordinate": {
+            "latitude": 22.853463325000003,
+            "longitude": -75.88683029166668
+          },
+          "timestamp": "2025-01-21T19:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.80777415,
+            "longitude": -75.899444
+          },
+          "timestamp": "2025-01-21T18:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.82380467333333,
+            "longitude": -75.89579241999999
+          },
+          "timestamp": "2025-01-21T18:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.8401539,
+            "longitude": -75.89094263333332
+          },
+          "timestamp": "2025-01-21T19:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.767142857142854,
+            "longitude": -75.90557701428573
+          },
+          "timestamp": "2025-01-21T18:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.79338333846154,
+            "longitude": -75.90169114615385
+          },
+          "timestamp": "2025-01-21T18:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.7392717,
+            "longitude": -75.9060432
+          },
+          "timestamp": "2025-01-21T15:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.7392772,
+            "longitude": -75.90603876666667
+          },
+          "timestamp": "2025-01-21T15:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.739315,
+            "longitude": -75.9060099
+          },
+          "timestamp": "2025-01-21T15:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.739312800000004,
+            "longitude": -75.90600873333334
+          },
+          "timestamp": "2025-01-21T16:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.739305,
+            "longitude": -75.9060249
+          },
+          "timestamp": "2025-01-21T16:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.7392961,
+            "longitude": -75.9060282
+          },
+          "timestamp": "2025-01-21T16:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.7393283,
+            "longitude": -75.9059899
+          },
+          "timestamp": "2025-01-21T16:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.739314433333334,
+            "longitude": -75.90601986666667
+          },
+          "timestamp": "2025-01-21T17:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.739345,
+            "longitude": -75.9060015
+          },
+          "timestamp": "2025-01-21T17:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.739312233333333,
+            "longitude": -75.90602653333333
+          },
+          "timestamp": "2025-01-21T17:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.739305,
+            "longitude": -75.9060315
+          },
+          "timestamp": "2025-01-21T17:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.742801019999995,
+            "longitude": -75.90753021999998
+          },
+          "timestamp": "2025-01-21T18:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        }
+      ]
+    },
+    {
+      "vessel": {
+        "id": "368278950",
+        "name": "Vessel 368278950",
+        "type": "vessel",
+        "color": "#3B82F6",
+        "description": "vessel - Unknown",
+        "beam": 20,
+        "length": "100",
+        "visible": true,
+        "flag": "Unknown",
+        "mmsi": "368278950"
+      },
+      "track": [
+        {
+          "coordinate": {
+            "latitude": 22.250520849999997,
+            "longitude": -75.75255444999999
+          },
+          "timestamp": "2025-01-21T12:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.250532,
+            "longitude": -75.75255254
+          },
+          "timestamp": "2025-01-21T12:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.250546,
+            "longitude": -75.75255586
+          },
+          "timestamp": "2025-01-21T12:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.25055375,
+            "longitude": -75.75253695
+          },
+          "timestamp": "2025-01-21T13:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.250532,
+            "longitude": -75.75253252
+          },
+          "timestamp": "2025-01-21T13:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.2505467,
+            "longitude": -75.7525215
+          },
+          "timestamp": "2025-01-21T13:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.25054125,
+            "longitude": -75.75252947499999
+          },
+          "timestamp": "2025-01-21T13:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        }
+      ]
+    },
+    {
+      "vessel": {
+        "id": "368290260",
+        "name": "Vessel 368290260",
+        "type": "vessel",
+        "color": "#3B82F6",
+        "description": "vessel - Unknown",
+        "beam": 20,
+        "length": "100",
+        "visible": true,
+        "flag": "Unknown",
+        "mmsi": "368290260"
+      },
+      "track": [
+        {
+          "coordinate": {
+            "latitude": 22.386745533333336,
+            "longitude": -75.8250043
+          },
+          "timestamp": "2025-01-21T12:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.386784000000002,
+            "longitude": -75.82498251999999
+          },
+          "timestamp": "2025-01-21T12:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.386769339999997,
+            "longitude": -75.82498786000001
+          },
+          "timestamp": "2025-01-21T12:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.386782320000002,
+            "longitude": -75.82498254
+          },
+          "timestamp": "2025-01-21T13:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.386775850000003,
+            "longitude": -75.82497985
+          },
+          "timestamp": "2025-01-21T13:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.386778333333336,
+            "longitude": -75.82498653333333
+          },
+          "timestamp": "2025-01-21T13:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.3867461,
+            "longitude": -75.8249932
+          },
+          "timestamp": "2025-01-21T13:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.386769340000004,
+            "longitude": -75.82498519999999
+          },
+          "timestamp": "2025-01-21T14:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.386783660000003,
+            "longitude": -75.82497319999999
+          },
+          "timestamp": "2025-01-21T14:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.386843325,
+            "longitude": -75.82494155
+          },
+          "timestamp": "2025-01-21T14:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.386820399999998,
+            "longitude": -75.82496152499999
+          },
+          "timestamp": "2025-01-21T14:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.3868983,
+            "longitude": -75.8249132
+          },
+          "timestamp": "2025-01-21T15:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        }
+      ]
+    },
+    {
+      "vessel": {
+        "id": "368327340",
+        "name": "Tideye",
+        "type": "own_vessel",
+        "color": "#3B82F6",
+        "description": "own_vessel - Unknown",
+        "beam": 20,
+        "length": "100",
+        "visible": true,
+        "flag": "Unknown",
+        "mmsi": "368327340"
+      },
+      "track": [
+        {
+          "coordinate": {
+            "latitude": 22.84364468636364,
+            "longitude": -75.89364108181817
+          },
+          "timestamp": "2025-01-21T17:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.860772370537614,
+            "longitude": -75.88767771913989
+          },
+          "timestamp": "2025-01-21T17:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.879954427096713,
+            "longitude": -75.87266513795689
+          },
+          "timestamp": "2025-01-21T17:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.879027000770108,
+            "longitude": -75.86987592816308
+          },
+          "timestamp": "2025-01-21T18:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.879022684111252,
+            "longitude": -75.86992415711113
+          },
+          "timestamp": "2025-01-21T18:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.879029469989053,
+            "longitude": -75.8699208943521
+          },
+          "timestamp": "2025-01-21T18:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.879029131381206,
+            "longitude": -75.86992739204422
+          },
+          "timestamp": "2025-01-21T18:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.879029087513842,
+            "longitude": -75.86992603314911
+          },
+          "timestamp": "2025-01-21T19:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.82776431411628,
+            "longitude": -75.89715424519562
+          },
+          "timestamp": "2025-01-21T17:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.764120335057477,
+            "longitude": -75.91227139181036
+          },
+          "timestamp": "2025-01-21T16:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.793000855387934,
+            "longitude": -75.90477987844848
+          },
+          "timestamp": "2025-01-21T17:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.811050006349205,
+            "longitude": -75.9001338904762
+          },
+          "timestamp": "2025-01-21T17:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.336710843417364,
+            "longitude": -75.81254939103647
+          },
+          "timestamp": "2025-01-21T12:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.34612995686487,
+            "longitude": -75.82012361383791
+          },
+          "timestamp": "2025-01-21T13:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.358518489154008,
+            "longitude": -75.81451870889371
+          },
+          "timestamp": "2025-01-21T13:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.36347105362165,
+            "longitude": -75.82071099135126
+          },
+          "timestamp": "2025-01-21T13:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.37003469462366,
+            "longitude": -75.82576677204297
+          },
+          "timestamp": "2025-01-21T13:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.337654803318554,
+            "longitude": -75.77974142544231
+          },
+          "timestamp": "2025-01-21T12:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.33974789552403,
+            "longitude": -75.78181741965062
+          },
+          "timestamp": "2025-01-21T12:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.341890212456143,
+            "longitude": -75.79859607666668
+          },
+          "timestamp": "2025-01-21T12:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.47859482523962,
+            "longitude": -75.87138536757193
+          },
+          "timestamp": "2025-01-21T14:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.50362563225804,
+            "longitude": -75.88030618322577
+          },
+          "timestamp": "2025-01-21T14:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.532862017475725,
+            "longitude": -75.88969530377567
+          },
+          "timestamp": "2025-01-21T15:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.556093089411767,
+            "longitude": -75.89578754188243
+          },
+          "timestamp": "2025-01-21T15:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.381720993389415,
+            "longitude": -75.8336213811298
+          },
+          "timestamp": "2025-01-21T13:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.41049361427025,
+            "longitude": -75.84606772486484
+          },
+          "timestamp": "2025-01-21T14:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.441136023250788,
+            "longitude": -75.85857517029068
+          },
+          "timestamp": "2025-01-21T14:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.46251099273928,
+            "longitude": -75.86618428184818
+          },
+          "timestamp": "2025-01-21T14:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.576733718181824,
+            "longitude": -75.90107238560608
+          },
+          "timestamp": "2025-01-21T15:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.596349141702593,
+            "longitude": -75.9062381116379
+          },
+          "timestamp": "2025-01-21T15:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.628064015086157,
+            "longitude": -75.91394525301729
+          },
+          "timestamp": "2025-01-21T15:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.65168198930349,
+            "longitude": -75.91658512736313
+          },
+          "timestamp": "2025-01-21T16:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.66807903129768,
+            "longitude": -75.9172901503819
+          },
+          "timestamp": "2025-01-21T16:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.69404402346613,
+            "longitude": -75.91752320183014
+          },
+          "timestamp": "2025-01-21T16:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.72719435915949,
+            "longitude": -75.9172002800646
+          },
+          "timestamp": "2025-01-21T16:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.747880711587975,
+            "longitude": -75.91619312746785
+          },
+          "timestamp": "2025-01-21T16:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.567899744583347,
+            "longitude": -75.89879909291666
+          },
+          "timestamp": "2025-01-21T15:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        }
+      ]
+    },
+    {
+      "vessel": {
+        "id": "477286200",
+        "name": "Vessel 477286200",
+        "type": "vessel",
+        "color": "#3B82F6",
+        "description": "vessel - Unknown",
+        "beam": 20,
+        "length": "100",
+        "visible": true,
+        "flag": "Unknown",
+        "mmsi": "477286200"
+      },
+      "track": [
+        {
+          "coordinate": {
+            "latitude": 23.2505683,
+            "longitude": -74.6769615
+          },
+          "timestamp": "2025-01-21T19:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 23.839375,
+            "longitude": -74.7395799
+          },
+          "timestamp": "2025-01-21T17:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 23.7586717,
+            "longitude": -74.7117932
+          },
+          "timestamp": "2025-01-21T17:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        }
+      ]
+    },
+    {
+      "vessel": {
+        "id": "503001530",
+        "name": "Vessel 503001530",
+        "type": "vessel",
+        "color": "#3B82F6",
+        "description": "vessel - Unknown",
+        "beam": 20,
+        "length": "100",
+        "visible": true,
+        "flag": "Unknown",
+        "mmsi": "503001530"
+      },
+      "track": [
+        {
+          "coordinate": {
+            "latitude": 22.88357,
+            "longitude": -75.8701824
+          },
+          "timestamp": "2025-01-21T17:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.88354732,
+            "longitude": -75.8701942
+          },
+          "timestamp": "2025-01-21T17:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.88353634,
+            "longitude": -75.8701992
+          },
+          "timestamp": "2025-01-21T17:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.883521679999994,
+            "longitude": -75.87018788
+          },
+          "timestamp": "2025-01-21T18:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.883513999999998,
+            "longitude": -75.87019988
+          },
+          "timestamp": "2025-01-21T18:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.88353502,
+            "longitude": -75.87018254
+          },
+          "timestamp": "2025-01-21T18:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.883545660000003,
+            "longitude": -75.87017054
+          },
+          "timestamp": "2025-01-21T18:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.883530999999998,
+            "longitude": -75.87019654
+          },
+          "timestamp": "2025-01-21T19:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        }
+      ]
+    },
+    {
+      "vessel": {
+        "id": "538072259",
+        "name": "Vessel 538072259",
+        "type": "vessel",
+        "color": "#3B82F6",
+        "description": "vessel - Unknown",
+        "beam": 20,
+        "length": "100",
+        "visible": true,
+        "flag": "Unknown",
+        "mmsi": "538072259"
+      },
+      "track": [
+        {
+          "coordinate": {
+            "latitude": 22.8436033,
+            "longitude": -75.8912049
+          },
+          "timestamp": "2025-01-21T17:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.857572762068976,
+            "longitude": -75.88572624827586
+          },
+          "timestamp": "2025-01-21T17:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.87743706666667,
+            "longitude": -75.87447891428573
+          },
+          "timestamp": "2025-01-21T17:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.879977925,
+            "longitude": -75.86966029999999
+          },
+          "timestamp": "2025-01-21T18:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.879985320000003,
+            "longitude": -75.86968052
+          },
+          "timestamp": "2025-01-21T18:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.879981225,
+            "longitude": -75.869676525
+          },
+          "timestamp": "2025-01-21T18:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.879992680000004,
+            "longitude": -75.86967286
+          },
+          "timestamp": "2025-01-21T18:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.879979575,
+            "longitude": -75.869692775
+          },
+          "timestamp": "2025-01-21T19:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.814354660000003,
+            "longitude": -75.89925488
+          },
+          "timestamp": "2025-01-21T17:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.830204289285714,
+            "longitude": -75.89543974642856
+          },
+          "timestamp": "2025-01-21T17:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.756645000000002,
+            "longitude": -75.91111607272728
+          },
+          "timestamp": "2025-01-21T16:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.775193675862077,
+            "longitude": -75.90735101034483
+          },
+          "timestamp": "2025-01-21T16:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.8001354875,
+            "longitude": -75.90229132083333
+          },
+          "timestamp": "2025-01-21T17:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.336083781818186,
+            "longitude": -75.81369276363637
+          },
+          "timestamp": "2025-01-21T12:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.349143727586206,
+            "longitude": -75.82912182413793
+          },
+          "timestamp": "2025-01-21T13:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.367724455555553,
+            "longitude": -75.83427802222224
+          },
+          "timestamp": "2025-01-21T13:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.33705232,
+            "longitude": -75.7796835
+          },
+          "timestamp": "2025-01-21T12:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.33913968,
+            "longitude": -75.78116654
+          },
+          "timestamp": "2025-01-21T12:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.341852411111113,
+            "longitude": -75.79527329444444
+          },
+          "timestamp": "2025-01-21T12:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.472124255555556,
+            "longitude": -75.87092096666666
+          },
+          "timestamp": "2025-01-21T14:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.490130858620688,
+            "longitude": -75.87833378275865
+          },
+          "timestamp": "2025-01-21T14:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.518207413793107,
+            "longitude": -75.8871241827586
+          },
+          "timestamp": "2025-01-21T14:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.546145406896546,
+            "longitude": -75.89564239655174
+          },
+          "timestamp": "2025-01-21T14:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.38236058,
+            "longitude": -75.837687205
+          },
+          "timestamp": "2025-01-21T13:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.40646925172414,
+            "longitude": -75.84331182413793
+          },
+          "timestamp": "2025-01-21T13:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.43484965517241,
+            "longitude": -75.85312618620688
+          },
+          "timestamp": "2025-01-21T13:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.458153255000003,
+            "longitude": -75.86424529000001
+          },
+          "timestamp": "2025-01-21T14:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.562075025,
+            "longitude": -75.900496125
+          },
+          "timestamp": "2025-01-21T15:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.576798335999996,
+            "longitude": -75.904922544
+          },
+          "timestamp": "2025-01-21T15:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.6040051137931,
+            "longitude": -75.91142825517242
+          },
+          "timestamp": "2025-01-21T15:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.63305201379311,
+            "longitude": -75.91683567586206
+          },
+          "timestamp": "2025-01-21T15:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.65298860833333,
+            "longitude": -75.91686792499998
+          },
+          "timestamp": "2025-01-21T15:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.667631182352945,
+            "longitude": -75.91687300588235
+          },
+          "timestamp": "2025-01-21T15:45:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.690380953571434,
+            "longitude": -75.91688688571428
+          },
+          "timestamp": "2025-01-21T16:00:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.71925218275862,
+            "longitude": -75.91678406551725
+          },
+          "timestamp": "2025-01-21T16:15:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        },
+        {
+          "coordinate": {
+            "latitude": 22.74275436111111,
+            "longitude": -75.91391606666666
+          },
+          "timestamp": "2025-01-21T16:30:00Z",
+          "speed": 0,
+          "heading": 0,
+          "altitude": 0,
+          "accuracy": 0
+        }
+      ]
+    }
+  ]
+}

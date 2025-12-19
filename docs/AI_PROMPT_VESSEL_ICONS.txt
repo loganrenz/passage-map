@@ -1,0 +1,66 @@
+Create 7 SVG icons for different vessel types, each 40x40 pixels. All icons must follow this exact style:
+
+REFERENCE DESIGN (vessel-marker.svg):
+- Outer circle: 18px radius, fill #007AFF at 90% opacity, white 2px stroke
+- Inner circle: 10px radius, white fill
+- Center element: 5px radius, #007AFF fill
+- ViewBox: "0 0 40 40"
+- Style: Minimalist, clean, maritime-themed
+
+REQUIRED ICONS (maintain the circular outer boundary style):
+
+1. vessel-cargo.svg - Cargo/Freight ship
+   - Silhouette: Container ship or cargo boxes
+   - Keep the outer circle (18px radius, #007AFF, white stroke)
+   - Replace center with cargo ship silhouette or stacked boxes
+   - Colors: #007AFF and white only
+
+2. vessel-tanker.svg - Oil/Chemical tanker
+   - Silhouette: Tanker ship with distinctive cylindrical tanks
+   - Keep the outer circle style
+   - Replace center with tanker ship silhouette
+   - Colors: #007AFF and white only
+
+3. vessel-fishing.svg - Fishing vessel
+   - Silhouette: Fishing boat, optionally with net or fishing elements
+   - Keep the outer circle style
+   - Replace center with fishing boat silhouette
+   - Colors: #007AFF and white only
+
+4. vessel-passenger.svg - Passenger/Ferry/Cruise ship
+   - Silhouette: Multi-deck passenger ship
+   - Keep the outer circle style
+   - Replace center with passenger ship silhouette
+   - Colors: #007AFF and white only
+
+5. vessel-tug.svg - Tugboat
+   - Silhouette: Compact, powerful tugboat
+   - Keep the outer circle style
+   - Replace center with tugboat silhouette
+   - Colors: #007AFF and white only
+
+6. vessel-sail.svg - Sailboat/Yacht
+   - Silhouette: Sailboat with mast and sail
+   - Keep the outer circle style
+   - Replace center with sailboat silhouette
+   - Colors: #007AFF and white only
+
+7. vessel-military.svg - Military/Navy vessel
+   - Silhouette: Naval ship with military features
+   - Keep the outer circle style
+   - Replace center with naval ship silhouette
+   - Colors: #007AFF and white only
+
+TECHNICAL REQUIREMENTS:
+- Format: SVG
+- Size: 40x40 pixels
+- ViewBox: "0 0 40 40"
+- All icons must have the same outer circle (18px radius, #007AFF fill at 0.9 opacity, white 2px stroke)
+- Center elements should be simple silhouettes that fit within the inner circle area (10px radius)
+- Icons must be recognizable at 32-40px size
+- Use only #007AFF (blue) and #FFFFFF (white) colors
+- Keep designs simple and iconic - no fine details
+- All icons should be centered at (20, 20)
+
+OUTPUT: Provide 7 separate SVG code blocks, one for each vessel type, ready to copy-paste into files.
+

@@ -76,7 +76,7 @@ export default defineEventHandler(async (event) => {
               country: loc.country || undefined,
               countryCode: loc.country_code || undefined,
               formattedAddress: loc.formatted_address || undefined,
-              pointsOfInterest: loc.points_of_interest ? JSON.parse(loc.points_of_interest) : undefined,
+              pointsOfInterest: loc.points_of_interest && loc.points_of_interest !== 'null' ? JSON.parse(loc.points_of_interest) : undefined,
             }))
           }
         }
@@ -142,7 +142,7 @@ export default defineEventHandler(async (event) => {
                 country: loc.country || undefined,
                 countryCode: loc.country_code || undefined,
                 formattedAddress: loc.formatted_address || undefined,
-                pointsOfInterest: loc.points_of_interest ? JSON.parse(loc.points_of_interest) : undefined,
+                pointsOfInterest: loc.points_of_interest && loc.points_of_interest !== 'null' ? JSON.parse(loc.points_of_interest) : undefined,
               }))
             }
           }

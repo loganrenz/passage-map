@@ -115,27 +115,38 @@ const emit = defineEmits<{
  * Try to load locations from D1 if they're not already loaded
  */
 const tryLoadLocationsFromD1 = async () => {
-    if (!props.passage || !props.passage.id) return
+    if (!props.passage || !props.passage.id) {
+        console.debug('tryLoadLocationsFromD1: No passage or passage ID')
+        return
+    }
     
     // If locations already exist, don't reload
     if (props.passage.locations && props.passage.locations.length > 0) {
+        console.log(`✓ Passage ${props.passage.id} already has ${props.passage.locations.length} locations`)
         return
     }
 
+    console.log(`Loading locations for passage ${props.passage.id}...`)
     isLoadingLocations.value = true
     
     try {
         // Try to fetch locations from D1 via API
         const response = await $fetch<Passage>(`/api/passages/${props.passage.id}`)
         
+        console.log(`API response for ${props.passage.id}:`, {
+            hasLocations: 'locations' in response,
+            locationCount: response.locations?.length || 0
+        })
+        
         if (response.locations && response.locations.length > 0) {
             // Update the passage with locations from D1
             emit('update:locations', response.locations)
-            console.log(`✓ Loaded ${response.locations.length} locations from D1`)
+            console.log(`✓ Loaded ${response.locations.length} locations from D1 for passage ${props.passage.id}`)
+        } else {
+            console.log(`No locations found for passage ${props.passage.id}`)
         }
     } catch (error) {
-        // Silently fail - D1 might not be available or locations might not exist
-        console.debug('Could not load locations from D1:', error)
+        console.error('Error loading locations from D1:', error)
     } finally {
         isLoadingLocations.value = false
     }
@@ -144,9 +155,21 @@ const tryLoadLocationsFromD1 = async () => {
 // Try to load locations when passage changes
 watch(() => props.passage?.id, async (passageId) => {
     if (passageId) {
+        // Check if passage already has locations (from loadPassageById)
+        if (props.passage?.locations && props.passage.locations.length > 0) {
+            console.log(`✓ Passage already has ${props.passage.locations.length} locations`)
+            return
+        }
         await tryLoadLocationsFromD1()
     }
 }, { immediate: true })
+
+// Also watch for locations being added to the passage
+watch(() => props.passage?.locations, (locations) => {
+    if (locations && locations.length > 0) {
+        console.log(`✓ Locations updated: ${locations.length} locations`)
+    }
+}, { deep: true })
 
 const handleGeocode = async () => {
     if (!props.passage) return

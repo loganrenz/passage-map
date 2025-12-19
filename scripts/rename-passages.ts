@@ -389,59 +389,6 @@ async function renamePassage(
     startGeocode = start
     endGeocode = end
   }
-    console.log(`  Geocoding failed, using existing location data as fallback...`)
-    const sortedLocations = [...passage.locations].sort((a, b) => 
-      Date.parse(a.time) - Date.parse(b.time)
-    )
-    
-    // Find locations closest to start and end coordinates
-    let closestStart: typeof sortedLocations[0] | null = null
-    let closestEnd: typeof sortedLocations[0] | null = null
-    let minStartDist = Infinity
-    let minEndDist = Infinity
-    
-    for (const loc of sortedLocations) {
-      const startDist = Math.sqrt(
-        Math.pow(loc.coordinate.lat - passage.startLocation.lat, 2) +
-        Math.pow(loc.coordinate.lon - passage.startLocation.lon, 2)
-      )
-      const endDist = Math.sqrt(
-        Math.pow(loc.coordinate.lat - passage.endLocation.lat, 2) +
-        Math.pow(loc.coordinate.lon - passage.endLocation.lon, 2)
-      )
-      
-      if (startDist < minStartDist) {
-        minStartDist = startDist
-        closestStart = loc
-      }
-      if (endDist < minEndDist) {
-        minEndDist = endDist
-        closestEnd = loc
-      }
-    }
-    
-    if (!startGeocode && closestStart) {
-      startGeocode = {
-        name: closestStart.name || undefined,
-        locality: closestStart.locality || undefined,
-        administrativeArea: closestStart.administrativeArea || undefined,
-        country: closestStart.country || undefined,
-        countryCode: closestStart.countryCode || undefined,
-        formattedAddress: closestStart.formattedAddress || undefined,
-      }
-    }
-    
-    if (!endGeocode && closestEnd) {
-      endGeocode = {
-        name: closestEnd.name || undefined,
-        locality: closestEnd.locality || undefined,
-        administrativeArea: closestEnd.administrativeArea || undefined,
-        country: closestEnd.country || undefined,
-        countryCode: closestEnd.countryCode || undefined,
-        formattedAddress: closestEnd.formattedAddress || undefined,
-      }
-    }
-  }
   
   // Debug: log what we got
   if (startGeocode) {

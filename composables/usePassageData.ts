@@ -42,6 +42,9 @@ export const usePassageData = () => {
             positions: fullPassage.positions ? [...fullPassage.positions] : undefined,
             locations: fullPassage.locations ? [...fullPassage.locations] : undefined
           }
+          if (process.env.NODE_ENV !== 'production') {
+            console.log(`✓ Loaded passage ${passageId} with ${mutablePassage.locations?.length || 0} locations`)
+          }
           selectedPassage.value = mutablePassage
           return mutablePassage
         }

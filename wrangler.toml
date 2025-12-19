@@ -1,6 +1,7 @@
 name = "passage-map"
 main = "src/index.ts"
 compatibility_date = "2024-01-01"
+account_id = "d715f0aeb6b2e7b10f54e9e72fba8fdd"
 
 # R2 buckets for storing passage data
 [[r2_buckets]]

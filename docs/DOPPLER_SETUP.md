@@ -85,6 +85,27 @@ The following environment variables are required:
 - `AIS_HUB_API_KEY`: API key for AIS Hub service
   - **Value**: `AH_3819_4C57E4B4`
 
+### Cloudflare R2/Wrangler Configuration
+
+For Cloudflare R2 storage and Wrangler CLI access:
+
+- `CLOUDFLARE_ACCOUNT_ID`: Cloudflare account ID
+  - **Value**: `d715f0aeb6b2e7b10f54e9e72fba8fdd`
+  - **Note**: This is automatically configured in `wrangler.toml` but can be set as an environment variable for CI/CD
+
+- `CLOUDFLARE_API_TOKEN`: Cloudflare API token (optional, for CI/CD)
+  - **Description**: API token with R2 read/write permissions
+  - **Required for**: Automated deployments, CI/CD pipelines
+  - **How to create**: 
+    1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/profile/api-tokens)
+    2. Click "Create Token"
+    3. Use "Edit Cloudflare Workers" template or create custom token with:
+       - Account: `d715f0aeb6b2e7b10f54e9e72fba8fdd`
+       - Permissions: `Account:Cloudflare Workers:Edit`, `Account:Workers R2 Storage:Edit`
+    4. Copy the token and add to Doppler
+
+**Note**: For local development, Wrangler uses OAuth authentication via `wrangler login`, so API tokens are not required. They are primarily needed for CI/CD environments.
+
 ## Running the Development Server
 
 The development server is configured to run on `phantom.curl-banjo.ts.net` by default. To start the server with Doppler secrets:

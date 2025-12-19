@@ -15,6 +15,11 @@ This project uses Cloudflare R2 for storing passage data, vessel encounter data,
    ```
    This will open a browser window to authenticate with Cloudflare.
 
+3. **Doppler Configuration** (Optional, for CI/CD)
+   - The Cloudflare Account ID is already configured in Doppler
+   - For CI/CD, you may also want to set `CLOUDFLARE_API_TOKEN` in Doppler
+   - See [DOPPLER_SETUP.md](./DOPPLER_SETUP.md) for details
+
 ## Creating R2 Buckets
 
 The project requires three R2 buckets:

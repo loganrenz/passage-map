@@ -64,12 +64,66 @@ const playbackSpeed = ref(1)
 const animationFrameId = ref<number | null>(null)
 const lastUpdateTime = ref<number>(0)
 
-const speedOptions = [
-  { label: '1x', value: 1 },
-  { label: '2x', value: 2 },
-  { label: '4x', value: 4 },
-  { label: '8x', value: 8 },
-] as const
+// Calculate passage duration in hours
+const passageDurationHours = computed(() => {
+  if (!props.passage || timeRange.value.end === timeRange.value.start) {
+    return 0
+  }
+  return (timeRange.value.end - timeRange.value.start) / (1000 * 60 * 60)
+})
+
+// Dynamic speed options based on passage length
+const speedOptions = computed(() => {
+  const duration = passageDurationHours.value
+  
+  // Very short passages (< 30 minutes): slower speeds for detail
+  if (duration < 0.5) {
+    return [
+      { label: '0.5x', value: 0.5 },
+      { label: '1x', value: 1 },
+      { label: '2x', value: 2 },
+      { label: '4x', value: 4 },
+    ]
+  }
+  
+  // Short passages (30 min - 2 hours): standard speeds
+  if (duration < 2) {
+    return [
+      { label: '1x', value: 1 },
+      { label: '2x', value: 2 },
+      { label: '4x', value: 4 },
+      { label: '8x', value: 8 },
+    ]
+  }
+  
+  // Medium passages (2-6 hours): faster speeds
+  if (duration < 6) {
+    return [
+      { label: '2x', value: 2 },
+      { label: '4x', value: 4 },
+      { label: '8x', value: 8 },
+      { label: '16x', value: 16 },
+    ]
+  }
+  
+  // Long passages (6-24 hours): very fast speeds
+  if (duration < 24) {
+    return [
+      { label: '4x', value: 4 },
+      { label: '8x', value: 8 },
+      { label: '16x', value: 16 },
+      { label: '32x', value: 32 },
+    ]
+  }
+  
+  // Very long passages (> 24 hours): maximum speeds
+  return [
+    { label: '8x', value: 8 },
+    { label: '16x', value: 16 },
+    { label: '32x', value: 32 },
+    { label: '64x', value: 64 },
+  ]
+})
 
 const timeRange = computed(() => {
   if (!props.passage) {

@@ -1219,10 +1219,12 @@ const updateVesselMarkers = async () => {
 
     try {
         const visibleVessels = getVisibleVessels(processingTime)
+        console.log(`[PassageMap] Updating vessel markers for time ${processingTime}: ${visibleVessels.length} vessels visible`)
         
         // Check if another update has started while we were processing
         // If so, abort this update to prevent showing stale data
         if (currentVesselUpdateTime.value !== processingTime) {
+            console.log('[PassageMap] Aborting vessel update - newer update in progress')
             return
         }
         const currentVesselIds = new Set<string>()

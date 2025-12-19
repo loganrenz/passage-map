@@ -1,114 +1,143 @@
 <template>
-  <div v-if="passage" class="passage-sidebar">
-    <!-- Layers Section -->
-    <div class="sidebar-section">
-      <h3 class="sidebar-section-title">Layers</h3>
-      <div class="sidebar-options">
-        <label class="sidebar-option">
-          <input type="checkbox" :checked="layers.track" @change="updateLayer('track', $event)" />
-          <span>Track</span>
-        </label>
-        <label class="sidebar-option">
-          <input type="checkbox" :checked="layers.speed" @change="updateLayer('speed', $event)" />
-          <span>Speed (colorized)</span>
-        </label>
-        <label class="sidebar-option">
-          <input type="checkbox" :checked="layers.wind" @change="updateLayer('wind', $event)" />
-          <span>Wind</span>
-        </label>
-        <label class="sidebar-option">
-          <input type="checkbox" :checked="layers.currents" @change="updateLayer('currents', $event)" />
-          <span>Currents</span>
-        </label>
-        <label class="sidebar-option">
-          <input type="checkbox" :checked="layers.waypoints" @change="updateLayer('waypoints', $event)" />
-          <span>Waypoints</span>
-        </label>
-        <label class="sidebar-option">
-          <input type="checkbox" :checked="layers.ais" @change="updateLayer('ais', $event)" disabled />
-          <span class="disabled">AIS (future)</span>
-        </label>
-      </div>
-    </div>
+  <div class="passage-sidebar">
+    <UAccordion 
+      type="multiple" 
+      :items="accordionItems"
+      class="sidebar-accordion"
+    >
+      <template #passages>
+        <div class="accordion-content">
+          <PassageList
+            :passages="passages"
+            :selected-passage="selectedPassage"
+            :is-loading="isLoading"
+            :error="error"
+            @select="handlePassageSelect"
+          />
+        </div>
+      </template>
 
-    <!-- Visualization Modes -->
-    <div class="sidebar-section">
-      <h3 class="sidebar-section-title">View Mode</h3>
-      <div class="sidebar-radio-group">
-        <label class="sidebar-radio-option">
-          <input 
-            type="radio" 
-            name="viewMode" 
-            value="clean" 
-            :checked="viewMode === 'clean'"
-            @change="updateViewMode('clean')"
-          />
-          <span>Clean</span>
-        </label>
-        <label class="sidebar-radio-option">
-          <input 
-            type="radio" 
-            name="viewMode" 
-            value="analysis" 
-            :checked="viewMode === 'analysis'"
-            @change="updateViewMode('analysis')"
-          />
-          <span>Analysis</span>
-        </label>
-        <label class="sidebar-radio-option">
-          <input 
-            type="radio" 
-            name="viewMode" 
-            value="playback" 
-            :checked="viewMode === 'playback'"
-            @change="updateViewMode('playback')"
-          />
-          <span>Playback</span>
-        </label>
-      </div>
-    </div>
+      <template #queries>
+        <div class="accordion-content">
+          <PassageQueries />
+        </div>
+      </template>
 
-    <!-- Passage Tools -->
-    <div class="sidebar-section">
-      <h3 class="sidebar-section-title">Passage Tools</h3>
-      <div class="sidebar-actions">
-        <UButton 
-          variant="outline" 
-          size="sm" 
-          icon="i-lucide-download"
-          class="sidebar-action-btn"
-          @click="exportGPX"
-        >
-          Export GPX
-        </UButton>
-        <UButton 
-          variant="outline" 
-          size="sm" 
-          icon="i-lucide-download"
-          class="sidebar-action-btn"
-          @click="exportGeoJSON"
-        >
-          Export GeoJSON
-        </UButton>
-        <UButton 
-          variant="outline" 
-          size="sm" 
-          icon="i-lucide-file-text"
-          class="sidebar-action-btn"
-          @click="generateReport"
-        >
-          Generate Report
-        </UButton>
-      </div>
-    </div>
+      <template #layers>
+        <div class="accordion-content">
+          <div class="sidebar-options">
+            <label class="sidebar-option">
+              <input type="checkbox" :checked="layers.track" @change="updateLayer('track', $event)" />
+              <span>Track</span>
+            </label>
+            <label class="sidebar-option">
+              <input type="checkbox" :checked="layers.speed" @change="updateLayer('speed', $event)" />
+              <span>Speed (colorized)</span>
+            </label>
+            <label class="sidebar-option">
+              <input type="checkbox" :checked="layers.wind" @change="updateLayer('wind', $event)" />
+              <span>Wind</span>
+            </label>
+            <label class="sidebar-option">
+              <input type="checkbox" :checked="layers.currents" @change="updateLayer('currents', $event)" />
+              <span>Currents</span>
+            </label>
+            <label class="sidebar-option">
+              <input type="checkbox" :checked="layers.waypoints" @change="updateLayer('waypoints', $event)" />
+              <span>Waypoints</span>
+            </label>
+            <label class="sidebar-option">
+              <input type="checkbox" :checked="layers.ais" @change="updateLayer('ais', $event)" disabled />
+              <span class="disabled">AIS (future)</span>
+            </label>
+          </div>
+        </div>
+      </template>
+
+      <template #view-mode>
+        <div class="accordion-content">
+          <div class="sidebar-radio-group">
+            <label class="sidebar-radio-option">
+              <input 
+                type="radio" 
+                name="viewMode" 
+                value="clean" 
+                :checked="viewMode === 'clean'"
+                @change="updateViewMode('clean')"
+              />
+              <span>Clean</span>
+            </label>
+            <label class="sidebar-radio-option">
+              <input 
+                type="radio" 
+                name="viewMode" 
+                value="analysis" 
+                :checked="viewMode === 'analysis'"
+                @change="updateViewMode('analysis')"
+              />
+              <span>Analysis</span>
+            </label>
+            <label class="sidebar-radio-option">
+              <input 
+                type="radio" 
+                name="viewMode" 
+                value="playback" 
+                :checked="viewMode === 'playback'"
+                @change="updateViewMode('playback')"
+              />
+              <span>Playback</span>
+            </label>
+          </div>
+        </div>
+      </template>
+
+      <template #tools>
+        <div class="accordion-content">
+          <div class="sidebar-actions">
+            <UButton 
+              variant="outline" 
+              size="sm" 
+              icon="i-lucide-download"
+              class="sidebar-action-btn"
+              @click="exportGPX"
+            >
+              Export GPX
+            </UButton>
+            <UButton 
+              variant="outline" 
+              size="sm" 
+              icon="i-lucide-download"
+              class="sidebar-action-btn"
+              @click="exportGeoJSON"
+            >
+              Export GeoJSON
+            </UButton>
+            <UButton 
+              variant="outline" 
+              size="sm" 
+              icon="i-lucide-file-text"
+              class="sidebar-action-btn"
+              @click="generateReport"
+            >
+              Generate Report
+            </UButton>
+          </div>
+        </div>
+      </template>
+    </UAccordion>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { Passage } from '~/types/passage'
+import type { AccordionItem } from '@nuxt/ui'
 
 interface Props {
   passage?: Passage | null
+  passages?: Passage[]
+  selectedPassage?: Passage | null
+  isLoading?: boolean
+  error?: string | null
   layers?: {
     track: boolean
     speed: boolean
@@ -121,6 +150,10 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  passages: () => [],
+  selectedPassage: null,
+  isLoading: false,
+  error: null,
   layers: () => ({
     track: true,
     speed: false,
@@ -138,7 +171,41 @@ const emit = defineEmits<{
   'export-gpx': []
   'export-geojson': []
   'generate-report': []
+  'select-passage': [passage: Passage]
 }>()
+
+const accordionItems: AccordionItem[] = [
+  {
+    label: 'Passages',
+    icon: 'i-lucide-list',
+    slot: 'passages',
+    value: 'passages',
+  },
+  {
+    label: 'Passage Queries',
+    icon: 'i-lucide-database',
+    slot: 'queries',
+    value: 'queries',
+  },
+  {
+    label: 'Layers',
+    icon: 'i-lucide-layers',
+    slot: 'layers',
+    value: 'layers',
+  },
+  {
+    label: 'View Mode',
+    icon: 'i-lucide-eye',
+    slot: 'view-mode',
+    value: 'view-mode',
+  },
+  {
+    label: 'Passage Tools',
+    icon: 'i-lucide-wrench',
+    slot: 'tools',
+    value: 'tools',
+  },
+]
 
 const updateLayer = (layer: keyof NonNullable<Props['layers']>, event: Event) => {
   const target = event.target as HTMLInputElement
@@ -164,34 +231,36 @@ const exportGeoJSON = () => {
 const generateReport = () => {
   emit('generate-report')
 }
+
+const handlePassageSelect = (passage: Passage) => {
+  emit('select-passage', passage)
+}
 </script>
 
 <style scoped>
 .passage-sidebar {
-  width: 280px;
+  width: 320px;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-right: 1px solid rgba(0, 0, 0, 0.08);
-  padding: 1.5rem;
+  padding: 1rem;
   overflow-y: auto;
   height: 100%;
 }
 
-.sidebar-section {
-  margin-bottom: 2rem;
+.sidebar-accordion {
+  width: 100%;
 }
 
-.sidebar-section:last-child {
-  margin-bottom: 0;
+.accordion-content {
+  padding: 0.5rem 0;
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
-.sidebar-section-title {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #6b7280;
-  margin-bottom: 0.75rem;
+/* Special handling for passages list to allow more height */
+.accordion-content:has(.space-y-3) {
+  max-height: 75vh;
 }
 
 .sidebar-options {

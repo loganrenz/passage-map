@@ -7,8 +7,11 @@
     <div class="main-layout">
       <!-- Left Sidebar -->
       <PassageSidebar
-        v-if="selectedPassage"
         :passage="mutableSelectedPassage"
+        :passages="mutablePassages"
+        :selected-passage="mutableSelectedPassage"
+        :is-loading="isLoading"
+        :error="error"
         :layers="layers"
         :view-mode="viewMode"
         @update:layers="layers = $event"
@@ -16,6 +19,7 @@
         @export-gpx="handleExportGPX"
         @export-geojson="handleExportGeoJSON"
         @generate-report="handleGenerateReport"
+        @select-passage="handlePassageSelect"
       />
 
       <!-- Map Canvas -->
@@ -34,7 +38,7 @@
           @time-update="handleTimeUpdate"
         />
 
-        <!-- Map Controls: Positioned to the left of map type selector -->
+        <!-- Map Controls: Positioned to the top right -->
         <div class="map-controls-top">
           <!-- Vessels Button -->
           <UButton
@@ -42,7 +46,7 @@
             :variant="showVessels ? 'solid' : 'outline'"
             size="sm"
             icon="i-lucide-ship"
-            class="shadow-lg w-auto"
+            class="shadow-lg"
             :class="showVessels ? 'bg-primary-600 text-white hover:bg-primary-700' : ''"
             @click="showVessels = !showVessels"
           >
@@ -54,7 +58,7 @@
             size="sm"
             variant="outline"
             icon="i-lucide-maximize"
-            class="shadow-lg w-auto"
+            class="shadow-lg"
             @click="handleMapFit"
           >
             Fit
@@ -66,23 +70,13 @@
             size="sm"
             :variant="lockTideye === 'locked' ? 'solid' : lockTideye === 'center' ? 'soft' : 'outline'"
             :icon="lockTideye === 'locked' ? 'i-lucide-lock' : 'i-lucide-crosshair'"
-            class="shadow-lg w-auto"
+            class="shadow-lg"
             :class="lockTideye === 'locked' ? 'bg-primary-600 text-white hover:bg-primary-700' : ''"
             @click="handleCenterToggle"
           >
             {{ lockTideye === 'locked' ? 'Locked' : lockTideye === 'center' ? 'Centered' : 'Center' }}
           </UButton>
         </div>
-
-        <!-- Right Panel: Passages and Queries -->
-        <PassageRightPanel
-          :passages="mutablePassages"
-          :selected-passage="mutableSelectedPassage"
-          :is-loading="isLoading"
-          :error="error"
-          @select="handlePassageSelect"
-          @close="() => {}"
-        />
       </div>
     </div>
 
@@ -398,13 +392,19 @@ onMounted(async () => {
 .map-controls-top {
   position: fixed;
   top: 1rem;
-  right: 4rem;
+  right: 1rem;
   z-index: 1002;
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.5rem;
   pointer-events: auto;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .details-panel {

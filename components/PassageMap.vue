@@ -3,32 +3,22 @@
         <div ref="mapContainer" class="w-full h-full" />
         <!-- Map Controls -->
         <div
-            v-if="props.selectedPassage || props.passages.length > 0"
+            v-if="selectedPassage || passages.length > 0"
             class="absolute top-16 right-4 z-[1001] flex flex-col gap-2"
         >
             <UCard class="p-2 shadow-lg bg-white/95 backdrop-blur-sm">
                 <div class="flex flex-col gap-2">
                     <!-- Show Vessels Toggle -->
-                    <UButton v-if="props.selectedPassage" :variant="showVessels ? 'solid' : 'outline'" size="xs"
+                    <UButton v-if="selectedPassage" :variant="showVessels ? 'solid' : 'outline'" size="xs"
                         icon="i-lucide-ship" @click="showVessels = !showVessels">
                         Vessels
-                    </UButton>
-                    <!-- Speed Color Coding Toggle -->
-                    <UButton v-if="props.selectedPassage" :variant="speedColorCoding ? 'solid' : 'outline'" size="xs"
-                        icon="i-lucide-palette" @click="speedColorCoding = !speedColorCoding">
-                        Speed
-                    </UButton>
-                    <!-- Show Features Toggle -->
-                    <UButton v-if="props.selectedPassage" :variant="showFeatures ? 'solid' : 'outline'" size="xs"
-                        icon="i-lucide-map-pin" @click="showFeatures = !showFeatures">
-                        Features
                     </UButton>
                     <!-- Zoom to Fit -->
                     <UButton size="xs" variant="outline" icon="i-lucide-maximize" @click="handleZoomToFit">
                         Fit
                     </UButton>
                     <!-- Center on Tideye -->
-                    <UButton v-if="props.selectedPassage && props.currentTime" size="xs"
+                    <UButton v-if="selectedPassage && currentTime" size="xs"
                         :variant="lockTideye === 'locked' ? 'solid' : lockTideye === 'center' ? 'soft' : 'outline'"
                         :icon="lockTideye === 'locked' ? 'i-lucide-lock' : 'i-lucide-crosshair'"
                         @click="handleCenterOnTideye">

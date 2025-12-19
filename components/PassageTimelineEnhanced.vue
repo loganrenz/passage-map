@@ -86,10 +86,12 @@ import { getTimeRange, calculateSpeed } from '~/utils/mapHelpers'
 interface Props {
   passage?: Passage | null
   showSpeedGraph?: boolean
+  currentTime?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showSpeedGraph: true,
+  currentTime: null,
 })
 
 const emit = defineEmits<{
@@ -331,6 +333,24 @@ onUnmounted(() => {
   window.removeEventListener('resize', updateGraphWidth)
 })
 
+// Watch for external time updates (e.g., from map clicks)
+watch(
+  () => props.currentTime,
+  (newTime) => {
+    if (newTime && props.passage) {
+      const timeValue = Date.parse(newTime)
+      const { start, end } = timeRange.value
+      
+      // Only update if the time is within the passage range and different from current
+      if (timeValue >= start && timeValue <= end && timeValue !== currentTimeValue.value) {
+        currentTimeValue.value = timeValue
+        // Don't emit time-update here to avoid circular updates
+        // The parent already knows about this time change
+      }
+    }
+  }
+)
+
 // Initialize current time when passage changes
 watch(
   () => props.passage,
@@ -338,8 +358,20 @@ watch(
     pausePlayback()
     playbackSpeed.value = 1
     if (newPassage && timeRange.value.start > 0 && timeRange.value.end > 0) {
-      currentTimeValue.value = timeRange.value.start
-      handleTimeChange(timeRange.value.start)
+      // Use currentTime prop if available, otherwise start at beginning
+      if (props.currentTime) {
+        const timeValue = Date.parse(props.currentTime)
+        const { start, end } = timeRange.value
+        if (timeValue >= start && timeValue <= end) {
+          currentTimeValue.value = timeValue
+        } else {
+          currentTimeValue.value = timeRange.value.start
+          handleTimeChange(timeRange.value.start)
+        }
+      } else {
+        currentTimeValue.value = timeRange.value.start
+        handleTimeChange(timeRange.value.start)
+      }
     } else {
       currentTimeValue.value = 0
     }

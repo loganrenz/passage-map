@@ -1,8 +1,11 @@
 <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-<path d="M5 32H35V30L33 28H7L5 30V32Z" fill="#34C759"/>
-<path d="M15 28H25V24H22V22H18V24H15V28Z" fill="#34C759"/>
-<path d="M20 20V28" stroke="#34C759" stroke-width="2"/>
-<polygon points="20 10,22 20,18 20" fill="#34C759"/>
-<rect x="16" y="25" width="2" height="2" fill="#FFFFFF"/>
-<rect x="22" y="25" width="2" height="2" fill="#FFFFFF"/>
+<path d="M3 32H37V30L35 28H5L3 30V32Z" fill="#34C759"/>
+<path d="M10 28H30V26H28V24H25V22H20V24H18V26H10V28Z" fill="#34C759"/>
+<path d="M25 12V26" stroke="#34C759" stroke-width="2"/>
+<path d="M25 20L32 22M25 18L30 16" stroke="#34C759" stroke-width="2"/>
+<rect x="20" y="24" width="3" height="2" fill="#34C759"/>
+<rect x="11" y="25" width="2" height="2" fill="#FFFFFF"/>
+<rect x="15" y="25" width="2" height="2" fill="#FFFFFF"/>
+<circle cx="8" cy="30" r="1" fill="#FFFFFF"/>
+<circle cx="10" cy="30" r="1" fill="#FFFFFF"/>
 </svg>

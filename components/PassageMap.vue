@@ -37,6 +37,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
     'update:lockTideye': [lock: 'center' | 'locked' | null]
+    'time-update': [timestamp: string]
 }>()
 
 const mapContainer = ref<HTMLElement | null>(null)
@@ -52,6 +53,8 @@ const currentPolylineCoordinates = shallowRef<Array<{ coord: mapkit.Coordinate; 
 const { loadEncounters, getVisibleVessels, isVesselEntering, isVesselExiting } = useVesselEncounters()
 // Track vessel markers separately for fade animations
 const vesselMarkers = shallowRef<Map<string, { marker: mapkit.ImageAnnotation; opacity: number; fadeTimeout?: number }>>(new Map())
+// Track the current time being processed to prevent race conditions
+const currentVesselUpdateTime = ref<string | null>(null)
 // Cache for vessel icon images
 const vesselIconCache = new Map<string, HTMLImageElement>()
 // Note: speedColorCoding, showFeatures, showVessels, and lockTideye are now props
@@ -103,6 +106,40 @@ onMounted(async () => {
                     })
                 }
             })
+
+            // Set up click listener to handle polyline clicks
+            // MapKit JS uses 'single-tap' event for map clicks
+            mapInstance.value.addEventListener('single-tap', (event: any) => {
+                console.log('[PassageMap] Map click detected (single-tap):', event)
+                handleMapClick(event)
+            })
+        }
+
+        // Also set up DOM click listener as fallback
+        // This works by listening to clicks on the map container and converting screen coordinates
+        if (mapContainer.value && mapInstance.value) {
+            const handleContainerClick = (e: MouseEvent) => {
+                if (!mapInstance.value || !props.selectedPassage) return
+                
+                // Convert page coordinates to map coordinates using MapKit JS API
+                // MapKit JS uses convertPointOnPageToCoordinate method
+                try {
+                    const point = new DOMPoint(e.clientX, e.clientY)
+                    const coord = mapInstance.value.convertPointOnPageToCoordinate(point)
+                    
+                    if (coord) {
+                        console.log('[PassageMap] Container click detected, converted to coordinate:', coord)
+                        handleMapClick({ coordinate: coord })
+                    }
+                } catch (error) {
+                    console.error('[PassageMap] Error converting click to coordinate:', error)
+                }
+            }
+            
+            mapContainer.value.addEventListener('click', handleContainerClick)
+            
+            // Store handler for cleanup
+            ;(mapContainer.value as any).__clickHandler = handleContainerClick
         }
 
         // Load custom marker image (Tideye icon)
@@ -169,6 +206,247 @@ const removeTimeMarker = () => {
     // Type assertion needed because mapInstance is readonly
     removeVesselPositionFromMap(mapInstance.value as mapkit.Map, timeMarker.value)
     timeMarker.value = null
+}
+
+/**
+ * Calculate distance between two coordinates in meters using Haversine formula
+ */
+const calculateDistance = (coord1: mapkit.Coordinate, coord2: mapkit.Coordinate): number => {
+    const R = 6371000 // Earth radius in meters
+    const lat1 = coord1.latitude * Math.PI / 180
+    const lat2 = coord2.latitude * Math.PI / 180
+    const deltaLat = (coord2.latitude - coord1.latitude) * Math.PI / 180
+    const deltaLon = (coord2.longitude - coord1.longitude) * Math.PI / 180
+
+    const a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+        Math.cos(lat1) * Math.cos(lat2) *
+        Math.sin(deltaLon / 2) * Math.sin(deltaLon / 2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+
+    return R * c
+}
+
+/**
+ * Find the closest point on a line segment to a given point
+ * Returns the closest point on the segment and the distance
+ * Uses geographic coordinate calculations
+ */
+const findClosestPointOnSegment = (
+    point: mapkit.Coordinate,
+    segmentStart: mapkit.Coordinate,
+    segmentEnd: mapkit.Coordinate
+): { point: mapkit.Coordinate; distance: number; t: number } => {
+    // For geographic coordinates, we need to use a different approach
+    // We'll approximate by converting to a local coordinate system
+    
+    // Calculate distances to both endpoints
+    const distToStart = calculateDistance(point, segmentStart)
+    const distToEnd = calculateDistance(point, segmentEnd)
+    const segmentLength = calculateDistance(segmentStart, segmentEnd)
+
+    // If segment is very short, return the closer endpoint
+    if (segmentLength < 1) { // less than 1 meter
+        if (distToStart < distToEnd) {
+            return {
+                point: segmentStart,
+                distance: distToStart,
+                t: 0
+            }
+        } else {
+            return {
+                point: segmentEnd,
+                distance: distToEnd,
+                t: 1
+            }
+        }
+    }
+
+    // Use linear interpolation in lat/lon space (approximation)
+    // For small segments, this is accurate enough
+    const lat1 = segmentStart.latitude
+    const lon1 = segmentStart.longitude
+    const lat2 = segmentEnd.latitude
+    const lon2 = segmentEnd.longitude
+    const latP = point.latitude
+    const lonP = point.longitude
+
+    // Calculate parameter t using perpendicular projection approximation
+    // This works well for short segments
+    const dx = lat2 - lat1
+    const dy = lon2 - lon1
+    const d2 = dx * dx + dy * dy
+
+    if (d2 < 1e-10) {
+        return {
+            point: segmentStart,
+            distance: distToStart,
+            t: 0
+        }
+    }
+
+    const t = Math.max(0, Math.min(1, 
+        ((latP - lat1) * dx + (lonP - lon1) * dy) / d2
+    ))
+
+    // Interpolate to find closest point
+    const closestLat = lat1 + t * dx
+    const closestLon = lon1 + t * dy
+
+    const closestPoint = new window.mapkit.Coordinate(closestLat, closestLon)
+    const distance = calculateDistance(point, closestPoint)
+
+    return {
+        point: closestPoint,
+        distance,
+        t
+    }
+}
+
+/**
+ * Handle map click events to find closest point on polyline and update timeline
+ */
+const handleMapClick = (event: any) => {
+    console.log('[PassageMap] handleMapClick called:', {
+        hasSelectedPassage: !!props.selectedPassage,
+        hasMapInstance: !!mapInstance.value,
+        coordinatesCount: currentPolylineCoordinates.value.length,
+        event: event
+    })
+
+    if (!props.selectedPassage || !mapInstance.value || currentPolylineCoordinates.value.length === 0) {
+        console.log('[PassageMap] handleMapClick: Missing requirements, returning early')
+        return
+    }
+
+    // MapKit JS event structure: event.coordinate or event.location
+    const clickCoord = (event.coordinate || event.location) as mapkit.Coordinate | undefined
+    if (!clickCoord) {
+        console.log('[PassageMap] handleMapClick: No coordinate in event')
+        return
+    }
+
+    console.log('[PassageMap] Click coordinate:', clickCoord.latitude, clickCoord.longitude)
+    
+    // Log first few polyline coordinates for comparison
+    if (currentPolylineCoordinates.value.length > 0) {
+        console.log('[PassageMap] First polyline coordinate:', {
+            lat: currentPolylineCoordinates.value[0]?.coord?.latitude,
+            lon: currentPolylineCoordinates.value[0]?.coord?.longitude
+        })
+        if (currentPolylineCoordinates.value.length > 1) {
+            console.log('[PassageMap] Second polyline coordinate:', {
+                lat: currentPolylineCoordinates.value[1]?.coord?.latitude,
+                lon: currentPolylineCoordinates.value[1]?.coord?.longitude
+            })
+        }
+    }
+
+    // Calculate threshold based on zoom level for better usability
+    // When zoomed out (large area visible), use larger threshold for easier clicking
+    // When zoomed in (small area visible), use smaller threshold for precision
+    let threshold = 1000 // meters (default)
+    if (mapInstance.value) {
+        const span = mapInstance.value.region.span
+        // Use latitude span as a proxy for zoom level
+        // Larger span = more zoomed out = larger threshold needed
+        const latSpanDegrees = span.latitudeDelta
+        const latSpanMeters = latSpanDegrees * 111000 // approximate conversion
+        
+        // More aggressive scaling: 
+        // - Very zoomed in (1km view): ~100m threshold
+        // - Medium zoom (10km view): ~500m threshold  
+        // - Zoomed out (100km view): ~5000m threshold
+        // - Very zoomed out (1000km view): ~20000m threshold
+        // Use a power function for smoother scaling
+        if (latSpanMeters < 2000) {
+            // Very zoomed in: 100-300m
+            threshold = 100 + (latSpanMeters / 2000) * 200
+        } else if (latSpanMeters < 50000) {
+            // Medium zoom: 300-2000m
+            threshold = 300 + ((latSpanMeters - 2000) / 48000) * 1700
+        } else if (latSpanMeters < 500000) {
+            // Zoomed out: 2000-10000m
+            threshold = 2000 + ((latSpanMeters - 50000) / 450000) * 8000
+        } else {
+            // Very zoomed out: 10000-20000m
+            threshold = Math.min(20000, 10000 + ((latSpanMeters - 500000) / 1000000) * 10000)
+        }
+        
+        // Ensure minimum and maximum bounds
+        threshold = Math.max(100, Math.min(20000, threshold))
+    }
+    
+    console.log('[PassageMap] Using threshold:', threshold, 'meters (zoom-adaptive)')
+
+    let closestDistance = Infinity
+    let closestTime: string | null = null
+    let closestSegmentIndex = -1
+
+    // Check each segment of the polyline
+    for (let i = 0; i < currentPolylineCoordinates.value.length - 1; i++) {
+        const start = currentPolylineCoordinates.value[i]
+        const end = currentPolylineCoordinates.value[i + 1]
+        
+        if (!start || !end || !start.coord || !end.coord) continue
+
+        const result = findClosestPointOnSegment(clickCoord, start.coord, end.coord)
+        
+        // Debug first few segments to see what's happening
+        if (i < 3) {
+            console.log(`[PassageMap] Segment ${i}:`, {
+                start: { lat: start.coord.latitude, lon: start.coord.longitude },
+                end: { lat: end.coord.latitude, lon: end.coord.longitude },
+                distance: result.distance,
+                threshold: threshold,
+                withinThreshold: result.distance < threshold
+            })
+        }
+        
+        if (result.distance < threshold && result.distance < closestDistance) {
+            closestDistance = result.distance
+            closestSegmentIndex = i
+            
+            // Interpolate time between start and end points
+            if (start.time && end.time) {
+                const startTime = Date.parse(start.time)
+                const endTime = Date.parse(end.time)
+                const interpolatedTime = startTime + (endTime - startTime) * result.t
+                closestTime = new Date(interpolatedTime).toISOString()
+            } else if (start.time) {
+                closestTime = start.time
+            } else if (end.time) {
+                closestTime = end.time
+            }
+        }
+    }
+    
+    // If no point found within threshold, find the absolute closest for debugging
+    if (closestDistance === Infinity && currentPolylineCoordinates.value.length > 0) {
+        let absoluteClosest = Infinity
+        for (let i = 0; i < currentPolylineCoordinates.value.length - 1; i++) {
+            const start = currentPolylineCoordinates.value[i]
+            const end = currentPolylineCoordinates.value[i + 1]
+            if (!start || !end || !start.coord || !end.coord) continue
+            const result = findClosestPointOnSegment(clickCoord, start.coord, end.coord)
+            if (result.distance < absoluteClosest) {
+                absoluteClosest = result.distance
+            }
+        }
+        console.log('[PassageMap] Absolute closest distance (for debugging):', absoluteClosest, 'meters')
+    }
+
+    console.log('[PassageMap] Closest point found:', {
+        distance: closestDistance,
+        time: closestTime
+    })
+
+    // If we found a close point, emit the time update
+    if (closestTime) {
+        console.log('[PassageMap] Emitting time-update:', closestTime)
+        emit('time-update', closestTime)
+    } else {
+        console.log('[PassageMap] No close point found (closest distance:', closestDistance, 'meters)')
+    }
 }
 
 /**
@@ -931,17 +1209,43 @@ const handleCenterOnTideye = () => {
 const updateVesselMarkers = async () => {
     if (!mapInstance.value || !window.mapkit || !props.currentTime || !props.selectedPassage || !props.showVessels) {
         clearVesselMarkers()
+        currentVesselUpdateTime.value = null
         return
     }
 
+    // Store the time we're processing to prevent race conditions
+    const processingTime = props.currentTime
+    currentVesselUpdateTime.value = processingTime
+
     try {
-        const visibleVessels = getVisibleVessels(props.currentTime)
+        const visibleVessels = getVisibleVessels(processingTime)
+        
+        // Check if another update has started while we were processing
+        // If so, abort this update to prevent showing stale data
+        if (currentVesselUpdateTime.value !== processingTime) {
+            return
+        }
         const currentVesselIds = new Set<string>()
+
+        // First, clear any pending fade-out timeouts for vessels that will be visible
+        // This prevents vessels from disappearing right after being shown
+        for (const { encounter, position, segmentIndex } of visibleVessels) {
+            const vesselId = `${encounter.vessel.id}-${segmentIndex}`
+            currentVesselIds.add(vesselId)
+            
+            // If this vessel already exists, clear any pending fade-out immediately
+            if (vesselMarkers.value.has(vesselId)) {
+                const existing = vesselMarkers.value.get(vesselId)!
+                if (existing.fadeTimeout) {
+                    clearTimeout(existing.fadeTimeout)
+                    existing.fadeTimeout = undefined
+                }
+            }
+        }
 
         // Update or create markers for visible vessels
         for (const { encounter, position, segmentIndex } of visibleVessels) {
             const vesselId = `${encounter.vessel.id}-${segmentIndex}`
-            currentVesselIds.add(vesselId)
 
             const iconPath = getVesselIcon(encounter.vessel.type, encounter.vessel.name)
             const iconSize = getVesselIconSize(encounter.vessel.type)
@@ -961,12 +1265,12 @@ const updateVesselMarkers = async () => {
                 const existing = vesselMarkers.value.get(vesselId)!
                 // Update position
                 existing.marker.coordinate = coord
-                // Clear any pending fade-out timeout since vessel is still visible
+                // Ensure opacity is 1 and no fade timeout
+                existing.opacity = 1
                 if (existing.fadeTimeout) {
                     clearTimeout(existing.fadeTimeout)
                     existing.fadeTimeout = undefined
                 }
-                existing.opacity = 1
             } else {
                 // Create new marker
                 const vesselName = getVesselDisplayNameSync(
@@ -993,6 +1297,7 @@ const updateVesselMarkers = async () => {
         }
 
         // Remove markers for vessels that are no longer visible
+        // Only remove if they're not in the current visible set
         for (const [vesselId, { marker, fadeTimeout }] of vesselMarkers.value.entries()) {
             if (!currentVesselIds.has(vesselId)) {
                 // Fade out before removing
@@ -1002,8 +1307,26 @@ const updateVesselMarkers = async () => {
                 fadeOutMarker(vesselId)
             }
         }
+        
+        // Final check: make sure we're still processing the same time
+        if (currentVesselUpdateTime.value !== processingTime) {
+            // Another update started, clear what we just added
+            for (const { encounter, segmentIndex } of visibleVessels) {
+                const vesselId = `${encounter.vessel.id}-${segmentIndex}`
+                if (vesselMarkers.value.has(vesselId)) {
+                    const existing = vesselMarkers.value.get(vesselId)!
+                    // Only remove if it was just added (not in the original set)
+                    // Actually, let the next update handle it
+                }
+            }
+        }
     } catch (error) {
         console.error('Error updating vessel markers:', error)
+    } finally {
+        // Clear the processing time if this was the latest update
+        if (currentVesselUpdateTime.value === processingTime) {
+            currentVesselUpdateTime.value = null
+        }
     }
 }
 
@@ -1066,9 +1389,28 @@ watch(() => props.showVessels, (shouldShow) => {
     if (!shouldShow) {
         clearVesselMarkers()
     } else if (props.currentTime && props.selectedPassage && markerImage.value) {
+        // Ensure vessels are displayed when showVessels is toggled on
+        // This is important when playback is paused and currentTime hasn't changed
         updateVesselMarkers()
     }
 })
+
+// Watch for selectedPassage changes to ensure vessels are updated when passage changes
+// This ensures vessels are displayed even if currentTime hasn't changed recently
+watch(
+    () => props.selectedPassage?.id,
+    () => {
+        if (!isInitialized.value) return
+        // If all conditions are met for showing vessels, ensure they are displayed
+        // This is important when passage changes or when playback is paused
+        if (props.showVessels && props.currentTime && props.selectedPassage && markerImage.value) {
+            // Use nextTick to avoid duplicate calls when currentTime watch also fires
+            nextTick(() => {
+                updateVesselMarkers()
+            })
+        }
+    }
+)
 
 // Watch showFeatures toggle to update feature markers visibility
 watch(() => props.showFeatures, (shouldShow) => {
@@ -1118,6 +1460,12 @@ onUnmounted(() => {
     clearVesselMarkers()
     clearFeatureMarkers()
     removeTimeMarker()
+    
+    // Clean up click handler
+    if (mapContainer.value && (mapContainer.value as any).__clickHandler) {
+        mapContainer.value.removeEventListener('click', (mapContainer.value as any).__clickHandler)
+        delete (mapContainer.value as any).__clickHandler
+    }
 })
 
 const handleResize = () => {

@@ -31,22 +31,57 @@
           :show-vessels="showVessels"
           :lock-tideye="lockTideye"
           @update:lock-tideye="lockTideye = $event"
+          @time-update="handleTimeUpdate"
         />
 
-        <!-- Right Panel: Passages, Queries, Vessels, and Controls -->
+        <!-- Map Controls: Positioned to the left of map type selector -->
+        <div class="map-controls-top">
+          <!-- Vessels Button -->
+          <UButton
+            v-if="selectedPassage"
+            :variant="showVessels ? 'solid' : 'outline'"
+            size="sm"
+            icon="i-lucide-ship"
+            class="shadow-lg w-auto"
+            :class="showVessels ? 'bg-primary-600 text-white hover:bg-primary-700' : ''"
+            @click="showVessels = !showVessels"
+          >
+            Vessels
+          </UButton>
+          
+          <!-- Fit Button -->
+          <UButton
+            size="sm"
+            variant="outline"
+            icon="i-lucide-maximize"
+            class="shadow-lg w-auto"
+            @click="handleMapFit"
+          >
+            Fit
+          </UButton>
+          
+          <!-- Center Button -->
+          <UButton
+            v-if="selectedPassage && currentTime"
+            size="sm"
+            :variant="lockTideye === 'locked' ? 'solid' : lockTideye === 'center' ? 'soft' : 'outline'"
+            :icon="lockTideye === 'locked' ? 'i-lucide-lock' : 'i-lucide-crosshair'"
+            class="shadow-lg w-auto"
+            :class="lockTideye === 'locked' ? 'bg-primary-600 text-white hover:bg-primary-700' : ''"
+            @click="handleCenterToggle"
+          >
+            {{ lockTideye === 'locked' ? 'Locked' : lockTideye === 'center' ? 'Centered' : 'Center' }}
+          </UButton>
+        </div>
+
+        <!-- Right Panel: Passages and Queries -->
         <PassageRightPanel
           :passages="mutablePassages"
           :selected-passage="mutableSelectedPassage"
           :is-loading="isLoading"
           :error="error"
-          :show-vessels="showVessels"
-          :lock-tideye="lockTideye"
-          :current-time="currentTime"
           @select="handlePassageSelect"
-          @update:show-vessels="showVessels = $event"
-          @update:lock-tideye="lockTideye = $event"
-          @fit="handleMapFit"
-          @center="handleMapCenter"
+          @close="() => {}"
         />
       </div>
     </div>
@@ -120,6 +155,7 @@
       v-if="selectedPassage"
       :passage="mutableSelectedPassage"
       :show-speed-graph="true"
+      :current-time="currentTime"
       @time-update="handleTimeUpdate"
     />
   </div>
@@ -269,6 +305,19 @@ const handleMapCenter = () => {
   }
 }
 
+const handleCenterToggle = () => {
+  // Toggle lockTideye: null -> 'center' -> 'locked' -> null
+  if (lockTideye.value === null) {
+    lockTideye.value = 'center'
+    handleMapCenter()
+  } else if (lockTideye.value === 'center') {
+    lockTideye.value = 'locked'
+    handleMapCenter()
+  } else {
+    lockTideye.value = null
+  }
+}
+
 const handleLocationsUpdate = (locations: Passage['locations']) => {
   if (mutableSelectedPassage.value && selectedPassage.value) {
     // Create updated passage with locations
@@ -347,10 +396,15 @@ onMounted(async () => {
 }
 
 .map-controls-top {
-  position: absolute;
+  position: fixed;
   top: 1rem;
-  right: 1rem;
-  z-index: 1001;
+  right: 4rem;
+  z-index: 1002;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.25rem;
+  pointer-events: auto;
 }
 
 .details-panel {

@@ -135,7 +135,8 @@
           @click="isTimelineVisible = !isTimelineVisible"
           @touchstart.prevent="isTimelineVisible = !isTimelineVisible" />
       </div>
-      <div v-if="isTimelineVisible" class="timeline-content-wrapper">
+      <!-- Always render component to preserve playback state, use CSS to hide -->
+      <div class="timeline-content-wrapper">
         <PassageTimelineEnhanced :passage="mutableSelectedPassage" :show-speed-graph="true" :current-time="currentTime"
           :show-passage-info="true" @time-update="handleTimeUpdate" />
       </div>
@@ -576,6 +577,8 @@ onUnmounted(() => {
   opacity: 0;
   max-height: 0;
   pointer-events: none;
+  /* Keep component mounted but visually hidden */
+  visibility: hidden;
 }
 
 .timeline-toggle-container {

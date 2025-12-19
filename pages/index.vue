@@ -1,18 +1,23 @@
 <template>
   <div class="app-container">
     <!-- Main Layout: Sidebar + Map -->
-    <div class="main-layout">
+    <div class="main-layout flex flex-1 min-h-0 overflow-hidden relative flex-col md:flex-row">
       <!-- Mobile Menu Toggle Button -->
       <UButton v-if="!isSidebarOpen" icon="i-lucide-menu" size="lg" color="neutral" variant="solid"
-        class="mobile-menu-toggle" @click="isSidebarOpen = true" @touchstart.prevent="isSidebarOpen = true" />
+        class="mobile-menu-toggle block md:hidden fixed top-4 left-4 z-[1001] shadow-lg"
+        @click="isSidebarOpen = true" @touchstart.prevent="isSidebarOpen = true" />
 
       <!-- Left Sidebar -->
-      <div class="sidebar-wrapper" :class="{ 'sidebar-open': isSidebarOpen }">
-        <div class="sidebar-overlay" @click="isSidebarOpen = false" @touchstart.prevent="isSidebarOpen = false"></div>
-        <div class="sidebar-content" :class="{ 'swiping': sidebarSwipeStart !== null }"
+      <div class="sidebar-wrapper relative block md:w-80 md:flex-shrink-0"
+        :class="{ 'sidebar-open': isSidebarOpen }">
+        <div class="sidebar-overlay hidden md:hidden"
+          :class="{ 'block': isSidebarOpen }"
+          @click="isSidebarOpen = false" @touchstart.prevent="isSidebarOpen = false"></div>
+        <div class="sidebar-content h-full w-full md:relative"
+          :class="{ 'swiping': sidebarSwipeStart !== null }"
           :style="sidebarSwipeOffset !== 0 ? { transform: `translateX(${sidebarSwipeOffset}px)` } : {}"
           @touchstart="handleSidebarTouchStart" @touchmove="handleSidebarTouchMove" @touchend="handleSidebarTouchEnd">
-          <div class="sidebar-header">
+          <div class="sidebar-header hidden md:hidden">
             <h2 class="sidebar-title">Menu</h2>
             <UButton icon="i-lucide-x" size="sm" variant="ghost" color="neutral" class="sidebar-close"
               title="Close menu" @click="isSidebarOpen = false" @touchstart.prevent="isSidebarOpen = false" />
@@ -26,7 +31,7 @@
       </div>
 
       <!-- Map Canvas -->
-      <div class="map-container">
+      <div class="map-container flex-1 relative min-w-0 overflow-visible">
         <PassageMap ref="mapRef" :passages="displayedPassages" :selected-passage="mutableSelectedPassage"
           :auto-fit="true" :current-time="currentTime" :speed-color-coding="layers.speed"
           :show-features="layers.waypoints" :show-vessels="showVessels" :lock-tideye="lockTideye"
@@ -36,14 +41,14 @@
         <div class="map-controls-bottom-left">
           <!-- Vessels Button -->
           <UButton v-if="selectedPassage" :variant="showVessels ? 'solid' : 'outline'" size="sm" icon="i-lucide-ship"
-            class="shadow-lg map-control-btn"
+            class="map-control-btn shadow-lg"
             :class="showVessels ? 'bg-primary-600 text-white hover:bg-primary-700' : ''"
             @click="showVessels = !showVessels" @touchstart.prevent="showVessels = !showVessels">
             <span class="map-control-label">Vessels</span>
           </UButton>
 
           <!-- Fit Button -->
-          <UButton size="sm" variant="outline" icon="i-lucide-maximize" class="shadow-lg map-control-btn"
+          <UButton size="sm" variant="outline" icon="i-lucide-maximize" class="map-control-btn shadow-lg"
             @click="handleMapFit" @touchstart.prevent="handleMapFit">
             <span class="map-control-label">Fit</span>
           </UButton>
@@ -51,7 +56,7 @@
           <!-- Center Button -->
           <UButton v-if="selectedPassage && currentTime" size="sm"
             :variant="lockTideye === 'locked' ? 'solid' : lockTideye === 'center' ? 'soft' : 'outline'"
-            :icon="lockTideye === 'locked' ? 'i-lucide-lock' : 'i-lucide-crosshair'" class="shadow-lg map-control-btn"
+            :icon="lockTideye === 'locked' ? 'i-lucide-lock' : 'i-lucide-crosshair'" class="map-control-btn shadow-lg"
             :class="lockTideye === 'locked' ? 'bg-primary-600 text-white hover:bg-primary-700' : ''"
             @click="handleCenterToggle" @touchstart.prevent="handleCenterToggle">
             <span class="map-control-label">{{ lockTideye === 'locked' ? 'Locked' : lockTideye === 'center' ? 'Centered'
@@ -63,7 +68,7 @@
 
     <!-- Details Panel (Collapsible) -->
     <div v-if="selectedPassage && !isDetailsCollapsed" class="details-panel">
-      <div class="details-header-controls">
+      <div class="details-header-controls flex justify-end mb-4">
         <UButton icon="i-lucide-x" size="xs" variant="ghost" color="neutral" @click="isDetailsCollapsed = true"
           @touchstart.prevent="isDetailsCollapsed = true">
           Close
@@ -71,51 +76,51 @@
       </div>
       <PassageDetailsCollapsible :passage="mutableSelectedPassage" :default-expanded="['stats']">
         <template #stats="{ passage }">
-          <div class="stats-content">
-            <div class="stat-item">
-              <span class="stat-label">Distance</span>
-              <span class="stat-value">{{ formatDistance(passage.distance) }}</span>
+          <div class="stats-content grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="stat-item flex flex-col gap-1">
+              <span class="stat-label text-xs text-gray-500 font-medium">Distance</span>
+              <span class="stat-value text-lg font-semibold text-gray-900">{{ formatDistance(passage.distance) }}</span>
             </div>
-            <div class="stat-item">
-              <span class="stat-label">Duration</span>
-              <span class="stat-value">{{ formatDuration(passage.duration) }}</span>
+            <div class="stat-item flex flex-col gap-1">
+              <span class="stat-label text-xs text-gray-500 font-medium">Duration</span>
+              <span class="stat-value text-lg font-semibold text-gray-900">{{ formatDuration(passage.duration) }}</span>
             </div>
-            <div class="stat-item">
-              <span class="stat-label">Average Speed</span>
-              <span class="stat-value">{{ passage.avgSpeed.toFixed(1) }} kt</span>
+            <div class="stat-item flex flex-col gap-1">
+              <span class="stat-label text-xs text-gray-500 font-medium">Average Speed</span>
+              <span class="stat-value text-lg font-semibold text-gray-900">{{ passage.avgSpeed.toFixed(1) }} kt</span>
             </div>
-            <div class="stat-item">
-              <span class="stat-label">Max Speed</span>
-              <span class="stat-value">{{ passage.maxSpeed.toFixed(1) }} kt</span>
+            <div class="stat-item flex flex-col gap-1">
+              <span class="stat-label text-xs text-gray-500 font-medium">Max Speed</span>
+              <span class="stat-value text-lg font-semibold text-gray-900">{{ passage.maxSpeed.toFixed(1) }} kt</span>
             </div>
           </div>
         </template>
         <template #start-end="{ passage }">
-          <div class="location-content">
-            <div class="location-item">
-              <span class="location-label">Start</span>
-              <span class="location-time">{{ formatDateTime(passage.startTime) }}</span>
-              <span class="location-coords">{{ passage.startLocation.lat.toFixed(4) }}, {{
+          <div class="location-content flex flex-col gap-4">
+            <div class="location-item flex flex-col gap-1">
+              <span class="location-label text-xs text-gray-500 font-medium">Start</span>
+              <span class="location-time text-sm text-gray-900 font-medium">{{ formatDateTime(passage.startTime) }}</span>
+              <span class="location-coords text-xs text-gray-400 font-mono">{{ passage.startLocation.lat.toFixed(4) }}, {{
                 passage.startLocation.lon.toFixed(4) }}</span>
             </div>
-            <div class="location-item">
-              <span class="location-label">End</span>
-              <span class="location-time">{{ formatDateTime(passage.endTime) }}</span>
-              <span class="location-coords">{{ passage.endLocation.lat.toFixed(4) }}, {{
+            <div class="location-item flex flex-col gap-1">
+              <span class="location-label text-xs text-gray-500 font-medium">End</span>
+              <span class="location-time text-sm text-gray-900 font-medium">{{ formatDateTime(passage.endTime) }}</span>
+              <span class="location-coords text-xs text-gray-400 font-mono">{{ passage.endLocation.lat.toFixed(4) }}, {{
                 passage.endLocation.lon.toFixed(4) }}</span>
             </div>
           </div>
         </template>
         <template #performance="{ passage }">
-          <div class="performance-content">
-            <div class="performance-item">
-              <span class="performance-label">Route</span>
-              <span class="performance-value">{{ passage.route || 'N/A' }}</span>
+          <div class="performance-content flex flex-col gap-4">
+            <div class="performance-item flex flex-col gap-1">
+              <span class="performance-label text-xs text-gray-500 font-medium">Route</span>
+              <span class="performance-value text-sm text-gray-900">{{ passage.route || 'N/A' }}</span>
             </div>
           </div>
         </template>
-        <template #notes="{ passage }">
-          <div class="notes-content">
+        <template #notes>
+          <div class="notes-content py-4">
             <p class="text-sm text-gray-500">Notes feature coming soon...</p>
           </div>
         </template>
@@ -123,7 +128,7 @@
     </div>
 
     <!-- Timeline Strip at Bottom -->
-    <div v-if="selectedPassage" class="timeline-wrapper" :class="{ 'timeline-hidden': !isTimelineVisible }">
+    <div v-if="selectedPassage" class="timeline-wrapper relative w-full" :class="{ 'timeline-hidden': !isTimelineVisible }">
       <div class="timeline-toggle-container">
         <UButton :icon="isTimelineVisible ? 'i-lucide-chevron-down' : 'i-lucide-chevron-up'" size="xs" variant="ghost"
           color="neutral" class="timeline-toggle-btn" :title="isTimelineVisible ? 'Hide timeline' : 'Show timeline'"
@@ -323,12 +328,14 @@ const handlePassageSelect = async (passage: Passage, updateUrl = true) => {
 
 const handleMapFit = () => {
   if (mapRef.value && 'handleZoomToFit' in mapRef.value) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ; (mapRef.value as any).handleZoomToFit()
   }
 }
 
 const handleMapCenter = () => {
   if (mapRef.value && 'handleCenterOnTideye' in mapRef.value) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ; (mapRef.value as any).handleCenterOnTideye()
   }
 }
@@ -411,7 +418,7 @@ onMounted(async () => {
   await loadPassageFromUrl()
 
   // If no passage is selected and we have passages, automatically select the first one
-  if (!selectedPassage.value && passages.value.length > 0) {
+  if (!selectedPassage.value && passages.value.length > 0 && passages.value[0]) {
     const firstPassage = toMutablePassage(passages.value[0])
     await handlePassageSelect(firstPassage, true)
   }
@@ -443,75 +450,70 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* App container - viewport height handling for iOS Safari */
 .app-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
-  /* Dynamic viewport height - accounts for Safari address bar */
   height: calc(var(--vh, 1vh) * 100);
-  /* JavaScript fallback for older browsers */
   height: -webkit-fill-available;
-  /* Fallback for older Safari */
   width: 100vw;
   overflow: hidden;
   position: fixed;
-  /* Prevent iOS Safari bottom bar from causing layout shifts */
   min-height: -webkit-fill-available;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
-.main-layout {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  position: relative;
-}
-
-/* Mobile Menu Toggle */
+/* Mobile menu toggle - iOS jittering prevention */
 .mobile-menu-toggle {
-  display: none;
-  position: fixed;
-  top: 1rem;
-  left: 1rem;
-  z-index: 1001;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  /* Prevent iOS jittering */
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
   will-change: transform;
 }
 
-/* Sidebar Wrapper */
-.sidebar-wrapper {
-  position: relative;
-  display: block;
-}
-
+/* Sidebar overlay - only visible on mobile when open */
 .sidebar-overlay {
-  display: none;
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
+/* Sidebar content - mobile slide animation */
 .sidebar-content {
-  height: 100%;
-  width: 100%;
-}
-
-.sidebar-header {
-  display: none;
-}
-
-/* Map Container */
-.map-container {
-  flex: 1;
-  position: relative;
-  min-width: 0;
-  /* Prevent iOS jittering */
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
   will-change: transform;
 }
 
+.sidebar-content.swiping {
+  transition: none !important;
+}
+
+.sidebar-wrapper:not(.sidebar-open) {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.sidebar-wrapper.sidebar-open .sidebar-content:not(.swiping) {
+  transform: translateX(0);
+}
+
+/* Map container - iOS jittering prevention */
+.map-container {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Map controls positioning */
 .map-controls-bottom-left {
   position: fixed;
   bottom: 1rem;
@@ -530,47 +532,6 @@ onUnmounted(() => {
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-/* Ensure MapKit's map type selector in bottom-right is not covered on desktop */
-@media (min-width: 769px) {
-
-  /* Lower our controls z-index on desktop to ensure MapKit controls are always on top */
-  .map-controls-bottom-left {
-    z-index: 1001;
-    bottom: 1rem;
-    left: 1rem;
-  }
-
-  /* Ensure MapKit controls are always visible and clickable */
-  .map-container {
-    overflow: visible;
-  }
-
-  /* MapKit's controls should be above our floating controls */
-  .map-container :deep(div[class*="mapkitjs"]) {
-    z-index: 1003;
-  }
-
-  /* Desktop: Sidebar should always be visible, no hamburger menu */
-  .sidebar-wrapper {
-    display: block;
-    width: 320px;
-    flex-shrink: 0;
-  }
-
-  .sidebar-content {
-    position: relative;
-    transform: none;
-  }
-
-  .sidebar-header {
-    display: none !important;
-  }
-
-  .mobile-menu-toggle {
-    display: none !important;
-  }
-}
-
 .map-control-btn {
   white-space: nowrap;
   display: flex;
@@ -586,6 +547,7 @@ onUnmounted(() => {
   display: inline;
 }
 
+/* Details panel */
 .details-panel {
   position: absolute;
   top: 0;
@@ -602,322 +564,8 @@ onUnmounted(() => {
   padding: 1rem;
 }
 
-.details-header-controls {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 1rem;
-}
-
-.stats-content {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.stat-label {
-  font-size: 0.75rem;
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.stat-value {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #111827;
-}
-
-.location-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.location-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.location-label {
-  font-size: 0.75rem;
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.location-time {
-  font-size: 0.875rem;
-  color: #111827;
-  font-weight: 500;
-}
-
-.location-coords {
-  font-size: 0.75rem;
-  color: #9ca3af;
-  font-family: ui-monospace, monospace;
-}
-
-.performance-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.performance-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.performance-label {
-  font-size: 0.75rem;
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.performance-value {
-  font-size: 0.875rem;
-  color: #111827;
-}
-
-.notes-content {
-  padding: 1rem 0;
-}
-
-/* Tablet and below */
-@media (max-width: 1024px) {
-  .main-layout {
-    flex-direction: column;
-  }
-
-  .details-panel {
-    position: fixed;
-    top: auto;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    max-width: 100%;
-    max-height: 60vh;
-    border-left: none;
-    border-top: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 1rem 1rem 0 0;
-  }
-
-  .stats-content {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-  }
-}
-
-/* Mobile styles */
-@media (max-width: 768px) {
-  .mobile-menu-toggle {
-    display: block;
-  }
-
-  .sidebar-wrapper {
-    position: fixed;
-    inset: 0;
-    z-index: 1000;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
-    display: block;
-    /* Prevent iOS jittering */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    will-change: transform, opacity;
-  }
-
-  .sidebar-wrapper:not(.sidebar-open) {
-    opacity: 0;
-    visibility: hidden;
-  }
-
-  .sidebar-wrapper.sidebar-open {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-  }
-
-  .sidebar-wrapper.sidebar-open .mobile-menu-toggle {
-    display: none !important;
-  }
-
-  .sidebar-overlay {
-    display: block;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-  }
-
-  .sidebar-content {
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 75%;
-    max-width: 280px;
-    background: #ffffff;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-y;
-    /* Prevent iOS jittering */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    will-change: transform;
-  }
-
-  .sidebar-wrapper.sidebar-open .sidebar-content:not(.swiping) {
-    transform: translateX(0);
-  }
-
-  /* Disable transition during swipe gesture */
-  .sidebar-content.swiping {
-    transition: none !important;
-  }
-
-  .sidebar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    background: #ffffff;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-
-
-  .sidebar-title {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #111827;
-    margin: 0;
-  }
-
-  .map-controls-bottom-left {
-    /* On mobile, position absolutely relative to map container, not fixed to viewport */
-    position: absolute !important;
-    /* Reset desktop positioning */
-    right: auto !important;
-    /* Position in bottom-left of map area, above timeline panel */
-    bottom: 0.5rem !important;
-    left: 0.5rem !important;
-    padding: 0.25rem;
-    gap: 0.25rem;
-    flex-wrap: wrap;
-    /* Constrain width to stay in left half, leaving room for MapKit controls on right */
-    max-width: calc(50vw - 1rem);
-    /* Lower z-index on mobile so MapKit controls are on top */
-    z-index: 1001 !important;
-  }
-
-  /* Ensure MapKit controls are always visible and clickable on mobile */
-  .map-container {
-    overflow: visible;
-  }
-
-  /* MapKit's controls should be above our floating controls on mobile */
-  .map-container :deep(div[class*="mapkitjs"]) {
-    z-index: 1003;
-  }
-
-  .map-control-label {
-    display: none;
-  }
-
-  .map-control-btn {
-    min-width: 32px !important;
-    min-height: 32px !important;
-    padding: 0.25rem !important;
-    font-size: 0.75rem;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-  }
-
-  .map-control-btn :deep(svg) {
-    margin: 0 !important;
-  }
-
-  .details-panel {
-    max-height: 70vh;
-    padding: 0.75rem;
-  }
-
-  .stats-content {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-  }
-
-  .stat-value {
-    font-size: 1rem;
-  }
-}
-
-/* Small mobile */
-@media (max-width: 640px) {
-  .mobile-menu-toggle {
-    top: 0.75rem;
-    left: 0.75rem;
-    min-width: 44px;
-    min-height: 44px;
-  }
-
-  .map-controls-bottom-left {
-    /* On small mobile, position absolutely relative to map container, not fixed to viewport */
-    position: absolute !important;
-    /* Reset desktop positioning */
-    right: auto !important;
-    /* Position in bottom-left of map area, above timeline panel */
-    bottom: 0.5rem !important;
-    left: 0.5rem !important;
-    padding: 0.25rem;
-    gap: 0.25rem;
-    /* Constrain width to stay in left half, leaving room for MapKit controls on right */
-    max-width: calc(50vw - 1rem);
-    /* Lower z-index on small mobile so MapKit controls are on top */
-    z-index: 1001 !important;
-  }
-
-  .map-control-btn {
-    min-width: 28px !important;
-    min-height: 28px !important;
-    padding: 0.25rem !important;
-    font-size: 0.6875rem;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-  }
-
-  .map-control-btn :deep(svg) {
-    margin: 0 !important;
-  }
-
-  .details-panel {
-    max-height: 75vh;
-    padding: 0.5rem;
-  }
-}
-
-/* Timeline wrapper with toggle */
-.timeline-wrapper {
-  position: relative;
-  width: 100%;
-}
-
+/* Timeline wrapper */
 .timeline-content-wrapper {
-  width: 100%;
   transition: transform 0.3s ease, opacity 0.3s ease, max-height 0.3s ease;
   max-height: 1000px;
   overflow: hidden;
@@ -939,7 +587,6 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   pointer-events: auto;
-  /* Always visible, even when timeline is hidden */
   opacity: 1;
   visibility: visible;
 }
@@ -956,13 +603,132 @@ onUnmounted(() => {
   padding: 0.375rem 0.75rem;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  /* Prevent iOS jittering */
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
   will-change: transform;
 }
 
+/* Desktop styles */
+@media (min-width: 769px) {
+  .map-controls-bottom-left {
+    z-index: 1001;
+  }
+
+  .map-container :deep(div[class*="mapkitjs"]) {
+    z-index: 1003;
+  }
+
+  .sidebar-wrapper.sidebar-open .mobile-menu-toggle {
+    display: none !important;
+  }
+}
+
+/* Tablet styles */
+@media (max-width: 1024px) {
+  .details-panel {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    max-height: 60vh;
+    border-left: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 1rem 1rem 0 0;
+  }
+}
+
+/* Mobile styles */
 @media (max-width: 768px) {
+  .sidebar-wrapper {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: transform, opacity;
+  }
+
+  .sidebar-wrapper.sidebar-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .sidebar-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 75%;
+    max-width: 280px;
+    background: #ffffff;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+  }
+
+  .sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .map-controls-bottom-left {
+    position: absolute !important;
+    bottom: 0.5rem !important;
+    left: 0.5rem !important;
+    padding: 0.25rem;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+    max-width: calc(50vw - 1rem);
+    z-index: 1001 !important;
+  }
+
+  .map-container :deep(div[class*="mapkitjs"]) {
+    z-index: 1003;
+  }
+
+  .map-control-label {
+    display: none;
+  }
+
+  .map-control-btn {
+    min-width: 32px !important;
+    min-height: 32px !important;
+    padding: 0.25rem !important;
+    font-size: 0.75rem;
+  }
+
+  .map-control-btn :deep(svg) {
+    margin: 0 !important;
+  }
+
+  .details-panel {
+    max-height: 70vh;
+    padding: 0.75rem;
+  }
+
+  .stats-content {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .stat-value {
+    font-size: 1rem;
+  }
+
   .timeline-toggle-container {
     top: -2rem;
   }
@@ -971,6 +737,32 @@ onUnmounted(() => {
     min-width: 40px;
     min-height: 32px;
     padding: 0.25rem 0.5rem;
+  }
+}
+
+/* Small mobile */
+@media (max-width: 640px) {
+  .mobile-menu-toggle {
+    top: 0.75rem;
+    left: 0.75rem;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .map-controls-bottom-left {
+    padding: 0.25rem;
+    gap: 0.25rem;
+  }
+
+  .map-control-btn {
+    min-width: 28px !important;
+    min-height: 28px !important;
+    font-size: 0.6875rem;
+  }
+
+  .details-panel {
+    max-height: 75vh;
+    padding: 0.5rem;
   }
 }
 </style>

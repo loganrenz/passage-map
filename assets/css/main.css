@@ -12,151 +12,87 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  /* Fix iOS viewport height issues - use dvh for Safari address bar */
-  height: 100dvh; /* Dynamic viewport height - accounts for Safari address bar */
-  height: calc(var(--vh, 1vh) * 100); /* JavaScript fallback for older browsers */
-  height: -webkit-fill-available; /* Fallback for older Safari */
+  height: 100dvh;
+  height: calc(var(--vh, 1vh) * 100);
+  height: -webkit-fill-available;
   position: fixed;
   width: 100%;
 }
 
 #__nuxt {
   height: 100vh;
-  height: 100dvh; /* Dynamic viewport height - accounts for Safari address bar */
-  height: calc(var(--vh, 1vh) * 100); /* JavaScript fallback for older browsers */
-  height: -webkit-fill-available; /* Fallback for older Safari */
+  height: 100dvh;
+  height: calc(var(--vh, 1vh) * 100);
+  height: -webkit-fill-available;
   overflow: hidden;
   position: fixed;
   width: 100%;
-  /* Prevent iOS Safari bottom bar from causing layout shifts */
   min-height: -webkit-fill-available;
 }
 
 /* Mobile UX improvements */
 @media (max-width: 768px) {
-  /* Improve touch targets */
   button, a, [role="button"] {
     min-height: 44px;
     min-width: 44px;
   }
   
-  /* Better scrolling on mobile */
   * {
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Prevent text selection on interactive elements */
   button, [role="button"], .cursor-pointer {
     -webkit-tap-highlight-color: transparent;
     user-select: none;
-    touch-action: manipulation; /* Eliminates 300ms delay on iOS */
+    touch-action: manipulation;
   }
 
-  /* Better input handling on mobile */
   input, textarea, select {
-    font-size: 16px; /* Prevents zoom on iOS */
+    font-size: 16px;
   }
 }
 
 /* iOS-specific touch improvements */
 @supports (-webkit-touch-callout: none) {
-  /* This targets iOS Safari specifically */
   button, [role="button"], .cursor-pointer, a {
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
     cursor: pointer;
   }
   
-  /* Ensure all interactive elements respond immediately */
   button:active, [role="button"]:active, .cursor-pointer:active {
     opacity: 0.7;
-  }
-}
-
-@media (max-width: 640px) {
-  /* Bottom sheet pattern for mobile */
-  .timeline-bottom {
-    border-radius: 1rem 1rem 0 0;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-  }
-
-  /* Swipe indicator for mobile */
-  .timeline-bottom::before {
-    content: '';
-    position: absolute;
-    top: 0.5rem;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 40px;
-    height: 4px;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 2px;
-  }
-
-  /* Ensure safe area insets for notched devices */
-  .app-container {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-    /* Use fixed height to prevent iOS Safari bottom bar from causing jitter */
-    height: 100vh;
-    height: -webkit-fill-available;
-    position: fixed;
-    width: 100%;
   }
 }
 
 /* iOS-specific fixes to prevent jittering */
 @supports (-webkit-touch-callout: none) {
   html, body, #__nuxt {
-    /* Prevent iOS Safari from resizing viewport when address bar appears/disappears */
-    /* Use dvh (dynamic viewport height) which accounts for address bar */
     height: 100dvh;
-    height: -webkit-fill-available; /* Fallback for older Safari */
+    height: -webkit-fill-available;
     position: fixed;
     width: 100%;
     overflow: hidden;
   }
   
-  /* Handle Safari address bar show/hide with JavaScript fallback */
-  /* The viewport will adjust automatically with dvh, but we add extra protection */
-  .app-container {
-    height: 100dvh;
-    height: -webkit-fill-available;
-    min-height: -webkit-fill-available;
-  }
-  
-  /* Prevent momentum scrolling from causing jitter */
   * {
     -webkit-overflow-scrolling: touch;
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
   }
-  
-  /* Fix for elements that might cause repaints */
-  .sidebar-content,
-  .map-container,
-  .timeline-enhanced {
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    will-change: transform;
-  }
 }
 
-/* Prevent text selection on interactive elements */
+/* Touch manipulation utilities */
 .cursor-pointer {
   -webkit-tap-highlight-color: transparent;
   user-select: none;
 }
 
-/* Touch manipulation for better performance */
 .touch-manipulation {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Ensure all buttons have proper touch handling */
 button, [role="button"] {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
@@ -164,22 +100,16 @@ button, [role="button"] {
 
 /* Vessel position annotation styling */
 .vessel-position-annotation {
-  /* Ensure the annotation doesn't interfere with map interactions */
   pointer-events: auto;
-  /* Prevent text selection */
   user-select: none;
-  /* Smooth rendering */
   will-change: transform;
 }
 
 .vessel-position-annotation img {
-  /* Ensure image doesn't block pointer events */
   pointer-events: none;
 }
 
-/* Debug border styling - make it more visible */
 .vessel-position-annotation[data-debug-border="true"] {
-  /* Add a subtle shadow to make border stand out */
   box-shadow: 0 0 0 1px rgba(255, 0, 0, 0.3),
               0 2px 4px rgba(0, 0, 0, 0.2);
 }
@@ -279,10 +209,8 @@ button, [role="button"] {
   text-align: center;
 }
 
-/* Ensure MapKit's native controls (map type selector, zoom controls) are visible on desktop */
+/* MapKit controls visibility */
 @media (min-width: 769px) {
-  /* MapKit controls should be above our custom floating controls */
-  /* Target all MapKit-generated elements that are likely controls */
   div[class*="mapkitjs"] > div,
   div[class*="mapkitjs"] button,
   div[class*="mapkitjs"] [role="button"] {
@@ -290,7 +218,6 @@ button, [role="button"] {
     pointer-events: auto !important;
   }
   
-  /* Ensure elements positioned in bottom-right (where map type selector typically is) are visible */
   .map-container > div > div:last-child,
   .map-container [style*="bottom"] {
     z-index: 1003 !important;

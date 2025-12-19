@@ -24,6 +24,7 @@
         color="primary"
         variant="solid"
         @click="togglePlayback"
+        @touchstart.prevent="togglePlayback()"
       />
       <div class="speed-controls">
         <UButton
@@ -33,6 +34,7 @@
           :color="playbackSpeed === option.value ? 'primary' : 'neutral'"
           :variant="playbackSpeed === option.value ? 'solid' : 'ghost'"
           @click="playbackSpeed = option.value"
+          @touchstart.prevent="playbackSpeed = option.value"
         >
           {{ option.label }}
         </UButton>
@@ -43,7 +45,7 @@
     <div class="timeline-data">
       <div class="data-row" v-if="showSpeedGraph">
         <div class="data-label">Speed</div>
-        <div class="data-graph" ref="speedGraphRef" @mousemove="handleGraphHover($event, 'speed')" @mouseleave="hoverData = null">
+        <div class="data-graph touch-manipulation" ref="speedGraphRef" @mousemove="handleGraphHover($event, 'speed')" @mouseleave="hoverData = null" @click="handleGraphClick($event, 'speed')" @touchstart.prevent="handleGraphTouch($event, 'speed')" @touchmove.prevent="handleGraphTouch($event, 'speed')" @touchend.prevent="hoverData = null">
           <svg :width="graphWidth" :height="graphHeight" class="graph-svg">
             <path
               :d="speedPath"
@@ -229,7 +231,7 @@ const speedData = computed(() => {
   return speeds
 })
 
-// Generate SVG path for speed graph
+// Generate SVG path for speed graph with smooth curves
 const speedPath = computed(() => {
   if (speedData.value.length === 0) return ''
 
@@ -242,79 +244,123 @@ const speedPath = computed(() => {
 
   const speedRange = maxSpeed - minSpeed || 1
 
-  const points = speedData.value.map((data, index) => {
+  // Convert speed data to x,y coordinates
+  const points = speedData.value.map((data) => {
     const x = ((data.time - start) / range) * graphWidth.value
     const y = graphHeight - ((data.speed - minSpeed) / speedRange) * graphHeight
-    return `${index === 0 ? 'M' : 'L'} ${x} ${y}`
+    return { x, y }
   })
 
-  return points.join(' ')
+  if (points.length === 0) return ''
+  if (points.length === 1) return `M ${points[0].x} ${points[0].y}`
+  if (points.length === 2) return `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y}`
+
+  // Use smooth curve interpolation with cubic bezier curves
+  let path = `M ${points[0].x} ${points[0].y}`
+
+  // Smoothing factor (0.25 = smooth curves, adjust for more/less smoothing)
+  const smoothing = 0.25
+
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = i > 0 ? points[i - 1] : points[i]
+    const p1 = points[i]
+    const p2 = points[i + 1]
+    const p3 = i < points.length - 2 ? points[i + 2] : p2
+
+    // Calculate control points for smooth cubic bezier curve
+    // This creates a Catmull-Rom spline-like effect
+    const cp1x = p1.x + (p2.x - p0.x) * smoothing
+    const cp1y = p1.y + (p2.y - p0.y) * smoothing
+    const cp2x = p2.x - (p3.x - p1.x) * smoothing
+    const cp2y = p2.y - (p3.y - p1.y) * smoothing
+
+    path += ` C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`
+  }
+
+  return path
 })
 
 const formatTime = (timestamp: string) => {
-  if (!timestamp) return '--:--:--'
+  if (!timestamp) return '--:--:-- --'
   const date = new Date(timestamp)
   if (isNaN(date.getTime())) {
-    return '--:--:--'
+    return '--:--:-- --'
   }
   return date.toLocaleTimeString('en-US', {
-    hour: '2-digit',
+    hour: 'numeric',
     minute: '2-digit',
     second: '2-digit',
-    hour12: false,
+    hour12: true,
   })
 }
 
 const formatFullTime = (timestamp: string) => {
-  if (!timestamp) return '--:--:--'
+  if (!timestamp) return '-- --, ---- --:--:-- --'
   const date = new Date(timestamp)
   if (isNaN(date.getTime())) {
-    return '--:--:--'
+    return '-- --, ---- --:--:-- --'
   }
   return date.toLocaleString('en-US', {
     month: 'short',
     day: 'numeric',
-    hour: '2-digit',
+    hour: 'numeric',
     minute: '2-digit',
     second: '2-digit',
-    hour12: false,
+    hour12: true,
   })
 }
 
-// Format date and time in industry standard format
+// Format date and time in American standard format (12-hour with AM/PM)
 const formatDateTime = (timestamp: string): string => {
-  if (!timestamp) return '-- -- ---- --:--:--'
+  if (!timestamp) return '-- --, ---- --:--:-- --'
   const date = new Date(timestamp)
   if (isNaN(date.getTime())) {
-    return '-- -- ---- --:--:--'
+    return '-- --, ---- --:--:-- --'
   }
   
-  // Format: "Jan 15, 2024 14:30:45"
+  // Format: "Jan 15, 2024 2:30:45 PM"
   const dateStr = date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   })
   const timeStr = date.toLocaleTimeString('en-US', {
-    hour: '2-digit',
+    hour: 'numeric',
     minute: '2-digit',
     second: '2-digit',
-    hour12: false,
+    hour12: true,
   })
   
   return `${dateStr} ${timeStr}`
 }
 
-// Format duration in HH:MM:SS format from milliseconds
+// Format duration in human-readable format (days, hours, minutes) from milliseconds
 const formatDurationFromMs = (milliseconds: number): string => {
-  if (milliseconds < 0) return '00:00:00'
+  if (milliseconds < 0) return '0 minutes'
   
   const totalSeconds = Math.floor(milliseconds / 1000)
-  const hours = Math.floor(totalSeconds / 3600)
+  const days = Math.floor(totalSeconds / 86400)
+  const hours = Math.floor((totalSeconds % 86400) / 3600)
   const minutes = Math.floor((totalSeconds % 3600) / 60)
   const seconds = totalSeconds % 60
   
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+  const parts: string[] = []
+  
+  if (days > 0) {
+    parts.push(`${days} ${days === 1 ? 'day' : 'days'}`)
+  }
+  if (hours > 0) {
+    parts.push(`${hours} ${hours === 1 ? 'hour' : 'hours'}`)
+  }
+  if (minutes > 0 || parts.length === 0) {
+    parts.push(`${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`)
+  }
+  // Only show seconds if less than a minute
+  if (totalSeconds < 60 && seconds > 0) {
+    parts.push(`${seconds} ${seconds === 1 ? 'second' : 'seconds'}`)
+  }
+  
+  return parts.join(', ')
 }
 
 // Calculate elapsed time (from start to current)
@@ -398,6 +444,77 @@ const handleGraphHover = (event: MouseEvent, type: 'speed') => {
       x,
       time: new Date(closest.time).toISOString(),
       speed: closest.speed,
+    }
+  }
+}
+
+const handleGraphClick = (event: MouseEvent, type: 'speed') => {
+  if (!speedGraphRef.value || !props.passage) return
+
+  const rect = speedGraphRef.value.getBoundingClientRect()
+  const x = event.clientX - rect.left
+  const percent = x / graphWidth.value
+
+  const { start, end } = timeRange.value
+  const clickTime = start + (end - start) * percent
+
+  if (type === 'speed') {
+    // Find closest speed data point
+    const closest = speedData.value.reduce((prev, curr) => {
+      const prevDiff = Math.abs(prev.time - clickTime)
+      const currDiff = Math.abs(curr.time - clickTime)
+      return currDiff < prevDiff ? curr : prev
+    }, speedData.value[0])
+
+    // Update timeline to the clicked time
+    currentTimeValue.value = closest.time
+    handleTimeChange(closest.time)
+    
+    // Pause playback if it's playing
+    if (isPlaying.value) {
+      pausePlayback()
+    }
+  }
+}
+
+const handleGraphTouch = (event: TouchEvent, type: 'speed') => {
+  if (!speedGraphRef.value || !props.passage) return
+
+  const touch = event.touches[0] || event.changedTouches[0]
+  if (!touch) return
+
+  const rect = speedGraphRef.value.getBoundingClientRect()
+  const x = touch.clientX - rect.left
+  const percent = x / graphWidth.value
+
+  const { start, end } = timeRange.value
+  const touchTime = start + (end - start) * percent
+
+  if (type === 'speed') {
+    // Find closest speed data point
+    const closest = speedData.value.reduce((prev, curr) => {
+      const prevDiff = Math.abs(prev.time - touchTime)
+      const currDiff = Math.abs(curr.time - touchTime)
+      return currDiff < prevDiff ? curr : prev
+    }, speedData.value[0])
+
+    // Show hover data
+    hoverData.value = {
+      x,
+      time: new Date(closest.time).toISOString(),
+      speed: closest.speed,
+    }
+
+    // On touchend, update timeline
+    if (event.type === 'touchend') {
+      // Update timeline to the touched time
+      currentTimeValue.value = closest.time
+      handleTimeChange(closest.time)
+      
+      // Pause playback if it's playing
+      if (isPlaying.value) {
+        pausePlayback()
+      }
     }
   }
 }
@@ -567,11 +684,19 @@ watch(
 
 .speed-controls {
   display: flex;
-  gap: 0.25rem;
+  gap: 0.375rem;
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 0.5rem;
   padding: 0.25rem;
   background: rgba(0, 0, 0, 0.02);
+  align-items: center;
+}
+
+.speed-controls :deep(button) {
+  min-width: 40px;
+  min-height: 32px;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
 .timeline-data {
@@ -820,15 +945,25 @@ watch(
   .speed-controls {
     flex: 1;
     min-width: 0;
-    padding: 0.125rem;
-    gap: 0.125rem;
+    padding: 0.25rem;
+    gap: 0.375rem;
+    justify-content: center;
   }
 
-  .timeline-controls :deep(button) {
-    min-width: 32px !important;
-    min-height: 28px !important;
-    padding: 0.25rem 0.375rem !important;
-    font-size: 0.6875rem;
+  .speed-controls :deep(button) {
+    min-width: 44px !important;
+    min-height: 36px !important;
+    padding: 0.375rem 0.5rem !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    flex: 1;
+    max-width: 60px;
+  }
+
+  .timeline-controls > :deep(button:first-child) {
+    min-width: 36px !important;
+    min-height: 36px !important;
+    padding: 0.375rem !important;
   }
 
   .timeline-controls > :deep(button:first-child) {
@@ -913,22 +1048,26 @@ watch(
   .speed-controls {
     order: 2;
     width: 100%;
-    margin-top: 0.25rem;
-    padding: 0.125rem;
-    gap: 0.125rem;
+    margin-top: 0.375rem;
+    padding: 0.375rem;
+    gap: 0.5rem;
+    justify-content: stretch;
   }
 
   .speed-controls :deep(button) {
-    min-width: 28px !important;
-    min-height: 24px !important;
-    padding: 0.1875rem 0.25rem !important;
-    font-size: 0.625rem;
+    min-width: 48px !important;
+    min-height: 40px !important;
+    padding: 0.5rem 0.625rem !important;
+    font-size: 0.8125rem !important;
+    font-weight: 600 !important;
+    flex: 1;
+    border-radius: 0.5rem !important;
   }
 
   .timeline-controls > :deep(button:first-child) {
-    min-width: 28px !important;
-    min-height: 28px !important;
-    padding: 0.25rem !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    padding: 0.5rem !important;
   }
 
   .data-label {

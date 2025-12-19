@@ -7,8 +7,9 @@
       :class="{ 'is-expanded': expandedSections[section.key] }"
     >
       <button
-        class="section-header"
+        class="section-header touch-manipulation"
         @click="toggleSection(section.key)"
+        @touchstart.prevent="toggleSection(section.key)"
       >
         <span class="section-title">{{ section.title }}</span>
         <span class="section-summary" v-if="!expandedSections[section.key] && section.getSummary">
@@ -123,6 +124,9 @@ watch(
   cursor: pointer;
   text-align: left;
   transition: background-color 0.2s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 44px;
 }
 
 .section-header:hover {

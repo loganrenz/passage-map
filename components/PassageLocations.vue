@@ -10,6 +10,7 @@
                 size="xs"
                 icon="i-lucide-map-pin"
                 @click="handleGeocode"
+                @touchstart.prevent="!isGeocoding && !isLoadingLocations && handleGeocode()"
             >
                 {{ isGeocoding ? 'Geocoding...' : isLoadingLocations ? 'Loading...' : 'Get Locations' }}
             </UButton>
@@ -81,7 +82,8 @@
         <div v-else class="locations-empty">
             <UIcon name="i-lucide-map" class="locations-empty-icon" />
             <p class="locations-empty-text">No location information available</p>
-            <UButton size="xs" icon="i-lucide-map-pin" @click="handleGeocode">
+            <UButton size="xs" icon="i-lucide-map-pin" @click="handleGeocode"
+                @touchstart.prevent="handleGeocode()">
                 Discover Locations
             </UButton>
         </div>

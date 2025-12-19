@@ -16,9 +16,9 @@
       <template #header>
         <div
           ref="dragHandleRef"
-          class="flex items-center justify-between cursor-move select-none"
+          class="flex items-center justify-between cursor-move select-none touch-manipulation"
           @mousedown="startDrag"
-          @touchstart="startDrag"
+          @touchstart.prevent="startDrag"
         >
           <div class="flex items-center gap-2 flex-1">
             <UIcon name="i-lucide-grip-vertical" class="text-gray-400" />
@@ -31,6 +31,7 @@
               variant="ghost"
               color="gray"
               @click.stop="toggleHide"
+              @touchstart.stop.prevent="toggleHide"
             />
             <UButton
               v-if="isCollapsed"
@@ -39,6 +40,7 @@
               variant="ghost"
               color="gray"
               @click.stop="isCollapsed = false"
+              @touchstart.stop.prevent="isCollapsed = false"
             />
             <UButton
               v-else
@@ -47,6 +49,7 @@
               variant="ghost"
               color="gray"
               @click.stop="isCollapsed = true"
+              @touchstart.stop.prevent="isCollapsed = true"
             />
           </div>
         </div>
@@ -74,6 +77,7 @@
               color="primary"
               :disabled="!selectedDateTime"
               @click="handleCenterOnDate"
+              @touchstart.prevent="!selectedDateTime || handleCenterOnDate()"
             >
               Center
             </UButton>

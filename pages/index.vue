@@ -3,112 +3,59 @@
     <!-- Main Layout: Sidebar + Map -->
     <div class="main-layout">
       <!-- Mobile Menu Toggle Button -->
-      <UButton
-        icon="i-lucide-menu"
-        size="lg"
-        color="white"
-        variant="solid"
-        class="mobile-menu-toggle"
-        @click="isSidebarOpen = true"
-      />
+      <UButton icon="i-lucide-menu" size="lg" color="white" variant="solid" class="mobile-menu-toggle"
+        @click="isSidebarOpen = true" @touchstart.prevent="isSidebarOpen = true" />
 
       <!-- Left Sidebar -->
-      <div 
-        class="sidebar-wrapper" 
-        :class="{ 'sidebar-open': isSidebarOpen }"
-      >
-        <div class="sidebar-overlay" @click="isSidebarOpen = false"></div>
-        <div 
-          class="sidebar-content" 
-          :class="{ 'swiping': sidebarSwipeStart !== null }"
+      <div class="sidebar-wrapper" :class="{ 'sidebar-open': isSidebarOpen }">
+        <div class="sidebar-overlay" @click="isSidebarOpen = false" @touchstart.prevent="isSidebarOpen = false"></div>
+        <div class="sidebar-content" :class="{ 'swiping': sidebarSwipeStart !== null }"
           :style="sidebarSwipeOffset !== 0 ? { transform: `translateX(${sidebarSwipeOffset}px)` } : {}"
-          @touchstart="handleSidebarTouchStart"
-          @touchmove="handleSidebarTouchMove"
-          @touchend="handleSidebarTouchEnd"
-        >
+          @touchstart="handleSidebarTouchStart" @touchmove="handleSidebarTouchMove" @touchend="handleSidebarTouchEnd">
           <div class="sidebar-header">
             <h2 class="sidebar-title">Menu</h2>
-            <UButton
-              icon="i-lucide-x"
-              size="sm"
-              variant="ghost"
-              color="neutral"
-              class="sidebar-close"
-              title="Close menu"
-              @click="isSidebarOpen = false"
-            />
+            <UButton icon="i-lucide-x" size="sm" variant="ghost" color="neutral" class="sidebar-close"
+              title="Close menu" @click="isSidebarOpen = false" @touchstart.prevent="isSidebarOpen = false" />
           </div>
-          <PassageSidebar
-            :passage="mutableSelectedPassage"
-            :passages="mutablePassages"
-            :selected-passage="mutableSelectedPassage"
-            :is-loading="isLoading"
-            :error="error"
-            :layers="layers"
-            :view-mode="viewMode"
-            @update:layers="layers = $event"
-            @update:view-mode="viewMode = $event"
-            @export-gpx="handleExportGPX"
-            @export-geojson="handleExportGeoJSON"
-            @generate-report="handleGenerateReport"
-            @select-passage="handlePassageSelect"
-          />
+          <PassageSidebar :passage="mutableSelectedPassage" :passages="mutablePassages"
+            :selected-passage="mutableSelectedPassage" :is-loading="isLoading" :error="error" :layers="layers"
+            :view-mode="viewMode" @update:layers="layers = $event" @update:view-mode="viewMode = $event"
+            @export-gpx="handleExportGPX" @export-geojson="handleExportGeoJSON" @generate-report="handleGenerateReport"
+            @select-passage="handlePassageSelect" />
         </div>
       </div>
 
       <!-- Map Canvas -->
       <div class="map-container">
-        <PassageMap
-          ref="mapRef"
-          :passages="displayedPassages"
-          :selected-passage="mutableSelectedPassage"
-          :auto-fit="true"
-          :current-time="currentTime"
-          :speed-color-coding="layers.speed"
-          :show-features="layers.waypoints"
-          :show-vessels="showVessels"
-          :lock-tideye="lockTideye"
-          @update:lock-tideye="lockTideye = $event"
-          @time-update="handleTimeUpdate"
-        />
+        <PassageMap ref="mapRef" :passages="displayedPassages" :selected-passage="mutableSelectedPassage"
+          :auto-fit="true" :current-time="currentTime" :speed-color-coding="layers.speed"
+          :show-features="layers.waypoints" :show-vessels="showVessels" :lock-tideye="lockTideye"
+          @update:lock-tideye="lockTideye = $event" @time-update="handleTimeUpdate" />
 
         <!-- Map Controls: Positioned to the bottom left -->
         <div class="map-controls-bottom-left">
           <!-- Vessels Button -->
-          <UButton
-            v-if="selectedPassage"
-            :variant="showVessels ? 'solid' : 'outline'"
-            size="sm"
-            icon="i-lucide-ship"
+          <UButton v-if="selectedPassage" :variant="showVessels ? 'solid' : 'outline'" size="sm" icon="i-lucide-ship"
             class="shadow-lg map-control-btn"
             :class="showVessels ? 'bg-primary-600 text-white hover:bg-primary-700' : ''"
-            @click="showVessels = !showVessels"
-          >
+            @click="showVessels = !showVessels" @touchstart.prevent="showVessels = !showVessels">
             <span class="map-control-label">Vessels</span>
           </UButton>
-          
+
           <!-- Fit Button -->
-          <UButton
-            size="sm"
-            variant="outline"
-            icon="i-lucide-maximize"
-            class="shadow-lg map-control-btn"
-            @click="handleMapFit"
-          >
+          <UButton size="sm" variant="outline" icon="i-lucide-maximize" class="shadow-lg map-control-btn"
+            @click="handleMapFit" @touchstart.prevent="handleMapFit">
             <span class="map-control-label">Fit</span>
           </UButton>
-          
+
           <!-- Center Button -->
-          <UButton
-            v-if="selectedPassage && currentTime"
-            size="sm"
+          <UButton v-if="selectedPassage && currentTime" size="sm"
             :variant="lockTideye === 'locked' ? 'solid' : lockTideye === 'center' ? 'soft' : 'outline'"
-            :icon="lockTideye === 'locked' ? 'i-lucide-lock' : 'i-lucide-crosshair'"
-            class="shadow-lg map-control-btn"
+            :icon="lockTideye === 'locked' ? 'i-lucide-lock' : 'i-lucide-crosshair'" class="shadow-lg map-control-btn"
             :class="lockTideye === 'locked' ? 'bg-primary-600 text-white hover:bg-primary-700' : ''"
-            @click="handleCenterToggle"
-          >
-            <span class="map-control-label">{{ lockTideye === 'locked' ? 'Locked' : lockTideye === 'center' ? 'Centered' : 'Center' }}</span>
+            @click="handleCenterToggle" @touchstart.prevent="handleCenterToggle">
+            <span class="map-control-label">{{ lockTideye === 'locked' ? 'Locked' : lockTideye === 'center' ? 'Centered'
+              : 'Center' }}</span>
           </UButton>
         </div>
       </div>
@@ -117,13 +64,8 @@
     <!-- Details Panel (Collapsible) -->
     <div v-if="selectedPassage && !isDetailsCollapsed" class="details-panel">
       <div class="details-header-controls">
-        <UButton
-          icon="i-lucide-x"
-          size="xs"
-          variant="ghost"
-          color="neutral"
-          @click="isDetailsCollapsed = true"
-        >
+        <UButton icon="i-lucide-x" size="xs" variant="ghost" color="neutral" @click="isDetailsCollapsed = true"
+          @touchstart.prevent="isDetailsCollapsed = true">
           Close
         </UButton>
       </div>
@@ -153,12 +95,14 @@
             <div class="location-item">
               <span class="location-label">Start</span>
               <span class="location-time">{{ formatDateTime(passage.startTime) }}</span>
-              <span class="location-coords">{{ passage.startLocation.lat.toFixed(4) }}, {{ passage.startLocation.lon.toFixed(4) }}</span>
+              <span class="location-coords">{{ passage.startLocation.lat.toFixed(4) }}, {{
+                passage.startLocation.lon.toFixed(4) }}</span>
             </div>
             <div class="location-item">
               <span class="location-label">End</span>
               <span class="location-time">{{ formatDateTime(passage.endTime) }}</span>
-              <span class="location-coords">{{ passage.endLocation.lat.toFixed(4) }}, {{ passage.endLocation.lon.toFixed(4) }}</span>
+              <span class="location-coords">{{ passage.endLocation.lat.toFixed(4) }}, {{
+                passage.endLocation.lon.toFixed(4) }}</span>
             </div>
           </div>
         </template>
@@ -179,14 +123,8 @@
     </div>
 
     <!-- Timeline Strip at Bottom -->
-    <PassageTimelineEnhanced
-      v-if="selectedPassage"
-      :passage="mutableSelectedPassage"
-      :show-speed-graph="true"
-      :current-time="currentTime"
-      :show-passage-info="true"
-      @time-update="handleTimeUpdate"
-    />
+    <PassageTimelineEnhanced v-if="selectedPassage" :passage="mutableSelectedPassage" :show-speed-graph="true"
+      :current-time="currentTime" :show-passage-info="true" @time-update="handleTimeUpdate" />
   </div>
 </template>
 
@@ -227,17 +165,19 @@ const SWIPE_THRESHOLD = 50 // Minimum distance to trigger close
 const handleSidebarTouchStart = (e: TouchEvent) => {
   if (!isSidebarOpen.value) return
   const touch = e.touches[0]
+  if (!touch) return
   sidebarSwipeStart.value = { x: touch.clientX, y: touch.clientY, time: Date.now() }
   sidebarSwipeOffset.value = 0
 }
 
 const handleSidebarTouchMove = (e: TouchEvent) => {
   if (!isSidebarOpen.value || !sidebarSwipeStart.value) return
-  
+
   const touch = e.touches[0]
+  if (!touch) return
   const deltaX = touch.clientX - sidebarSwipeStart.value.x
   const deltaY = Math.abs(touch.clientY - sidebarSwipeStart.value.y)
-  
+
   // Only allow horizontal swipe (not vertical scrolling)
   if (Math.abs(deltaX) > deltaY && deltaX < 0) {
     sidebarSwipeOffset.value = Math.max(deltaX, -280) // Limit to sidebar max width
@@ -247,13 +187,13 @@ const handleSidebarTouchMove = (e: TouchEvent) => {
 
 const handleSidebarTouchEnd = () => {
   if (!isSidebarOpen.value || !sidebarSwipeStart.value) return
-  
+
   const shouldClose = sidebarSwipeOffset.value < -SWIPE_THRESHOLD
-  
+
   if (shouldClose) {
     isSidebarOpen.value = false
   }
-  
+
   // Reset
   sidebarSwipeStart.value = null
   sidebarSwipeOffset.value = 0
@@ -370,13 +310,13 @@ const handlePassageSelect = async (passage: Passage, updateUrl = true) => {
 
 const handleMapFit = () => {
   if (mapRef.value && 'handleZoomToFit' in mapRef.value) {
-    ;(mapRef.value as any).handleZoomToFit()
+    ; (mapRef.value as any).handleZoomToFit()
   }
 }
 
 const handleMapCenter = () => {
   if (mapRef.value && 'handleCenterOnTideye' in mapRef.value) {
-    ;(mapRef.value as any).handleCenterOnTideye()
+    ; (mapRef.value as any).handleCenterOnTideye()
   }
 }
 
@@ -405,7 +345,7 @@ const handleLocationsUpdate = (locations: Passage['locations']) => {
   }
 }
 
-const mapRef = ref<{ 
+const mapRef = ref<{
   centerMapOnTime: (timestamp: string) => void
   handleZoomToFit?: () => void
   handleCenterOnTideye?: () => void
@@ -509,8 +449,8 @@ onMounted(async () => {
 
 .map-controls-bottom-left {
   position: fixed;
-  top: 1rem;
-  right: 1rem;
+  bottom: 1rem;
+  left: 1rem;
   z-index: 1002;
   display: flex;
   flex-direction: row;
@@ -525,8 +465,56 @@ onMounted(async () => {
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
+/* Ensure MapKit's map type selector in bottom-right is not covered on desktop */
+@media (min-width: 769px) {
+
+  /* Lower our controls z-index on desktop to ensure MapKit controls are always on top */
+  .map-controls-bottom-left {
+    z-index: 1001;
+    bottom: 1rem;
+    left: 1rem;
+  }
+
+  /* Ensure MapKit controls are always visible and clickable */
+  .map-container {
+    overflow: visible;
+  }
+
+  /* MapKit's controls should be above our floating controls */
+  .map-container :deep(div[class*="mapkitjs"]) {
+    z-index: 1003;
+  }
+
+  /* Desktop: Sidebar should always be visible, no hamburger menu */
+  .sidebar-wrapper {
+    display: block;
+    width: 320px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-content {
+    position: relative;
+    transform: none;
+  }
+
+  .sidebar-header {
+    display: none !important;
+  }
+
+  .mobile-menu-toggle {
+    display: none !important;
+  }
+}
+
 .map-control-btn {
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.map-control-btn :deep(svg) {
+  margin: 0;
 }
 
 .map-control-label {
@@ -739,14 +727,30 @@ onMounted(async () => {
   }
 
   .map-controls-bottom-left {
-    top: auto;
-    bottom: calc(240px + 0.75rem);
-    right: auto;
-    left: 0.75rem;
+    /* On mobile, position absolutely relative to map container, not fixed to viewport */
+    position: absolute !important;
+    /* Reset desktop positioning */
+    right: auto !important;
+    /* Position in bottom-left of map area, above timeline panel */
+    bottom: 0.5rem !important;
+    left: 0.5rem !important;
     padding: 0.25rem;
     gap: 0.25rem;
     flex-wrap: wrap;
-    max-width: calc(100vw - 5rem);
+    /* Constrain width to stay in left half, leaving room for MapKit controls on right */
+    max-width: calc(50vw - 1rem);
+    /* Lower z-index on mobile so MapKit controls are on top */
+    z-index: 1001 !important;
+  }
+
+  /* Ensure MapKit controls are always visible and clickable on mobile */
+  .map-container {
+    overflow: visible;
+  }
+
+  /* MapKit's controls should be above our floating controls on mobile */
+  .map-container :deep(div[class*="mapkitjs"]) {
+    z-index: 1003;
   }
 
   .map-control-label {
@@ -754,10 +758,17 @@ onMounted(async () => {
   }
 
   .map-control-btn {
-    min-width: 36px !important;
-    min-height: 36px !important;
-    padding: 0.375rem !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    padding: 0.25rem !important;
     font-size: 0.75rem;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .map-control-btn :deep(svg) {
+    margin: 0 !important;
   }
 
   .details-panel {
@@ -785,17 +796,33 @@ onMounted(async () => {
   }
 
   .map-controls-bottom-left {
-    bottom: calc(260px + 0.5rem);
-    left: 0.5rem;
+    /* On small mobile, position absolutely relative to map container, not fixed to viewport */
+    position: absolute !important;
+    /* Reset desktop positioning */
+    right: auto !important;
+    /* Position in bottom-left of map area, above timeline panel */
+    bottom: 0.5rem !important;
+    left: 0.5rem !important;
     padding: 0.25rem;
     gap: 0.25rem;
+    /* Constrain width to stay in left half, leaving room for MapKit controls on right */
+    max-width: calc(50vw - 1rem);
+    /* Lower z-index on small mobile so MapKit controls are on top */
+    z-index: 1001 !important;
   }
 
   .map-control-btn {
-    min-width: 32px !important;
-    min-height: 32px !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
     padding: 0.25rem !important;
     font-size: 0.6875rem;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .map-control-btn :deep(svg) {
+    margin: 0 !important;
   }
 
   .details-panel {

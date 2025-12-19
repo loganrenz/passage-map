@@ -40,7 +40,7 @@ export default defineNuxtConfig({
       title: 'Passage Map',
       meta: [
         { charset: 'utf-8' },
-        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover' },
       ],
       script: [
         {

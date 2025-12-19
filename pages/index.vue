@@ -1,26 +1,49 @@
 <template>
   <div class="app-container">
-    <!-- Header: Passage Summary Bar -->
-    <PassageHeader v-if="selectedPassage" :passage="mutableSelectedPassage" />
-
     <!-- Main Layout: Sidebar + Map -->
     <div class="main-layout">
-      <!-- Left Sidebar -->
-      <PassageSidebar
-        :passage="mutableSelectedPassage"
-        :passages="mutablePassages"
-        :selected-passage="mutableSelectedPassage"
-        :is-loading="isLoading"
-        :error="error"
-        :layers="layers"
-        :view-mode="viewMode"
-        @update:layers="layers = $event"
-        @update:view-mode="viewMode = $event"
-        @export-gpx="handleExportGPX"
-        @export-geojson="handleExportGeoJSON"
-        @generate-report="handleGenerateReport"
-        @select-passage="handlePassageSelect"
+      <!-- Mobile Menu Toggle Button -->
+      <UButton
+        icon="i-lucide-menu"
+        size="lg"
+        color="white"
+        variant="solid"
+        class="mobile-menu-toggle"
+        @click="isSidebarOpen = true"
       />
+
+      <!-- Left Sidebar -->
+      <div class="sidebar-wrapper" :class="{ 'sidebar-open': isSidebarOpen }">
+        <div class="sidebar-overlay" @click="isSidebarOpen = false"></div>
+        <div class="sidebar-content">
+          <div class="sidebar-header">
+            <h2 class="sidebar-title">Menu</h2>
+            <UButton
+              icon="i-lucide-x"
+              size="sm"
+              variant="ghost"
+              color="neutral"
+              class="sidebar-close"
+              @click="isSidebarOpen = false"
+            />
+          </div>
+          <PassageSidebar
+            :passage="mutableSelectedPassage"
+            :passages="mutablePassages"
+            :selected-passage="mutableSelectedPassage"
+            :is-loading="isLoading"
+            :error="error"
+            :layers="layers"
+            :view-mode="viewMode"
+            @update:layers="layers = $event"
+            @update:view-mode="viewMode = $event"
+            @export-gpx="handleExportGPX"
+            @export-geojson="handleExportGeoJSON"
+            @generate-report="handleGenerateReport"
+            @select-passage="handlePassageSelect"
+          />
+        </div>
+      </div>
 
       <!-- Map Canvas -->
       <div class="map-container">
@@ -38,19 +61,19 @@
           @time-update="handleTimeUpdate"
         />
 
-        <!-- Map Controls: Positioned to the top right -->
-        <div class="map-controls-top">
+        <!-- Map Controls: Positioned to the bottom left -->
+        <div class="map-controls-bottom-left">
           <!-- Vessels Button -->
           <UButton
             v-if="selectedPassage"
             :variant="showVessels ? 'solid' : 'outline'"
             size="sm"
             icon="i-lucide-ship"
-            class="shadow-lg"
+            class="shadow-lg map-control-btn"
             :class="showVessels ? 'bg-primary-600 text-white hover:bg-primary-700' : ''"
             @click="showVessels = !showVessels"
           >
-            Vessels
+            <span class="map-control-label">Vessels</span>
           </UButton>
           
           <!-- Fit Button -->
@@ -58,10 +81,10 @@
             size="sm"
             variant="outline"
             icon="i-lucide-maximize"
-            class="shadow-lg"
+            class="shadow-lg map-control-btn"
             @click="handleMapFit"
           >
-            Fit
+            <span class="map-control-label">Fit</span>
           </UButton>
           
           <!-- Center Button -->
@@ -70,11 +93,11 @@
             size="sm"
             :variant="lockTideye === 'locked' ? 'solid' : lockTideye === 'center' ? 'soft' : 'outline'"
             :icon="lockTideye === 'locked' ? 'i-lucide-lock' : 'i-lucide-crosshair'"
-            class="shadow-lg"
+            class="shadow-lg map-control-btn"
             :class="lockTideye === 'locked' ? 'bg-primary-600 text-white hover:bg-primary-700' : ''"
             @click="handleCenterToggle"
           >
-            {{ lockTideye === 'locked' ? 'Locked' : lockTideye === 'center' ? 'Centered' : 'Center' }}
+            <span class="map-control-label">{{ lockTideye === 'locked' ? 'Locked' : lockTideye === 'center' ? 'Centered' : 'Center' }}</span>
           </UButton>
         </div>
       </div>
@@ -150,6 +173,7 @@
       :passage="mutableSelectedPassage"
       :show-speed-graph="true"
       :current-time="currentTime"
+      :show-passage-info="true"
       @time-update="handleTimeUpdate"
     />
   </div>
@@ -180,6 +204,9 @@ const viewMode = ref<'clean' | 'analysis' | 'playback'>('clean')
 
 // Details panel state
 const isDetailsCollapsed = ref(true)
+
+// Mobile sidebar state
+const isSidebarOpen = ref(false)
 
 // Helper to convert readonly arrays to mutable arrays
 type ReadonlyPassage = {
@@ -234,7 +261,7 @@ const handleTimeUpdate = (timestamp: string) => {
 
 // Vessels and lock state
 const showVessels = ref(true)
-const lockTideye = ref<'center' | 'locked' | null>(null)
+const lockTideye = ref<'center' | 'locked' | null>('locked')
 
 // Export handlers
 const handleExportGPX = () => {
@@ -280,6 +307,9 @@ const handlePassageSelect = async (passage: Passage, updateUrl = true) => {
 
   // Reset timeline to start when passage changes
   currentTime.value = passage.startTime
+
+  // Close mobile sidebar after selection
+  isSidebarOpen.value = false
 
   // Update URL with passage ID (unless we're loading from URL)
   if (updateUrl && !isUpdatingFromUrl.value) {
@@ -364,6 +394,12 @@ onMounted(async () => {
 
   // Check if there's a passage ID in the URL after loading passages
   await loadPassageFromUrl()
+
+  // If no passage is selected and we have passages, automatically select the first one
+  if (!selectedPassage.value && passages.value.length > 0) {
+    const firstPassage = toMutablePassage(passages.value[0])
+    await handlePassageSelect(firstPassage, true)
+  }
 })
 </script>
 
@@ -381,18 +417,49 @@ onMounted(async () => {
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  position: relative;
 }
 
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+  display: none;
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1001;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Sidebar Wrapper */
+.sidebar-wrapper {
+  position: relative;
+  display: block;
+}
+
+.sidebar-overlay {
+  display: none;
+}
+
+.sidebar-content {
+  height: 100%;
+  width: 100%;
+}
+
+.sidebar-header {
+  display: none;
+}
+
+/* Map Container */
 .map-container {
   flex: 1;
   position: relative;
   min-width: 0;
 }
 
-.map-controls-top {
+.map-controls-bottom-left {
   position: fixed;
-  top: 1rem;
-  right: 1rem;
+  bottom: calc(220px + 1rem);
+  left: 1rem;
   z-index: 1002;
   display: flex;
   flex-direction: row;
@@ -405,6 +472,14 @@ onMounted(async () => {
   border-radius: 0.5rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.map-control-btn {
+  white-space: nowrap;
+}
+
+.map-control-label {
+  display: inline;
 }
 
 .details-panel {
@@ -510,6 +585,7 @@ onMounted(async () => {
   padding: 1rem 0;
 }
 
+/* Tablet and below */
 @media (max-width: 1024px) {
   .main-layout {
     flex-direction: column;
@@ -523,9 +599,140 @@ onMounted(async () => {
     right: 0;
     width: 100%;
     max-width: 100%;
-    max-height: 50vh;
+    max-height: 60vh;
     border-left: none;
     border-top: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 1rem 1rem 0 0;
+  }
+
+  .stats-content {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .mobile-menu-toggle {
+    display: block;
+  }
+
+  .sidebar-wrapper {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    display: block;
+  }
+
+  .sidebar-wrapper:not(.sidebar-open) {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .sidebar-wrapper.sidebar-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .sidebar-overlay {
+    display: block;
+  }
+
+  .sidebar-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 85%;
+    max-width: 320px;
+    background: white;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sidebar-wrapper.sidebar-open .sidebar-content {
+    transform: translateX(0);
+  }
+
+  .sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .sidebar-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+  }
+
+  .map-controls-bottom-left {
+    bottom: calc(240px + 0.75rem);
+    left: 0.75rem;
+    padding: 0.375rem;
+    gap: 0.375rem;
+    flex-wrap: wrap;
+    max-width: calc(100vw - 5rem);
+  }
+
+  .map-control-label {
+    display: none;
+  }
+
+  .map-control-btn {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0.5rem;
+  }
+
+  .details-panel {
+    max-height: 70vh;
+    padding: 0.75rem;
+  }
+
+  .stats-content {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .stat-value {
+    font-size: 1rem;
+  }
+}
+
+/* Small mobile */
+@media (max-width: 640px) {
+  .mobile-menu-toggle {
+    top: 0.75rem;
+    left: 0.75rem;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .map-controls-bottom-left {
+    bottom: calc(260px + 0.5rem);
+    left: 0.5rem;
+    padding: 0.25rem;
+    gap: 0.25rem;
+  }
+
+  .details-panel {
+    max-height: 75vh;
+    padding: 0.5rem;
   }
 }
 </style>

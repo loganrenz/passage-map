@@ -246,6 +246,7 @@ const handlePassageSelect = (passage: Passage) => {
   padding: 1rem;
   overflow-y: auto;
   height: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
 .sidebar-accordion {
@@ -256,6 +257,7 @@ const handlePassageSelect = (passage: Passage) => {
   padding: 0.5rem 0;
   max-height: 70vh;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Special handling for passages list to allow more height */
@@ -274,10 +276,12 @@ const handlePassageSelect = (passage: Passage) => {
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
-  padding: 0.375rem 0;
+  padding: 0.5rem 0;
   font-size: 0.875rem;
   color: #374151;
   user-select: none;
+  min-height: 44px;
+  touch-action: manipulation;
 }
 
 .sidebar-option:hover {
@@ -285,9 +289,10 @@ const handlePassageSelect = (passage: Passage) => {
 }
 
 .sidebar-option input[type="checkbox"] {
-  width: 1rem;
-  height: 1rem;
+  width: 1.125rem;
+  height: 1.125rem;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .sidebar-option .disabled {
@@ -306,10 +311,12 @@ const handlePassageSelect = (passage: Passage) => {
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
-  padding: 0.375rem 0;
+  padding: 0.5rem 0;
   font-size: 0.875rem;
   color: #374151;
   user-select: none;
+  min-height: 44px;
+  touch-action: manipulation;
 }
 
 .sidebar-radio-option:hover {
@@ -317,9 +324,10 @@ const handlePassageSelect = (passage: Passage) => {
 }
 
 .sidebar-radio-option input[type="radio"] {
-  width: 1rem;
-  height: 1rem;
+  width: 1.125rem;
+  height: 1.125rem;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .sidebar-actions {
@@ -331,14 +339,30 @@ const handlePassageSelect = (passage: Passage) => {
 .sidebar-action-btn {
   width: 100%;
   justify-content: flex-start;
+  min-height: 44px;
 }
 
 @media (max-width: 1024px) {
   .passage-sidebar {
     width: 100%;
     height: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .passage-sidebar {
+    width: 100%;
+    padding: 0 1rem 1rem 1rem;
+    background: transparent;
     border-right: none;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .accordion-content {
+    max-height: none;
+  }
+
+  .accordion-content:has(.space-y-3) {
+    max-height: none;
   }
 }
 </style>

@@ -1,11 +1,55 @@
 <template>
     <div class="relative w-full h-full">
         <div ref="mapContainer" class="w-full h-full" />
+        <!-- Vessel details callout popover -->
+        <div
+            v-if="selectedVesselData"
+            ref="vesselCalloutRef"
+            class="vessel-callout-popover"
+            :style="vesselCalloutStyle"
+        >
+            <div class="vessel-callout-content">
+                <div class="vessel-callout-header">
+                    <div class="vessel-callout-name">{{ selectedVesselData.name }}</div>
+                    <span v-if="selectedVesselData.type && selectedVesselData.type !== 'vessel'" class="vessel-callout-type">
+                        {{ selectedVesselData.type }}
+                    </span>
+                </div>
+                <div class="vessel-callout-details">
+                    <div v-if="selectedVesselData.mmsi" class="vessel-callout-detail">
+                        <div class="vessel-callout-label">MMSI</div>
+                        <div class="vessel-callout-value">{{ selectedVesselData.mmsi }}</div>
+                    </div>
+                    <div class="vessel-callout-detail">
+                        <div class="vessel-callout-label">Speed</div>
+                        <div class="vessel-callout-value">{{ selectedVesselData.speed }}</div>
+                    </div>
+                    <div class="vessel-callout-detail">
+                        <div class="vessel-callout-label">Heading</div>
+                        <div class="vessel-callout-value">{{ selectedVesselData.heading }}</div>
+                    </div>
+                    <div class="vessel-callout-detail">
+                        <div class="vessel-callout-label">Distance</div>
+                        <div class="vessel-callout-value">{{ selectedVesselData.distance }}</div>
+                    </div>
+                    <div v-if="selectedVesselData.length" class="vessel-callout-detail">
+                        <div class="vessel-callout-label">Length</div>
+                        <div class="vessel-callout-value">{{ selectedVesselData.length }}</div>
+                    </div>
+                    <div v-if="selectedVesselData.flag" class="vessel-callout-detail">
+                        <div class="vessel-callout-label">Flag</div>
+                        <div class="vessel-callout-value">{{ selectedVesselData.flag }}</div>
+                    </div>
+                </div>
+                <div class="vessel-callout-timestamp">{{ selectedVesselData.timestamp }}</div>
+            </div>
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
 import type { Passage, LocationInfo } from '~/types/passage'
+import type { VesselEncounter, VesselPosition } from '~/types/vessel-encounter'
 import { useMapKit } from '~/composables/useMapKit'
 import { getPassageBounds, getAllPassagesBounds, getPositionAtTime, calculateSpeed, calculateBearing, calculateDistanceKm } from '~/utils/mapHelpers'
 import { useVesselEncounters } from '~/composables/useVesselEncounters'
@@ -52,14 +96,37 @@ const currentPolylineCoordinates = shallowRef<Array<{ coord: mapkit.Coordinate; 
 // Vessel encounters management
 const { loadEncounters, getVisibleVessels, isVesselEntering, isVesselExiting } = useVesselEncounters()
 // Track vessel markers separately for fade animations
-const vesselMarkers = shallowRef<Map<string, { marker: mapkit.ImageAnnotation; opacity: number; fadeTimeout?: number }>>(new Map())
+// Store encounter and position data with each marker for callout display
+const vesselMarkers = shallowRef<Map<string, { 
+    marker: mapkit.ImageAnnotation
+    opacity: number
+    fadeTimeout?: number
+    encounter?: VesselEncounter
+    position?: VesselPosition
+}>>(new Map())
 // Track the current time being processed to prevent race conditions
 const currentVesselUpdateTime = ref<string | null>(null)
 // Cache for vessel icon images
 const vesselIconCache = new Map<string, HTMLImageElement>()
+// Flag to track programmatic region changes to avoid infinite loops when locked
+const isProgrammaticRegionChange = ref(false)
 // Note: speedColorCoding, showFeatures, showVessels, and lockTideye are now props
 // Track feature markers (water features and attractions)
 const featureMarkers = shallowRef<Array<mapkit.Annotation>>([])
+// Vessel callout state
+const selectedVesselData = ref<{
+    name: string
+    type?: string
+    mmsi?: string
+    speed: string
+    heading: string
+    distance: string
+    length?: string
+    flag?: string
+    timestamp: string
+} | null>(null)
+const vesselCalloutRef = ref<HTMLElement | null>(null)
+const vesselCalloutStyle = ref<{ top: string; left: string }>({ top: '0px', left: '0px'})
 
 const waitForMapKit = (): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -98,6 +165,27 @@ onMounted(async () => {
         if (mapInstance.value) {
             // MapKit JS uses addEventListener for region change events
             mapInstance.value.addEventListener('region-change-end', () => {
+                // If locked and this wasn't a programmatic change, re-center on tideye
+                if (props.lockTideye === 'locked' && !isProgrammaticRegionChange.value) {
+                    const tideyeCoord = getTideyeCoordinate()
+                    if (tideyeCoord && mapInstance.value) {
+                        const currentRegion = mapInstance.value.region
+                        const centerCoord = currentRegion.center
+                        // Only re-center if tideye is not already at center (with small tolerance)
+                        const latDiff = Math.abs(tideyeCoord.latitude - centerCoord.latitude)
+                        const lonDiff = Math.abs(tideyeCoord.longitude - centerCoord.longitude)
+                        // Re-center if tideye is more than ~10 meters away from center
+                        if (latDiff > 0.0001 || lonDiff > 0.0001) {
+                            isProgrammaticRegionChange.value = true
+                            centerMapOnTideye()
+                            // Reset flag after a short delay
+                            setTimeout(() => {
+                                isProgrammaticRegionChange.value = false
+                            }, 100)
+                        }
+                    }
+                }
+                
                 // Update marker position when map region changes to keep it aligned with polyline
                 if (props.currentTime && markerImage.value && props.selectedPassage) {
                     // Small delay to ensure polyline rendering is complete
@@ -112,6 +200,18 @@ onMounted(async () => {
             mapInstance.value.addEventListener('single-tap', (event: any) => {
                 console.log('[PassageMap] Map click detected (single-tap):', event)
                 handleMapClick(event)
+            })
+            
+            // Set up annotation selection listener for vessel callouts
+            mapInstance.value.addEventListener('select', (event: any) => {
+                if (event.annotation) {
+                    handleAnnotationSelect(event.annotation)
+                }
+            })
+            
+            // Close callout when annotation is deselected
+            mapInstance.value.addEventListener('deselect', () => {
+                closeVesselCallout()
             })
         }
 
@@ -157,6 +257,10 @@ onMounted(async () => {
             if (props.currentTime && props.selectedPassage) {
                 nextTick(() => {
                     updateTimeMarker()
+                    // Center map if lockTideye is 'locked'
+                    if (props.lockTideye === 'locked') {
+                        centerMapOnTideye()
+                    }
                 })
             }
         }
@@ -815,9 +919,49 @@ const fitToPassage = (passage: Passage) => {
     console.log('[PassageMap] Fitting to passage:', {
         passageId: passage.id,
         hasPositions: passage.positions ? passage.positions.length : 0,
-        bounds: bounds
+        bounds: bounds,
+        lockTideye: props.lockTideye
     })
 
+    // If locked, keep tideye centered and fit polyline in view
+    if (props.lockTideye === 'locked' && props.currentTime) {
+        const tideyeCoord = getTideyeCoordinate()
+        if (tideyeCoord) {
+            // Calculate the distance from tideye to each edge of the bounds
+            const latDistNorth = Math.abs(bounds.north - tideyeCoord.latitude)
+            const latDistSouth = Math.abs(tideyeCoord.latitude - bounds.south)
+            const lonDistEast = Math.abs(bounds.east - tideyeCoord.longitude)
+            const lonDistWest = Math.abs(tideyeCoord.longitude - bounds.west)
+            
+            // Use the maximum distance in each direction to ensure everything fits
+            const maxLatSpan = Math.max(latDistNorth, latDistSouth) * 2
+            const maxLonSpan = Math.max(lonDistEast, lonDistWest) * 2
+            
+            // Add small padding to ensure polyline is fully visible
+            const padding = 0.1 // 10% padding
+            const latSpan = maxLatSpan * (1 + padding)
+            const lonSpan = maxLonSpan * (1 + padding)
+            
+            // Ensure minimum span to prevent invalid regions
+            const minSpan = 0.0001
+            const finalLatSpan = Math.max(latSpan, minSpan)
+            const finalLonSpan = Math.max(lonSpan, minSpan)
+            
+            const region = new window.mapkit.CoordinateRegion(
+                tideyeCoord, // Center on tideye
+                new window.mapkit.CoordinateSpan(finalLatSpan, finalLonSpan)
+            )
+            
+            isProgrammaticRegionChange.value = true
+            mapInstance.value.setRegionAnimated(region, true)
+            setTimeout(() => {
+                isProgrammaticRegionChange.value = false
+            }, 100)
+            return
+        }
+    }
+
+    // Default behavior: center on polyline bounds
     // Use exact bounds with no padding for tightest fit
     // Only add minimal padding if bounds are too small to prevent invalid regions
     const latSpan = bounds.north - bounds.south
@@ -838,7 +982,11 @@ const fitToPassage = (passage: Passage) => {
         new window.mapkit.CoordinateSpan(paddedNorth - paddedSouth, paddedEast - paddedWest)
     )
 
+    isProgrammaticRegionChange.value = true
     mapInstance.value.setRegionAnimated(region, true)
+    setTimeout(() => {
+        isProgrammaticRegionChange.value = false
+    }, 100)
 }
 
 watch(
@@ -985,10 +1133,12 @@ const redrawSelectedPassage = async (passage: Passage) => {
         nextTick(() => {
             setTimeout(() => {
                 // fitToPassage uses getPassageBounds which includes positions if available
+                // If locked, fitToPassage will already keep tideye centered
                 fitToPassage(passage)
                 
-                // After fitting to show all points, center on tideye if currentTime is set
-                if (props.currentTime) {
+                // After fitting to show all points, center on tideye if currentTime is set and not locked
+                // (When locked, fitToPassage already handles centering)
+                if (props.currentTime && props.lockTideye !== 'locked') {
                     setTimeout(() => {
                         centerMapOnTideye()
                     }, 50)
@@ -1058,10 +1208,13 @@ watch(
                 // Now fit to passage with positions loaded - this is the key fix
                 nextTick(() => {
                     setTimeout(() => {
+                        // fitToPassage uses getPassageBounds which will now include all the loaded positions
+                        // If locked, fitToPassage will already keep tideye centered
                         fitToPassage(passage)
                         
-                        // After fitting to show all points, center on tideye if currentTime is set
-                        if (props.currentTime) {
+                        // After fitting to show all points, center on tideye if currentTime is set and not locked
+                        // (When locked, fitToPassage already handles centering)
+                        if (props.currentTime && props.lockTideye !== 'locked') {
                             setTimeout(() => {
                                 centerMapOnTideye()
                             }, 50)
@@ -1090,50 +1243,99 @@ watch(
 /**
  * Load vessel icon image
  * Uses cache busting on first load to ensure new icons are loaded after updates
+ * Ensures proper SVG icon paths and handles errors gracefully
  */
 const loadVesselIcon = async (iconPath: string): Promise<HTMLImageElement> => {
-    const cacheKey = iconPath
+    // Normalize icon path - ensure it starts with /images/
+    const normalizedPath = iconPath.startsWith('/images/') 
+        ? iconPath 
+        : iconPath.startsWith('images/')
+        ? `/${iconPath}`
+        : `/images/${iconPath}`
+    
+    const cacheKey = normalizedPath
     
     if (vesselIconCache.has(cacheKey)) {
-        return vesselIconCache.get(cacheKey)!
+        const cached = vesselIconCache.get(cacheKey)!
+        // Verify cached image is still valid
+        if (cached && cached.src && cached.complete && !cached.naturalWidth) {
+            // Image failed to load, remove from cache and retry
+            vesselIconCache.delete(cacheKey)
+        } else if (cached && cached.src) {
+            return cached
+        }
     }
 
     return new Promise((resolve, reject) => {
         const img = new Image()
         // Add cache busting only on first load to force browser to check for updates
         // Use a version constant that can be updated when icons change
-        const version = '2' // Increment this when icons are updated
-        img.src = `${iconPath}?v=${version}`
+        const version = '3' // Increment this when icons are updated
+        const versionedPath = `${normalizedPath}?v=${version}`
+        
         img.onload = () => {
-            vesselIconCache.set(cacheKey, img)
-            resolve(img)
+            if (img.naturalWidth === 0 || img.naturalHeight === 0) {
+                // Image loaded but has zero dimensions (likely invalid)
+                console.warn(`Vessel icon loaded but has zero dimensions: ${normalizedPath}`)
+                // Try fallback
+                loadFallbackIcon(resolve, reject, normalizedPath)
+            } else {
+                vesselIconCache.set(cacheKey, img)
+                resolve(img)
+            }
         }
+        
         img.onerror = () => {
+            console.warn(`Failed to load vessel icon with version: ${versionedPath}, trying without version`)
             // If versioned load fails, try without version
             const img2 = new Image()
-            img2.src = iconPath
             img2.onload = () => {
-                vesselIconCache.set(cacheKey, img2)
-                resolve(img2)
+                if (img2.naturalWidth === 0 || img2.naturalHeight === 0) {
+                    loadFallbackIcon(resolve, reject, normalizedPath)
+                } else {
+                    vesselIconCache.set(cacheKey, img2)
+                    resolve(img2)
+                }
             }
             img2.onerror = () => {
                 // Fallback to default icon
-                console.warn(`Failed to load vessel icon: ${iconPath}, using default`)
-                const defaultIcon = '/images/vessel-marker.svg'
-                if (vesselIconCache.has(defaultIcon)) {
-                    resolve(vesselIconCache.get(defaultIcon)!)
-                } else {
-                    const defaultImg = new Image()
-                    defaultImg.src = defaultIcon
-                    defaultImg.onload = () => {
-                        vesselIconCache.set(defaultIcon, defaultImg)
-                        resolve(defaultImg)
-                    }
-                    defaultImg.onerror = reject
-                }
+                console.warn(`Failed to load vessel icon: ${normalizedPath}, using default`)
+                loadFallbackIcon(resolve, reject, normalizedPath)
             }
+            img2.src = normalizedPath
         }
+        
+        img.src = versionedPath
     })
+}
+
+/**
+ * Load fallback default icon
+ */
+const loadFallbackIcon = (
+    resolve: (value: HTMLImageElement) => void,
+    reject: (reason?: any) => void,
+    originalPath: string
+) => {
+    const defaultIcon = '/images/vessel-marker.svg'
+    if (vesselIconCache.has(defaultIcon)) {
+        const cached = vesselIconCache.get(defaultIcon)!
+        if (cached && cached.src) {
+            resolve(cached)
+            return
+        }
+    }
+    
+    const defaultImg = new Image()
+    defaultImg.onload = () => {
+        vesselIconCache.set(defaultIcon, defaultImg)
+        resolve(defaultImg)
+    }
+    defaultImg.onerror = () => {
+        console.error(`Failed to load default vessel icon: ${defaultIcon}`)
+        reject(new Error(`Failed to load vessel icon: ${originalPath} and fallback ${defaultIcon}`))
+    }
+    defaultImg.src = defaultIcon
 }
 
 /**
@@ -1162,7 +1364,11 @@ const centerMapOnTideye = () => {
         currentRegion.span
     )
 
+    isProgrammaticRegionChange.value = true
     mapInstance.value.setRegionAnimated(region, true)
+    setTimeout(() => {
+        isProgrammaticRegionChange.value = false
+    }, 100)
 }
 
 const centerMapOnTime = (timestamp: string) => {
@@ -1206,6 +1412,127 @@ const handleCenterOnTideye = () => {
     emit('update:lockTideye', newState)
 }
 
+/**
+ * Handle annotation selection - show vessel details callout
+ */
+const handleAnnotationSelect = (annotation: mapkit.Annotation) => {
+    // Find the vessel marker that corresponds to this annotation
+    for (const [vesselId, { marker, encounter, position }] of vesselMarkers.value.entries()) {
+        if (marker === annotation && encounter && position) {
+            showVesselCallout(encounter, position, annotation)
+            break
+        }
+    }
+}
+
+/**
+ * Show vessel details callout popover
+ */
+const showVesselCallout = (
+    encounter: VesselEncounter,
+    position: VesselPosition,
+    annotation: mapkit.Annotation
+) => {
+    const vessel = encounter.vessel
+    const vesselName = getVesselDisplayNameSync(
+        vessel.mmsi || vessel.id,
+        vessel.name
+    )
+    
+    // Format speed
+    const speed = position.speed !== undefined 
+        ? `${position.speed.toFixed(1)} knots`
+        : 'N/A'
+    
+    // Format heading
+    const heading = position.heading !== undefined
+        ? `${Math.round(position.heading)}°`
+        : 'N/A'
+    
+    // Calculate distance to our vessel (Tideye)
+    let distanceText = 'N/A'
+    if (props.selectedPassage && props.currentTime) {
+        const tideyePos = getPositionAtTime(props.selectedPassage, props.currentTime)
+        if (tideyePos) {
+            const distance = calculateDistanceKm(tideyePos.lat, tideyePos.lon, position.lat, position.lon)
+            distanceText = `${distance.toFixed(2)} km`
+        }
+    }
+    
+    // Format vessel type
+    const vesselType = vessel.type && vessel.type !== 'vessel' && vessel.type !== 'unknown'
+        ? vessel.type.charAt(0).toUpperCase() + vessel.type.slice(1)
+        : undefined
+    
+    // Format timestamp
+    const time = new Date(position.timestamp)
+    const timestamp = time.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    })
+    
+    // Format length
+    const lengthText = vessel.length
+        ? typeof vessel.length === 'number' 
+            ? `${vessel.length}m`
+            : vessel.length
+        : undefined
+    
+    selectedVesselData.value = {
+        name: vesselName,
+        type: vesselType,
+        mmsi: vessel.mmsi,
+        speed,
+        heading,
+        distance: distanceText,
+        length: lengthText,
+        flag: vessel.flag,
+        timestamp,
+    }
+    
+    // Position the callout near the annotation
+    nextTick(() => {
+        if (mapInstance.value && annotation && mapContainer.value) {
+            // Convert annotation coordinate to screen point
+            const point = mapInstance.value.convertCoordinateToPointOnPage(annotation.coordinate)
+            if (point && vesselCalloutRef.value) {
+                // Position callout above the annotation
+                const calloutWidth = 320 // max-width from CSS
+                const calloutHeight = vesselCalloutRef.value.offsetHeight || 200
+                const offsetX = point.x - calloutWidth / 2
+                const offsetY = point.y - calloutHeight - 60 // Above the marker
+                
+                vesselCalloutStyle.value = {
+                    left: `${Math.max(10, Math.min(offsetX, window.innerWidth - calloutWidth - 10))}px`,
+                    top: `${Math.max(10, offsetY)}px`,
+                }
+            }
+        }
+    })
+}
+
+/**
+ * Close vessel callout
+ */
+const closeVesselCallout = () => {
+    selectedVesselData.value = null
+}
+
+/**
+ * Set up custom callout for a vessel annotation (legacy - now handled via selection events)
+ */
+const setupVesselCallout = (
+    annotation: mapkit.ImageAnnotation,
+    encounter: VesselEncounter,
+    position: VesselPosition
+) => {
+    // Callout is now handled via annotation selection events
+    // This function is kept for potential future use
+}
+
 const updateVesselMarkers = async () => {
     if (!mapInstance.value || !window.mapkit || !props.currentTime || !props.selectedPassage || !props.showVessels) {
         clearVesselMarkers()
@@ -1218,6 +1545,20 @@ const updateVesselMarkers = async () => {
     currentVesselUpdateTime.value = processingTime
 
     try {
+        // CRITICAL FIX: Clear ALL pending fade-out timeouts at the start
+        // This prevents vessels from disappearing when playback is paused
+        // When paused, currentTime doesn't change, so updateVesselMarkers isn't called again,
+        // but pending fade-out timeouts from previous updates would still execute
+        vesselMarkers.value.forEach(({ fadeTimeout }) => {
+            if (fadeTimeout) {
+                clearTimeout(fadeTimeout)
+            }
+        })
+        // Clear all fade timeouts from the markers
+        vesselMarkers.value.forEach((markerData) => {
+            markerData.fadeTimeout = undefined
+        })
+
         const visibleVessels = getVisibleVessels(processingTime)
         console.log(`[PassageMap] Updating vessel markers for time ${processingTime}: ${visibleVessels.length} vessels visible`)
         
@@ -1229,19 +1570,20 @@ const updateVesselMarkers = async () => {
         }
         const currentVesselIds = new Set<string>()
 
-        // First, clear any pending fade-out timeouts for vessels that will be visible
-        // This prevents vessels from disappearing right after being shown
+        // Build the set of visible vessel IDs and clear any pending fade-out timeouts
         for (const { encounter, position, segmentIndex } of visibleVessels) {
             const vesselId = `${encounter.vessel.id}-${segmentIndex}`
             currentVesselIds.add(vesselId)
             
-            // If this vessel already exists, clear any pending fade-out immediately
+            // If this vessel already exists, ensure no fade timeout is set
             if (vesselMarkers.value.has(vesselId)) {
                 const existing = vesselMarkers.value.get(vesselId)!
                 if (existing.fadeTimeout) {
                     clearTimeout(existing.fadeTimeout)
                     existing.fadeTimeout = undefined
                 }
+                // Ensure opacity is 1 (vessel should be visible)
+                existing.opacity = 1
             }
         }
 
@@ -1249,7 +1591,12 @@ const updateVesselMarkers = async () => {
         for (const { encounter, position, segmentIndex } of visibleVessels) {
             const vesselId = `${encounter.vessel.id}-${segmentIndex}`
 
-            const iconPath = getVesselIcon(encounter.vessel.type, encounter.vessel.name)
+            const iconPath = getVesselIcon(
+                encounter.vessel.type, 
+                encounter.vessel.name,
+                encounter.vessel.id,
+                encounter.vessel.mmsi
+            )
             const iconSize = getVesselIconSize(encounter.vessel.type)
             
             // Debug logging for icon selection
@@ -1257,7 +1604,15 @@ const updateVesselMarkers = async () => {
                 console.debug(`Vessel ${encounter.vessel.id} (${encounter.vessel.name}) type: "${encounter.vessel.type}" -> icon: ${iconPath}`)
             }
             
-            const iconImg = await loadVesselIcon(iconPath)
+            // Load icon with error handling
+            let iconImg: HTMLImageElement
+            try {
+                iconImg = await loadVesselIcon(iconPath)
+            } catch (error) {
+                console.error(`Failed to load vessel icon: ${iconPath}`, error)
+                // Fallback to default icon
+                iconImg = await loadVesselIcon('/images/vessel-marker.svg')
+            }
 
             const coord = new window.mapkit.Coordinate(position.lat, position.lon)
             const anchorPoint = new DOMPoint(iconSize.width / 2, iconSize.height / 2)
@@ -1267,6 +1622,11 @@ const updateVesselMarkers = async () => {
                 const existing = vesselMarkers.value.get(vesselId)!
                 // Update position
                 existing.marker.coordinate = coord
+                // Update stored position data
+                existing.position = position
+                // Update icon if it changed (in case vessel type was updated)
+                // Note: MapKit ImageAnnotation doesn't support updating the image URL directly,
+                // so we'd need to recreate the marker. For now, we'll just update position.
                 // Ensure opacity is 1 and no fade timeout
                 existing.opacity = 1
                 if (existing.fadeTimeout) {
@@ -1279,6 +1639,13 @@ const updateVesselMarkers = async () => {
                     encounter.vessel.mmsi || encounter.vessel.id,
                     encounter.vessel.name
                 )
+                
+                // Verify icon image is loaded before creating annotation
+                if (!iconImg || !iconImg.src) {
+                    console.warn(`Skipping vessel ${vesselId}: icon not loaded`)
+                    continue
+                }
+                
                 const marker = new window.mapkit.ImageAnnotation(coord, {
                     url: { 1: iconImg.src },
                     size: { width: iconSize.width, height: iconSize.height },
@@ -1291,21 +1658,32 @@ const updateVesselMarkers = async () => {
                 const rawMarker = markRaw(marker)
                 mapInstance.value.addAnnotation(rawMarker)
 
+                // Store encounter and position data with marker for callout display
                 vesselMarkers.value.set(vesselId, {
                     marker: rawMarker,
                     opacity: 1,
+                    fadeTimeout: undefined, // Explicitly set to undefined
+                    encounter,
+                    position,
                 })
+                
+                // Set up custom callout for vessel details
+                setupVesselCallout(rawMarker, encounter, position)
             }
         }
 
         // Remove markers for vessels that are no longer visible
         // Only remove if they're not in the current visible set
+        // IMPORTANT: Only remove vessels that are truly not visible anymore
+        // This prevents vessels from disappearing when playback is paused
         for (const [vesselId, { marker, fadeTimeout }] of vesselMarkers.value.entries()) {
             if (!currentVesselIds.has(vesselId)) {
-                // Fade out before removing
+                // Clear any existing fade timeout before starting a new one
                 if (fadeTimeout) {
                     clearTimeout(fadeTimeout)
                 }
+                // Only fade out if the vessel is truly not visible at this time
+                // The fade-out will be cancelled if the vessel becomes visible again
                 fadeOutMarker(vesselId)
             }
         }
@@ -1381,6 +1759,21 @@ watch(
         // Auto-center if locked
         if (props.lockTideye === 'locked') {
             centerMapOnTideye()
+        }
+    }
+)
+
+// Watch lockTideye to center map when it becomes 'locked'
+watch(
+    () => props.lockTideye,
+    (newLockState, oldLockState) => {
+        if (!isInitialized.value) return
+        // Center the map when lockTideye becomes 'locked' (from null or 'center')
+        if (newLockState === 'locked' && oldLockState !== 'locked' && props.selectedPassage && props.currentTime) {
+            // Small delay to ensure everything is ready
+            nextTick(() => {
+                centerMapOnTideye()
+            })
         }
     }
 )

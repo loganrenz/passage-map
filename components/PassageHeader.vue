@@ -64,24 +64,24 @@ const formatDateRange = (startTime: string, endTime: string): string => {
 }
 
 .header-content {
-  padding: 1rem 1.5rem;
+  padding: 0.5rem 1.5rem;
   max-width: 100%;
 }
 
 .header-title {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #111827;
-  line-height: 1.3;
-  margin-bottom: 0.5rem;
+  line-height: 1.2;
+  margin-bottom: 0.25rem;
 }
 
 .header-metrics {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   flex-wrap: wrap;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   color: #6b7280;
 }
 
@@ -101,16 +101,50 @@ const formatDateRange = (startTime: string, endTime: string): string => {
 
 @media (max-width: 768px) {
   .header-content {
-    padding: 0.875rem 1rem;
+    padding: 0.5rem 1rem;
   }
 
   .header-title {
-    font-size: 1.25rem;
+    font-size: 1rem;
+    line-height: 1.3;
   }
 
   .header-metrics {
-    font-size: 0.8125rem;
-    gap: 0.5rem;
+    font-size: 0.6875rem;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+  }
+
+  .header-separator {
+    display: none;
+  }
+
+  .header-metric {
+    padding: 0.125rem 0.375rem;
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 0.25rem;
+    margin-right: 0.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .header-content {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .header-title {
+    font-size: 0.9375rem;
+    margin-bottom: 0.375rem;
+  }
+
+  .header-metrics {
+    font-size: 0.625rem;
+    gap: 0.25rem;
+  }
+
+  .header-metric {
+    padding: 0.125rem 0.25rem;
+    font-size: 0.625rem;
   }
 }
 </style>

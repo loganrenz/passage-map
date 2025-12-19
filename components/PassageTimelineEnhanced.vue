@@ -1,5 +1,21 @@
 <template>
   <div v-if="passage" class="timeline-enhanced">
+    <!-- Passage Info (if enabled) -->
+    <div v-if="showPassageInfo" class="passage-info-header">
+      <h2 class="passage-title">{{ passage.name }}</h2>
+      <div class="passage-metrics">
+        <span class="passage-metric-item">{{ formatDateRange(passage.startTime, passage.endTime) }}</span>
+        <span class="passage-separator">•</span>
+        <span class="passage-metric-item">{{ formatDistance(passage.distance) }}</span>
+        <span class="passage-separator">•</span>
+        <span class="passage-metric-item">{{ formatDuration(passage.duration) }}</span>
+        <span class="passage-separator">•</span>
+        <span class="passage-metric-item">Avg {{ passage.avgSpeed.toFixed(1) }} kt</span>
+        <span class="passage-separator">•</span>
+        <span class="passage-metric-item">Max {{ passage.maxSpeed.toFixed(1) }} kt</span>
+      </div>
+    </div>
+
     <!-- Playback Controls -->
     <div class="timeline-controls">
       <UButton
@@ -81,16 +97,18 @@
 
 <script setup lang="ts">
 import type { Passage } from '~/types/passage'
-import { getTimeRange, calculateSpeed } from '~/utils/mapHelpers'
+import { getTimeRange, calculateSpeed, formatDuration, formatDistance } from '~/utils/mapHelpers'
 
 interface Props {
   passage?: Passage | null
   showSpeedGraph?: boolean
+  showPassageInfo?: boolean
   currentTime?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showSpeedGraph: true,
+  showPassageInfo: false,
   currentTime: null,
 })
 
@@ -106,7 +124,7 @@ const speedGraphRef = ref<HTMLElement | null>(null)
 const hoverData = ref<{ x: number; time: string; speed?: number } | null>(null)
 
 const graphWidth = ref(400)
-const graphHeight = 40
+const graphHeight = 32
 
 const BASELINE_SPEED = 1800
 
@@ -232,6 +250,30 @@ const formatFullTime = (timestamp: string) => {
     second: '2-digit',
     hour12: false,
   })
+}
+
+const formatDateRange = (startTime: string, endTime: string): string => {
+  const start = new Date(startTime)
+  const end = new Date(endTime)
+  
+  const formatDate = (date: Date) => {
+    const month = date.toLocaleDateString('en-US', { month: 'short' })
+    const day = date.getDate()
+    const year = date.getFullYear()
+    return `${month} ${day}, ${year}`
+  }
+  
+  const startStr = formatDate(start)
+  const endStr = formatDate(end)
+  
+  // If same year, only show year once
+  if (start.getFullYear() === end.getFullYear()) {
+    const startMonthDay = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    const endMonthDay = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    return `${startMonthDay} – ${endMonthDay}, ${start.getFullYear()}`
+  }
+  
+  return `${startStr} – ${endStr}`
 }
 
 const handleTimeChange = (value: number | number[] | undefined) => {
@@ -388,16 +430,48 @@ watch(
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(10px);
   border-top: 1px solid rgba(0, 0, 0, 0.08);
-  padding: 1rem 1.5rem;
+  padding: 0.625rem 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.625rem;
+}
+
+.passage-info-header {
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  margin-bottom: 0.25rem;
+}
+
+.passage-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.2;
+  margin: 0 0 0.375rem 0;
+}
+
+.passage-metrics {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.passage-metric-item {
+  font-weight: 500;
+  color: #374151;
+}
+
+.passage-separator {
+  color: #d1d5db;
 }
 
 .timeline-controls {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .speed-controls {
@@ -412,27 +486,27 @@ watch(
 .timeline-data {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .data-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .data-label {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   color: #6b7280;
-  min-width: 60px;
+  min-width: 50px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .data-graph {
   flex: 1;
-  height: 40px;
+  height: 32px;
   position: relative;
   cursor: crosshair;
 }
@@ -454,7 +528,7 @@ watch(
 .timeline-scrubbing {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.375rem;
 }
 
 .time-display {
@@ -464,13 +538,13 @@ watch(
 }
 
 .current-time {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: #111827;
 }
 
 .time-range {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   color: #6b7280;
 }
 
@@ -507,18 +581,118 @@ watch(
   color: rgba(255, 255, 255, 0.8);
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .timeline-enhanced {
-    padding: 0.875rem 1rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .passage-info-header {
+    padding-bottom: 0.375rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .passage-title {
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .passage-metrics {
+    font-size: 0.6875rem;
+    gap: 0.25rem;
+  }
+
+  .passage-separator {
+    display: none;
+  }
+
+  .passage-metric-item {
+    padding: 0.125rem 0.375rem;
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 0.25rem;
+    margin-right: 0.25rem;
   }
 
   .timeline-controls {
     flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+
+  .speed-controls {
+    flex: 1;
+    min-width: 0;
   }
 
   .data-label {
-    min-width: 50px;
+    min-width: 45px;
+    font-size: 0.625rem;
+  }
+
+  .time-display {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .current-time {
+    font-size: 0.75rem;
+  }
+
+  .time-range {
+    font-size: 0.625rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .timeline-enhanced {
+    padding: 0.5rem 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .passage-info-header {
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .passage-title {
+    font-size: 0.9375rem;
+    margin-bottom: 0.375rem;
+  }
+
+  .passage-metrics {
+    font-size: 0.625rem;
+    gap: 0.25rem;
+  }
+
+  .passage-metric-item {
+    padding: 0.125rem 0.25rem;
+    font-size: 0.625rem;
+  }
+
+  .timeline-controls {
+    gap: 0.25rem;
+  }
+
+  .speed-controls {
+    order: 2;
+    width: 100%;
+    margin-top: 0.25rem;
+  }
+
+  .data-label {
+    min-width: 40px;
+    font-size: 0.5625rem;
+  }
+
+  .data-graph {
+    height: 28px;
+  }
+
+  .current-time {
     font-size: 0.6875rem;
+  }
+
+  .time-range {
+    font-size: 0.5625rem;
   }
 }
 </style>

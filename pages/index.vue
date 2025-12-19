@@ -1,41 +1,59 @@
 <template>
-  <div class="fullscreen-map-container">
-    <!-- Full Screen Map -->
-    <div class="map-wrapper" :class="{ 'details-collapsed': isDetailsCollapsed && selectedPassage, 'has-timeline': selectedPassage }">
-      <PassageMap ref="mapRef" :passages="displayedPassages" :selected-passage="mutableSelectedPassage" :auto-fit="true"
-        :current-time="currentTime" />
+  <div class="app-container">
+    <!-- Header: Passage Summary Bar -->
+    <PassageHeader v-if="selectedPassage" :passage="mutableSelectedPassage" />
 
-      <!-- Map Controls Overlay -->
-      <div class="map-controls-overlay">
-        <div class="flex items-center justify-between w-full">
-          <div class="flex items-center gap-2">
-            <h1 class="text-xl font-bold text-white drop-shadow-lg">Passage Map</h1>
-            <ClientOnly>
-              <UButton variant="ghost" icon="i-lucide-database" to="/queries" size="sm"
-                class="text-white hover:bg-white/20">
-                Queries
+    <!-- Main Layout: Sidebar + Map -->
+    <div class="main-layout">
+      <!-- Left Sidebar -->
+      <PassageSidebar
+        v-if="selectedPassage"
+        :passage="mutableSelectedPassage"
+        :layers="layers"
+        :view-mode="viewMode"
+        @update:layers="layers = $event"
+        @update:view-mode="viewMode = $event"
+        @export-gpx="handleExportGPX"
+        @export-geojson="handleExportGeoJSON"
+        @generate-report="handleGenerateReport"
+      />
+
+      <!-- Map Canvas -->
+      <div class="map-container">
+        <PassageMap
+          ref="mapRef"
+          :passages="displayedPassages"
+          :selected-passage="mutableSelectedPassage"
+          :auto-fit="true"
+          :current-time="currentTime"
+          :speed-color-coding="layers.speed"
+          :show-features="layers.waypoints"
+        />
+
+        <!-- Passage List Button -->
+        <div class="map-controls-top">
+          <UCard class="p-2 shadow-lg bg-white/95 backdrop-blur-sm">
+            <div class="flex items-center gap-2">
+              <UButton
+                icon="i-lucide-list"
+                size="xs"
+                variant="outline"
+                @click="isPassageModalOpen = true"
+              >
+                Passages
               </UButton>
-              <template #fallback>
-                <div />
-              </template>
-            </ClientOnly>
-          </div>
+              <ClientOnly>
+                <UButton variant="ghost" icon="i-lucide-database" to="/queries" size="xs">
+                  Queries
+                </UButton>
+                <template #fallback>
+                  <div />
+                </template>
+              </ClientOnly>
+            </div>
+          </UCard>
         </div>
       </div>
-    </div>
-
-    <!-- Passage List Modal Button -->
-    <div class="absolute top-[280px] right-4 z-[1001]">
-      <UCard class="p-2 shadow-lg bg-white/95 backdrop-blur-sm">
-        <UButton
-          icon="i-lucide-list"
-          size="xs"
-          variant="outline"
-          @click="isPassageModalOpen = true"
-        >
-          Passages
-        </UButton>
-      </UCard>
     </div>
 
     <!-- Passage List Modal -->
@@ -58,87 +76,105 @@
       </template>
     </UModal>
 
-    <!-- Details and Timeline at Bottom -->
-    <div v-if="selectedPassage" class="timeline-bottom" :class="{ 'details-collapsed': isDetailsCollapsed }">
-      <!-- Details Section Header -->
-      <div class="details-header">
-        <div class="flex items-center justify-between">
-          <UTabs v-model="activeTab" :items="tabItems" class="flex-1" />
-          <UButton
-            :icon="isDetailsCollapsed ? 'i-lucide-chevron-down' : 'i-lucide-chevron-up'"
-            size="xs"
-            variant="ghost"
-            color="neutral"
-            class="ml-2"
-            @click="toggleDetails"
-          />
-        </div>
-        <!-- Collapsible Date/Time Picker -->
+    <!-- Details Panel (Collapsible) -->
+    <div v-if="selectedPassage && !isDetailsCollapsed" class="details-panel">
+      <div class="details-header-controls">
         <UButton
-          v-if="!isDatePickerVisible"
-          icon="i-lucide-calendar"
+          icon="i-lucide-x"
           size="xs"
           variant="ghost"
           color="neutral"
-          class="mt-2"
-          @click="isDatePickerVisible = true"
+          @click="isDetailsCollapsed = true"
         >
-          Jump to Date/Time
+          Close
         </UButton>
-        <div v-if="isDatePickerVisible" class="date-picker-compact">
-          <div class="flex gap-2">
-            <UInput
-              v-model="selectedDateTime"
-              type="datetime-local"
-              :min="minDateTime"
-              :max="maxDateTime"
-              size="sm"
-              class="flex-1"
-            />
-            <UButton
-              icon="i-lucide-map-pin"
-              size="sm"
-              color="primary"
-              :disabled="!selectedDateTime"
-              @click="handleCenterOnDate"
-            >
-              Center
-            </UButton>
-            <UButton
-              icon="i-lucide-x"
-              size="sm"
-              variant="ghost"
-              @click="isDatePickerVisible = false"
-            />
+      </div>
+      <PassageDetailsCollapsible :passage="mutableSelectedPassage" :default-expanded="['stats']">
+        <template #stats="{ passage }">
+          <div class="stats-content">
+            <div class="stat-item">
+              <span class="stat-label">Distance</span>
+              <span class="stat-value">{{ formatDistance(passage.distance) }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Duration</span>
+              <span class="stat-value">{{ formatDuration(passage.duration) }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Average Speed</span>
+              <span class="stat-value">{{ passage.avgSpeed.toFixed(1) }} kt</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Max Speed</span>
+              <span class="stat-value">{{ passage.maxSpeed.toFixed(1) }} kt</span>
+            </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Details Section -->
-      <div v-if="!isDetailsCollapsed" class="details-section">
-        <div v-if="activeTab === 'overview'">
-          <PassageInfo :passage="mutableSelectedPassage" />
-        </div>
-        <div v-else-if="activeTab === 'locations'">
-          <PassageLocations :passage="mutableSelectedPassage" @update:locations="handleLocationsUpdate" />
-        </div>
-      </div>
-
-      <!-- Timeline -->
-      <PassageTimeline :passage="mutableSelectedPassage!" @time-update="handleTimeUpdate" />
+        </template>
+        <template #start-end="{ passage }">
+          <div class="location-content">
+            <div class="location-item">
+              <span class="location-label">Start</span>
+              <span class="location-time">{{ formatDateTime(passage.startTime) }}</span>
+              <span class="location-coords">{{ passage.startLocation.lat.toFixed(4) }}, {{ passage.startLocation.lon.toFixed(4) }}</span>
+            </div>
+            <div class="location-item">
+              <span class="location-label">End</span>
+              <span class="location-time">{{ formatDateTime(passage.endTime) }}</span>
+              <span class="location-coords">{{ passage.endLocation.lat.toFixed(4) }}, {{ passage.endLocation.lon.toFixed(4) }}</span>
+            </div>
+          </div>
+        </template>
+        <template #performance="{ passage }">
+          <div class="performance-content">
+            <div class="performance-item">
+              <span class="performance-label">Route</span>
+              <span class="performance-value">{{ passage.route || 'N/A' }}</span>
+            </div>
+          </div>
+        </template>
+        <template #notes="{ passage }">
+          <div class="notes-content">
+            <p class="text-sm text-gray-500">Notes feature coming soon...</p>
+          </div>
+        </template>
+      </PassageDetailsCollapsible>
     </div>
+
+    <!-- Timeline Strip at Bottom -->
+    <PassageTimelineEnhanced
+      v-if="selectedPassage"
+      :passage="mutableSelectedPassage"
+      :show-speed-graph="true"
+      @time-update="handleTimeUpdate"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { Passage, PassageLocation } from '~/types/passage'
 import { usePassageData } from '~/composables/usePassageData'
+import { formatDuration, formatDistance } from '~/utils/mapHelpers'
 
 const route = useRoute()
 const router = useRouter()
 
 const { passages, selectedPassage, isLoading, error, loadAllPassages, selectPassage, loadPassageById } =
   usePassageData()
+
+// Layer and view mode state
+const layers = ref({
+  track: true,
+  speed: false,
+  wind: false,
+  currents: false,
+  waypoints: false,
+  ais: false,
+})
+
+const viewMode = ref<'clean' | 'analysis' | 'playback'>('clean')
+
+// Details panel state
+const isDetailsCollapsed = ref(true)
 
 // Helper to convert readonly arrays to mutable arrays
 type ReadonlyPassage = {
@@ -191,98 +227,34 @@ const handleTimeUpdate = (timestamp: string) => {
   currentTime.value = timestamp
 }
 
-// Details collapse state
-const isDetailsCollapsed = ref(false)
-
 // Passage modal state
 const isPassageModalOpen = ref(false)
 
-// Tab state
-const activeTab = ref('overview')
-const tabItems = [
-  { label: 'Overview', value: 'overview' },
-  { label: 'Locations', value: 'locations' },
-]
-
-// Date picker visibility
-const isDatePickerVisible = ref(false)
-
-const toggleDetails = () => {
-  isDetailsCollapsed.value = !isDetailsCollapsed.value
-  // Trigger map resize after details section toggles
-  // MapKit should automatically detect container size changes
-  nextTick(() => {
-    // Small delay to ensure DOM has updated and CSS transition has started
-    setTimeout(() => {
-      if (mapRef.value && 'handleResize' in mapRef.value) {
-        (mapRef.value as { handleResize: () => void }).handleResize()
-      }
-      // Also trigger window resize event for MapKit to recalculate
-      window.dispatchEvent(new Event('resize'))
-    }, 350) // Wait for CSS transition to complete (300ms + 50ms buffer)
-  })
+// Export handlers
+const handleExportGPX = () => {
+  // TODO: Implement GPX export
+  console.log('Export GPX')
 }
 
-// Date/Time picker state
-const selectedDateTime = ref<string>('')
-
-const minDateTime = computed(() => {
-  if (!mutableSelectedPassage.value) return ''
-  const date = new Date(mutableSelectedPassage.value.startTime)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  return `${year}-${month}-${day}T${hours}:${minutes}`
-})
-
-const maxDateTime = computed(() => {
-  if (!mutableSelectedPassage.value) return ''
-  const date = new Date(mutableSelectedPassage.value.endTime)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  return `${year}-${month}-${day}T${hours}:${minutes}`
-})
-
-const handleCenterOnDate = () => {
-  if (!selectedDateTime.value || !mutableSelectedPassage.value) return
-
-  const localDate = new Date(selectedDateTime.value)
-
-  if (isNaN(localDate.getTime())) {
-    console.error('Invalid date selected')
-    return
-  }
-
-  const isoString = localDate.toISOString()
-  currentTime.value = isoString
-  nextTick(() => {
-    if (mapRef.value) {
-      mapRef.value.centerMapOnTime(isoString)
-    }
-  })
+const handleExportGeoJSON = () => {
+  // TODO: Implement GeoJSON export
+  console.log('Export GeoJSON')
 }
 
-// Reset date picker when passage changes
-watch(() => mutableSelectedPassage.value, (newPassage) => {
-  if (newPassage) {
-    const startDate = new Date(newPassage.startTime)
-    const year = startDate.getFullYear()
-    const month = String(startDate.getMonth() + 1).padStart(2, '0')
-    const day = String(startDate.getDate()).padStart(2, '0')
-    const hours = String(startDate.getHours()).padStart(2, '0')
-    const minutes = String(startDate.getMinutes()).padStart(2, '0')
-    selectedDateTime.value = `${year}-${month}-${day}T${hours}:${minutes}`
-    isDatePickerVisible.value = false
-  } else {
-    selectedDateTime.value = ''
-    isDatePickerVisible.value = false
-  }
-}, { immediate: true })
+const handleGenerateReport = () => {
+  // TODO: Implement PDF report generation
+  console.log('Generate Report')
+}
+
+const formatDateTime = (dateString: string) => {
+  return new Date(dateString).toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
 
 // Flag to prevent infinite loops when updating URL
 const isUpdatingFromUrl = ref(false)
@@ -367,100 +339,153 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.fullscreen-map-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
+.app-container {
+  display: flex;
+  flex-direction: column;
   height: 100vh;
+  width: 100vw;
   overflow: hidden;
 }
 
-.map-wrapper {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  transition: bottom 0.3s ease;
-}
-
-/* Adjust map bottom when timeline exists */
-.map-wrapper.has-timeline:not(.details-collapsed) {
-  bottom: 35vh;
-}
-
-.map-wrapper.has-timeline.details-collapsed {
-  bottom: 80px;
-}
-
-.map-controls-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  padding: 1rem;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent);
-  pointer-events: none;
-}
-
-.map-controls-overlay>* {
-  pointer-events: all;
-}
-
-.timeline-bottom {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 998;
-  padding: 0.75rem 1rem;
-  background: linear-gradient(to top, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));
-  backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-  max-height: 35vh;
-  overflow-y: auto;
-  transition: max-height 0.3s ease;
+.main-layout {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.timeline-bottom.details-collapsed {
-  max-height: 80px;
-}
-
-.details-header {
-  flex-shrink: 0;
-}
-
-.details-section {
   flex: 1;
   min-height: 0;
+  overflow: hidden;
+}
+
+.map-container {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+}
+
+.map-controls-top {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1001;
+}
+
+.details-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 400px;
+  max-width: 90vw;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.05);
+  z-index: 999;
   overflow-y: auto;
-  max-height: 25vh;
+  padding: 1rem;
 }
 
-.date-picker-compact {
-  margin-top: 0.5rem;
-  padding: 0.5rem;
-  background: rgba(0, 0, 0, 0.02);
-  border-radius: 0.375rem;
+.details-header-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
 }
 
-@media (max-width: 640px) {
-  .timeline-bottom {
-    padding: 0.75rem;
+.stats-content {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.location-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.location-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.location-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.location-time {
+  font-size: 0.875rem;
+  color: #111827;
+  font-weight: 500;
+}
+
+.location-coords {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  font-family: ui-monospace, monospace;
+}
+
+.performance-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.performance-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.performance-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.performance-value {
+  font-size: 0.875rem;
+  color: #111827;
+}
+
+.notes-content {
+  padding: 1rem 0;
+}
+
+@media (max-width: 1024px) {
+  .main-layout {
+    flex-direction: column;
+  }
+
+  .details-panel {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
     max-height: 50vh;
-  }
-
-  .timeline-bottom.details-collapsed {
-    max-height: 80px;
-  }
-
-  .details-section {
-    max-height: 35vh;
+    border-left: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
   }
 }
 </style>

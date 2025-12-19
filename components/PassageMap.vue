@@ -54,6 +54,8 @@ interface Props {
     selectedPassage?: Passage | null
     autoFit?: boolean
     currentTime?: string | null
+    speedColorCoding?: boolean
+    showFeatures?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -61,6 +63,8 @@ const props = withDefaults(defineProps<Props>(), {
     selectedPassage: null,
     autoFit: true,
     currentTime: null,
+    speedColorCoding: false,
+    showFeatures: true,
 })
 
 const mapContainer = ref<HTMLElement | null>(null)
@@ -80,8 +84,7 @@ const vesselMarkers = shallowRef<Map<string, { marker: mapkit.ImageAnnotation; o
 const vesselIconCache = new Map<string, HTMLImageElement>()
 // Map controls state
 const showVessels = ref(true)
-const speedColorCoding = ref(false)
-const showFeatures = ref(true)
+// Note: speedColorCoding and showFeatures are now props, not refs
 // Lock tideye state: null = none, 'center' = centered but not locked, 'locked' = locked/following
 const lockTideye = ref<'center' | 'locked' | null>(null)
 // Track feature markers (water features and attractions)
@@ -463,7 +466,7 @@ const drawPassage = (passage: Passage, color = '#007AFF') => {
         return '#F44336' // Red for fast (20+ kn)
     }
 
-    if (speedColorCoding.value && passage.positions && passage.positions.length > 1) {
+    if (props.speedColorCoding && passage.positions && passage.positions.length > 1) {
         // Create multiple polyline segments with speed-based colors
         const sortedPositions = [...passage.positions].sort((a, b) => {
             const timeA = new Date(a._time).getTime()
@@ -683,7 +686,7 @@ const createFeatureMarkers = (passage: Passage) => {
 
     clearFeatureMarkers()
 
-    if (!showFeatures.value) return
+    if (!props.showFeatures) return
 
     const features = parseFeaturePoints(passage.locations)
 
@@ -828,7 +831,7 @@ watch(
                 }
                 
                 // Create feature markers if locations are available
-                if (passage.locations && passage.locations.length > 0 && showFeatures.value) {
+                if (passage.locations && passage.locations.length > 0 && props.showFeatures) {
                     nextTick(() => {
                         createFeatureMarkers(passage)
                     })
@@ -1111,15 +1114,15 @@ watch(showFeatures, (shouldShow) => {
 watch(
     () => props.selectedPassage?.locations,
     () => {
-        if (isInitialized.value && props.selectedPassage && showFeatures.value) {
+        if (isInitialized.value && props.selectedPassage && props.showFeatures) {
             createFeatureMarkers(props.selectedPassage)
         }
     },
     { deep: true }
 )
 
-// Watch speedColorCoding to redraw passage with color coding
-watch(speedColorCoding, () => {
+// Watch speedColorCoding prop to redraw passage with color coding
+watch(() => props.speedColorCoding, () => {
     if (!isInitialized.value) return
     if (props.selectedPassage) {
         redrawSelectedPassage(props.selectedPassage)

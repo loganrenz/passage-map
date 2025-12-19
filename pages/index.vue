@@ -28,53 +28,28 @@
           :current-time="currentTime"
           :speed-color-coding="layers.speed"
           :show-features="layers.waypoints"
+          :show-vessels="showVessels"
+          :lock-tideye="lockTideye"
+          @update:lock-tideye="lockTideye = $event"
         />
 
-        <!-- Passage List Button -->
-        <div class="map-controls-top">
-          <UCard class="p-2 shadow-lg bg-white/95 backdrop-blur-sm">
-            <div class="flex items-center gap-2">
-              <UButton
-                icon="i-lucide-list"
-                size="xs"
-                variant="outline"
-                @click="isPassageModalOpen = true"
-              >
-                Passages
-              </UButton>
-              <ClientOnly>
-                <UButton variant="ghost" icon="i-lucide-database" to="/queries" size="xs">
-                  Queries
-                </UButton>
-                <template #fallback>
-                  <div />
-                </template>
-              </ClientOnly>
-            </div>
-          </UCard>
-        </div>
+        <!-- Right Panel: Passages, Queries, Vessels, and Controls -->
+        <PassageRightPanel
+          :passages="mutablePassages"
+          :selected-passage="mutableSelectedPassage"
+          :is-loading="isLoading"
+          :error="error"
+          :show-vessels="showVessels"
+          :lock-tideye="lockTideye"
+          :current-time="currentTime"
+          @select="handlePassageSelect"
+          @update:show-vessels="showVessels = $event"
+          @update:lock-tideye="lockTideye = $event"
+          @fit="handleMapFit"
+          @center="handleMapCenter"
+        />
       </div>
     </div>
-
-    <!-- Passage List Modal -->
-    <UModal
-      v-model:open="isPassageModalOpen"
-      title="Select Passage"
-      :ui="{ width: 'w-full sm:max-w-2xl' }"
-      scrollable
-    >
-      <template #body>
-        <div class="max-h-[60vh]">
-          <PassageList
-            :passages="mutablePassages"
-            :selected-passage="mutableSelectedPassage"
-            :is-loading="isLoading"
-            :error="error"
-            @select="handlePassageSelectFromModal"
-          />
-        </div>
-      </template>
-    </UModal>
 
     <!-- Details Panel (Collapsible) -->
     <div v-if="selectedPassage && !isDetailsCollapsed" class="details-panel">
@@ -227,8 +202,9 @@ const handleTimeUpdate = (timestamp: string) => {
   currentTime.value = timestamp
 }
 
-// Passage modal state
-const isPassageModalOpen = ref(false)
+// Vessels and lock state
+const showVessels = ref(true)
+const lockTideye = ref<'center' | 'locked' | null>(null)
 
 // Export handlers
 const handleExportGPX = () => {
@@ -281,10 +257,16 @@ const handlePassageSelect = async (passage: Passage, updateUrl = true) => {
   }
 }
 
-const handlePassageSelectFromModal = async (passage: Passage) => {
-  await handlePassageSelect(passage, true)
-  // Close modal after selection
-  isPassageModalOpen.value = false
+const handleMapFit = () => {
+  if (mapRef.value && 'handleZoomToFit' in mapRef.value) {
+    ;(mapRef.value as any).handleZoomToFit()
+  }
+}
+
+const handleMapCenter = () => {
+  if (mapRef.value && 'handleCenterOnTideye' in mapRef.value) {
+    ;(mapRef.value as any).handleCenterOnTideye()
+  }
 }
 
 const handleLocationsUpdate = (locations: Passage['locations']) => {
@@ -299,7 +281,11 @@ const handleLocationsUpdate = (locations: Passage['locations']) => {
   }
 }
 
-const mapRef = ref<{ centerMapOnTime: (timestamp: string) => void } | null>(null)
+const mapRef = ref<{ 
+  centerMapOnTime: (timestamp: string) => void
+  handleZoomToFit?: () => void
+  handleCenterOnTideye?: () => void
+} | null>(null)
 
 // Function to load passage from URL
 const loadPassageFromUrl = async () => {

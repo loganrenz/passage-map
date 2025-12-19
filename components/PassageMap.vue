@@ -1,32 +1,6 @@
 <template>
     <div class="relative w-full h-full">
         <div ref="mapContainer" class="w-full h-full" />
-        <!-- Map Controls -->
-        <div
-            v-if="selectedPassage || passages.length > 0"
-            class="absolute top-16 right-4 z-[1001] flex flex-col gap-2"
-        >
-            <UCard class="p-2 shadow-lg bg-white/95 backdrop-blur-sm">
-                <div class="flex flex-col gap-2">
-                    <!-- Show Vessels Toggle -->
-                    <UButton v-if="selectedPassage" :variant="showVessels ? 'solid' : 'outline'" size="xs"
-                        icon="i-lucide-ship" @click="showVessels = !showVessels">
-                        Vessels
-                    </UButton>
-                    <!-- Zoom to Fit -->
-                    <UButton size="xs" variant="outline" icon="i-lucide-maximize" @click="handleZoomToFit">
-                        Fit
-                    </UButton>
-                    <!-- Center on Tideye -->
-                    <UButton v-if="selectedPassage && currentTime" size="xs"
-                        :variant="lockTideye === 'locked' ? 'solid' : lockTideye === 'center' ? 'soft' : 'outline'"
-                        :icon="lockTideye === 'locked' ? 'i-lucide-lock' : 'i-lucide-crosshair'"
-                        @click="handleCenterOnTideye">
-                        {{ lockTideye === 'locked' ? 'Locked' : lockTideye === 'center' ? 'Centered' : 'Center' }}
-                    </UButton>
-                </div>
-            </UCard>
-        </div>
     </div>
 </template>
 
@@ -46,6 +20,8 @@ interface Props {
     currentTime?: string | null
     speedColorCoding?: boolean
     showFeatures?: boolean
+    showVessels?: boolean
+    lockTideye?: 'center' | 'locked' | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -55,7 +31,13 @@ const props = withDefaults(defineProps<Props>(), {
     currentTime: null,
     speedColorCoding: false,
     showFeatures: true,
+    showVessels: true,
+    lockTideye: null,
 })
+
+const emit = defineEmits<{
+    'update:lockTideye': [lock: 'center' | 'locked' | null]
+}>()
 
 const mapContainer = ref<HTMLElement | null>(null)
 const { mapInstance, initializeMap, isInitialized } = useMapKit()
@@ -72,11 +54,7 @@ const { loadEncounters, getVisibleVessels, isVesselEntering, isVesselExiting } =
 const vesselMarkers = shallowRef<Map<string, { marker: mapkit.ImageAnnotation; opacity: number; fadeTimeout?: number }>>(new Map())
 // Cache for vessel icon images
 const vesselIconCache = new Map<string, HTMLImageElement>()
-// Map controls state
-const showVessels = ref(true)
-// Note: speedColorCoding and showFeatures are now props, not refs
-// Lock tideye state: null = none, 'center' = centered but not locked, 'locked' = locked/following
-const lockTideye = ref<'center' | 'locked' | null>(null)
+// Note: speedColorCoding, showFeatures, showVessels, and lockTideye are now props
 // Track feature markers (water features and attractions)
 const featureMarkers = shallowRef<Array<mapkit.Annotation>>([])
 
@@ -765,7 +743,7 @@ watch(
                 removeTimeMarker()
             }
             // Reset lock state when passage is deselected
-            lockTideye.value = null
+            emit('update:lockTideye', null)
         }
     }
 )
@@ -934,22 +912,24 @@ const handleCenterOnTideye = () => {
     if (!mapInstance.value || !window.mapkit || !props.selectedPassage || !props.currentTime) return
 
     // Cycle through states: null -> 'center' -> 'locked' -> null
-    if (lockTideye.value === null) {
+    let newState: 'center' | 'locked' | null
+    if (props.lockTideye === null) {
         // First click: center once
-        lockTideye.value = 'center'
+        newState = 'center'
         centerMapOnTideye()
-    } else if (lockTideye.value === 'center') {
+    } else if (props.lockTideye === 'center') {
         // Second click: lock (auto-center)
-        lockTideye.value = 'locked'
+        newState = 'locked'
         centerMapOnTideye()
     } else {
         // Third click: unlock
-        lockTideye.value = null
+        newState = null
     }
+    emit('update:lockTideye', newState)
 }
 
 const updateVesselMarkers = async () => {
-    if (!mapInstance.value || !window.mapkit || !props.currentTime || !props.selectedPassage || !showVessels.value) {
+    if (!mapInstance.value || !window.mapkit || !props.currentTime || !props.selectedPassage || !props.showVessels) {
         clearVesselMarkers()
         return
     }
@@ -1074,14 +1054,14 @@ watch(
             updateVesselMarkers()
         }
         // Auto-center if locked
-        if (lockTideye.value === 'locked') {
+        if (props.lockTideye === 'locked') {
             centerMapOnTideye()
         }
     }
 )
 
 // Watch showVessels toggle to update vessel markers visibility
-watch(showVessels, (shouldShow) => {
+watch(() => props.showVessels, (shouldShow) => {
     if (!isInitialized.value) return
     if (!shouldShow) {
         clearVesselMarkers()
@@ -1091,7 +1071,7 @@ watch(showVessels, (shouldShow) => {
 })
 
 // Watch showFeatures toggle to update feature markers visibility
-watch(showFeatures, (shouldShow) => {
+watch(() => props.showFeatures, (shouldShow) => {
     if (!isInitialized.value) return
     if (!shouldShow) {
         clearFeatureMarkers()
@@ -1163,5 +1143,7 @@ defineExpose({
     centerMapOnTime,
     centerMapOnTideye,
     handleResize,
+    handleZoomToFit,
+    handleCenterOnTideye,
 })
 </script>

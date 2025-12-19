@@ -2,7 +2,6 @@
   "buildCommand": "npm run build",
   "devCommand": "npm run dev:nuxt",
   "installCommand": "npm install",
-  "framework": "nuxtjs",
-  "nodeVersion": "22.x"
+  "framework": "nuxtjs"
 }
 

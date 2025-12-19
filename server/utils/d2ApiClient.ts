@@ -22,17 +22,38 @@ export class D2ApiClient {
       headers['Authorization'] = `Bearer ${this.config.apiKey}`
     }
 
-    const response = await fetch(url, {
-      ...options,
-      headers,
-    })
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers,
+      })
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Unknown error' }))
-      throw new Error(error.error || `HTTP ${response.status}`)
+      if (!response.ok) {
+        let errorMessage = `HTTP ${response.status}`
+        try {
+          const error = await response.json()
+          errorMessage = error.error || error.message || errorMessage
+          if (error.message && error.message !== error.error) {
+            errorMessage += `: ${error.message}`
+          }
+        } catch {
+          // If response isn't JSON, try to get text
+          const text = await response.text().catch(() => '')
+          if (text) {
+            errorMessage = text
+          }
+        }
+        throw new Error(errorMessage)
+      }
+
+      return response.json()
+    } catch (error) {
+      if (error instanceof Error) {
+        // Re-throw with more context
+        throw new Error(`D2 API request failed: ${error.message}`)
+      }
+      throw error
     }
-
-    return response.json()
   }
 
   async healthCheck(): Promise<{ status: string; database: string }> {
@@ -68,16 +89,38 @@ export class D2ApiClient {
 
 /**
  * Get D2 API client from environment
+ * Checks both process.env and runtime config (for Nuxt)
  */
 export function getD2ApiClient(): D2ApiClient | null {
-  const apiUrl = process.env.D2_API_URL
+  // Try to get from runtime config first (Nuxt way)
+  let apiUrl: string | undefined
+  let apiKey: string | undefined
+  
+  try {
+    const config = useRuntimeConfig()
+    apiUrl = config.d2ApiUrl || process.env.D2_API_URL
+    apiKey = config.d2ApiKey || process.env.D2_API_KEY
+  } catch {
+    // If useRuntimeConfig fails (not in Nuxt context), fall back to process.env
+    apiUrl = process.env.D2_API_URL
+    apiKey = process.env.D2_API_KEY
+  }
+
   if (!apiUrl) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('⚠️  D2_API_URL not set. D2 API client will not be available.')
+      console.log('   Set D2_API_URL in Doppler or environment variables to use D2 API worker.')
+    }
     return null
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`✅ D2 API client configured with URL: ${apiUrl}`)
   }
 
   return new D2ApiClient({
     apiUrl,
-    apiKey: process.env.D2_API_KEY,
+    apiKey,
   })
 }
 

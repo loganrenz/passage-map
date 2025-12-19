@@ -57,6 +57,17 @@ export default defineEventHandler(async (event) => {
         try {
           if (process.env.NODE_ENV !== 'production') {
             console.log('Using D2 API client to list passages')
+            const apiUrl = process.env.D2_API_URL || config.d2ApiUrl || 'not set'
+            console.log(`D2_API_URL: ${apiUrl}`)
+            
+            // Try health check first to verify worker is accessible
+            try {
+              const health = await d2Client.healthCheck()
+              console.log(`✅ D2 API worker health check: ${JSON.stringify(health)}`)
+            } catch (healthError) {
+              console.warn('⚠️  D2 API worker health check failed:', healthError)
+              console.warn('   This might mean the D2 API worker is not running or not accessible')
+            }
           }
           const d2Passages = await d2Client.listPassages(1000, 0)
           passages = d2Passages.map((p: any) => ({

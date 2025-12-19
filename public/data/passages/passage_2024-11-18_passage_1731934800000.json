@@ -15,7 +15,7 @@
     "lon": -75.76273434991782
   },
   "description": "Passage from 2024-11-18T13:00:00.000Z to 2024-11-20T20:00:00.000Z",
-  "name": "Passage passage_1731934800000",
+  "name": "From West Grand Bahama to West Grand Bahama",
   "route": "26.78, -79.95 → 23.51, -75.76",
   "exportTimestamp": "2025-08-15T18:56:05.761Z",
   "filename": "passage_2024-11-18_passage_1731934800000.json",
@@ -119,6 +119,60 @@
       "_time": "2024-11-19T03:00:00Z",
       "lat": 26.5235833,
       "lon": -78.8022815
+    }
+  ],
+  "locations": [
+    {
+      "coordinate": {
+        "lat": 26.5237383,
+        "lon": -78.8022182
+      },
+      "time": "2024-11-18T22:00:00Z",
+      "name": "West Grand Bahama",
+      "locality": "West Grand Bahama",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "West Grand Bahama, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 26.523700566666665,
+        "lon": -78.80230486666667
+      },
+      "time": "2024-11-18T22:30:00Z",
+      "name": "West Grand Bahama",
+      "locality": "West Grand Bahama",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "West Grand Bahama, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 26.5235117,
+        "lon": -78.802299025
+      },
+      "time": "2024-11-18T23:30:00Z",
+      "name": "West Grand Bahama",
+      "locality": "West Grand Bahama",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "West Grand Bahama, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 26.52355334,
+        "lon": -78.80233252000001
+      },
+      "time": "2024-11-19T00:30:00Z",
+      "name": "West Grand Bahama",
+      "locality": "West Grand Bahama",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "West Grand Bahama, The Bahamas",
+      "pointsOfInterest": []
     }
   ]
 }

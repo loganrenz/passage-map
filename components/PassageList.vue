@@ -15,7 +15,7 @@
             <p class="text-sm text-gray-500">No passages found</p>
         </div>
 
-        <div v-else class="space-y-2 max-h-[400px] sm:max-h-[500px] lg:max-h-[600px] overflow-y-auto -mx-1 px-1">
+        <div v-else class="space-y-2 overflow-y-auto -mx-1 px-1">
             <UCard v-for="passage in filteredPassages" :key="passage.id" :class="[
                 'cursor-pointer transition-all touch-manipulation',
                 'min-h-[60px] sm:min-h-[70px]',

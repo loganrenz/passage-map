@@ -11,8 +11,12 @@
       "docsUrl": "https://www.aishub.net/api",
       "description": "AISHub AIS Data Exchange API - Access AIS vessel data in XML, JSON or CSV format",
       "version": "latest"
+    },
+    {
+      "name": "apple-maps-server-api",
+      "docsUrl": "https://developer.apple.com/documentation/AppleMapsServerAPI",
+      "description": "Apple Maps Server API - Server-side mapping services and geocoding",
+      "version": "latest"
     }
   ]
 }
-
-

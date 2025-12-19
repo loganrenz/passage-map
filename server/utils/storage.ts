@@ -9,6 +9,7 @@ import { existsSync } from 'fs'
 import type { R2Bucket } from './r2Storage'
 import { readR2JSON, writeR2JSON, listR2Objects, readR2Text } from './r2Storage'
 import { R2S3Storage } from './r2S3Storage'
+import { getD2Database } from './d2Storage'
 
 export interface StorageAdapter {
   readJSON<T = unknown>(key: string): Promise<T | null>
@@ -193,8 +194,19 @@ export function getStorageAdapter(
 
 /**
  * Get passages storage
+ * Priority: R2 bindings > R2 S3 API > Filesystem
+ * Note: D2 is checked directly in API endpoints, not through this storage adapter
+ * This storage adapter is used as a fallback when D2 is not available
  */
 export function getPassagesStorage(env?: { [key: string]: unknown }, config?: { r2AccessKeyId?: string; r2SecretAccessKey?: string }): StorageAdapter {
+  // Check if D2 is available
+  const d2Db = getD2Database(env)
+  if (d2Db) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('D2 database available. API endpoints will use D2 directly. This storage adapter is for fallback only.')
+    }
+  }
+  
   return getStorageAdapter('passages', env, config)
 }
 

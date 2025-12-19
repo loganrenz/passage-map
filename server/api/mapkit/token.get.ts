@@ -5,7 +5,9 @@ export default defineEventHandler(async (_event) => {
   const isProduction = process.env.NODE_ENV === 'production'
   
   // Get token from Doppler (prod or dev token based on environment)
-  const token = isProduction ? config.mapkitProdToken : config.mapkitDevToken
+  // Use the provided server token: eyJraWQiOiI5NFU5UTMzSkE0IiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJpc3MiOiJGVlNZN0NGQzNTIiwiaWF0IjoxNzY2MTc1NzkxLCJleHAiOjE3NjY4MjIzOTl9.toByslo5HcQh5isUL4cqg9aA-veRRbAfQTbIZinGXoczfTZVhtXqU6r-A-rh8Vh3PqBaWQv2I2ZA91KqbqJX0A
+  const providedToken = 'eyJraWQiOiI5NFU5UTMzSkE0IiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJpc3MiOiJGVlNZN0NGQzNTIiwiaWF0IjoxNzY2MTc1NzkxLCJleHAiOjE3NjY4MjIzOTl9.toByslo5HcQh5isUL4cqg9aA-veRRbAfQTbIZinGXoczfTZVhtXqU6r-A-rh8Vh3PqBaWQv2I2ZA91KqbqJX0A'
+  const token = providedToken || (isProduction ? config.mapkitProdToken : config.mapkitDevToken)
   
   if (!token) {
     const tokenName = isProduction ? 'MAPKIT_PROD_TOKEN' : 'MAPKIT_DEV_TOKEN'

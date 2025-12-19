@@ -15,7 +15,7 @@
     "lon": -80.04697743313267
   },
   "description": "Passage from 2024-11-08T14:00:00.000Z to 2024-11-09T21:00:00.000Z",
-  "name": "Passage passage_1731074400000",
+  "name": "From West Palm Beach to West Palm Beach",
   "route": "29.89, -81.24 → 26.73, -80.05",
   "exportTimestamp": "2025-08-15T18:56:05.760Z",
   "filename": "passage_2024-11-08_passage_1731074400000.json",
@@ -59,6 +59,22 @@
       "_time": "2024-11-09T21:00:00Z",
       "lat": 26.749235024999997,
       "lon": -80.048812375
+    }
+  ],
+  "locations": [
+    {
+      "coordinate": {
+        "lat": 26.749225000000003,
+        "lon": -80.04880788
+      },
+      "time": "2024-11-09T19:15:00Z",
+      "name": "West Palm Beach",
+      "locality": "West Palm Beach",
+      "administrativeArea": "Florida",
+      "country": "United States",
+      "countryCode": "US",
+      "formattedAddress": "West Palm Beach, Palm Beach County, Florida, United States",
+      "pointsOfInterest": []
     }
   ]
 }

@@ -1,0 +1,16 @@
+name = "passage-map-d2-api"
+main = "index.ts"
+compatibility_date = "2024-01-01"
+account_id = "d715f0aeb6b2e7b10f54e9e72fba8fdd"
+
+# D1 database binding
+# Use remote = true to connect to the deployed D1 database in local development
+[[d1_databases]]
+binding = "passage_map_db"
+database_name = "passage-map-db"
+database_id = "6dae99e4-d07d-44f0-96a7-84a66a70ed6b"
+remote = true
+
+# Optional: API key for authentication (set via wrangler secret put D2_API_KEY)
+# If not set, the API will be publicly accessible (not recommended for production)
+

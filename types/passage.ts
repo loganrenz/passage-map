@@ -20,6 +20,18 @@ export interface QueryMetadata {
   description?: string
 }
 
+export interface LocationInfo {
+  coordinate: { lat: number; lon: number }
+  time: string
+  name?: string
+  locality?: string // City/town name
+  administrativeArea?: string // State/province
+  country?: string
+  countryCode?: string
+  pointsOfInterest?: string[] // Notable features/landmarks
+  formattedAddress?: string
+}
+
 export interface Passage {
   id: string
   startTime: string
@@ -39,5 +51,7 @@ export interface Passage {
   queryMetadata?: QueryMetadata
   /** Optional encounters data filename (relative to passages_vessel_data directory) */
   encountersFilename?: string
+  /** Optional location information along the route */
+  locations?: LocationInfo[]
 }
 

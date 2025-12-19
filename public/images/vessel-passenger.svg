@@ -1,0 +1,23 @@
+<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+<path d="M3 32H37V30L35 28H5L3 30V32Z" fill="#FFCC00"/>
+<path d="M5 28H33V26H30V24H27V22H24V20H21V18H18V16H15V14H12V12H9V10H6V28H5Z" fill="#FFCC00"/>
+<path d="M28 24L32 26H28V24Z" fill="#FFCC00"/>
+<path d="M29 22L33 24H29V22Z" fill="#FFCC00"/>
+<rect x="7" y="26" width="2" height="1" fill="#FFFFFF"/>
+<rect x="10" y="26" width="2" height="1" fill="#FFFFFF"/>
+<rect x="13" y="26" width="2" height="1" fill="#FFFFFF"/>
+<rect x="16" y="26" width="2" height="1" fill="#FFFFFF"/>
+<rect x="19" y="26" width="2" height="1" fill="#FFFFFF"/>
+<rect x="22" y="26" width="2" height="1" fill="#FFFFFF"/>
+<rect x="25" y="26" width="2" height="1" fill="#FFFFFF"/>
+<rect x="8" y="23" width="2" height="1" fill="#FFFFFF"/>
+<rect x="11" y="23" width="2" height="1" fill="#FFFFFF"/>
+<rect x="14" y="23" width="2" height="1" fill="#FFFFFF"/>
+<rect x="17" y="23" width="2" height="1" fill="#FFFFFF"/>
+<rect x="20" y="23" width="2" height="1" fill="#FFFFFF"/>
+<rect x="23" y="23" width="2" height="1" fill="#FFFFFF"/>
+<rect x="9" y="19" width="1" height="1" fill="#FFFFFF"/>
+<rect x="12" y="19" width="1" height="1" fill="#FFFFFF"/>
+<rect x="15" y="19" width="1" height="1" fill="#FFFFFF"/>
+<rect x="18" y="19" width="1" height="1" fill="#FFFFFF"/>
+</svg>

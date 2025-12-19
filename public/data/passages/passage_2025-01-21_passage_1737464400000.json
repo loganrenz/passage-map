@@ -15,7 +15,7 @@
     "lon": -75.87128645840122
   },
   "description": "Passage from 2025-01-21T13:00:00.000Z to 2025-01-21T18:00:00.000Z",
-  "name": "Passage passage_1737464400000",
+  "name": "From Las Tunas to Las Tunas",
   "route": "22.36, -75.82 → 22.88, -75.87",
   "exportTimestamp": "2025-08-15T18:56:05.764Z",
   "filename": "passage_2025-01-21_passage_1737464400000.json",
@@ -29,6 +29,34 @@
       "_time": "2025-01-21T16:30:00Z",
       "lat": 21.527745,
       "lon": -76.4461482
+    }
+  ],
+  "locations": [
+    {
+      "coordinate": {
+        "lat": 21.53141,
+        "lon": -76.4554115
+      },
+      "time": "2025-01-21T16:15:00Z",
+      "name": "Las Tunas",
+      "administrativeArea": "Las Tunas",
+      "country": "Cuba",
+      "countryCode": "CU",
+      "formattedAddress": "Las Tunas, Cuba",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 21.527745,
+        "lon": -76.4461482
+      },
+      "time": "2025-01-21T16:30:00Z",
+      "name": "Las Tunas",
+      "administrativeArea": "Las Tunas",
+      "country": "Cuba",
+      "countryCode": "CU",
+      "formattedAddress": "Las Tunas, Cuba",
+      "pointsOfInterest": []
     }
   ]
 }

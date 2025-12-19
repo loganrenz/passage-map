@@ -10,21 +10,18 @@ import {
   parseInfluxResults,
 } from '~/server/utils/passageTransformer'
 import { addQuery } from '~/server/utils/queryRegistry'
-import { getPassagesStorage } from '~/server/utils/storage'
 import { getCloudflareEnv } from '~/server/utils/cloudflareEnv'
+import { getD2Database, upsertPassage, insertPassagePositions } from '~/server/utils/d2Storage'
+import { getD2ApiClient } from '~/server/utils/d2ApiClient'
 import type { Passage } from '~/types/passage'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const influxConfig = getInfluxDBConfig()
   
-  // Get storage adapter (R2 bindings > R2 S3 API > filesystem)
+  // D1 is primary storage
   const env = getCloudflareEnv(event)
   const runtimeConfig = useRuntimeConfig(event)
-  const storage = getPassagesStorage(env, {
-    r2AccessKeyId: runtimeConfig.r2AccessKeyId,
-    r2SecretAccessKey: runtimeConfig.r2SecretAccessKey,
-  })
 
   // Support both direct query string or query parameters
   let queryString: string | undefined
@@ -109,8 +106,60 @@ export default defineEventHandler(async (event) => {
     const filename = body.filename || `passage_${dateStr}_passage_${timestamp}.json`
     passage.filename = filename
 
-    // Save passage to storage (R2 or filesystem)
-    await storage.writeJSON(filename, passage)
+    // Save passage to D1 (primary storage)
+    const db = getD2Database(env)
+    if (db) {
+      // Use direct D1 bindings
+      await upsertPassage(db, {
+        id: passage.id,
+        startTime: passage.startTime,
+        endTime: passage.endTime,
+        duration: passage.duration,
+        avgSpeed: passage.avgSpeed,
+        maxSpeed: passage.maxSpeed,
+        distance: passage.distance,
+        startLocation: passage.startLocation,
+        endLocation: passage.endLocation,
+        description: passage.description || '',
+        name: passage.name,
+        route: passage.route || '',
+        exportTimestamp: passage.exportTimestamp,
+        filename: passage.filename,
+        queryMetadata: passage.queryMetadata,
+        encountersFilename: passage.encountersFilename,
+      })
+      
+      // Insert positions if available
+      if (passage.positions && passage.positions.length > 0) {
+        await insertPassagePositions(
+          db,
+          passage.id,
+          passage.positions.map((p) => ({
+            _time: p._time,
+            lat: p.lat,
+            lon: p.lon,
+            speed: p.speed,
+            heading: p.heading,
+            distance: p.distance,
+          }))
+        )
+      }
+    } else {
+      // Fallback: Try D2 API client
+      const d2Client = getD2ApiClient()
+      if (!d2Client) {
+        throw createError({
+          statusCode: 503,
+          statusMessage: 'D1 database is not available. Please ensure D1 is configured.',
+        })
+      }
+      // Note: D2 API client doesn't have write methods yet
+      // For now, throw error if direct bindings aren't available
+      throw createError({
+        statusCode: 503,
+        statusMessage: 'D1 direct bindings required for writing passages. D2 API client write support not yet implemented.',
+      })
+    }
 
     // Store query in registry
     const queryMetadata = await addQuery({
@@ -133,8 +182,27 @@ export default defineEventHandler(async (event) => {
       description: queryMetadata.description,
     }
 
-    // Update the saved file with query metadata
-    await storage.writeJSON(filename, passage)
+    // Update the passage in D1 with query metadata
+    if (db) {
+      await upsertPassage(db, {
+        id: passage.id,
+        startTime: passage.startTime,
+        endTime: passage.endTime,
+        duration: passage.duration,
+        avgSpeed: passage.avgSpeed,
+        maxSpeed: passage.maxSpeed,
+        distance: passage.distance,
+        startLocation: passage.startLocation,
+        endLocation: passage.endLocation,
+        description: passage.description || '',
+        name: passage.name,
+        route: passage.route || '',
+        exportTimestamp: passage.exportTimestamp,
+        filename: passage.filename,
+        queryMetadata: passage.queryMetadata,
+        encountersFilename: passage.encountersFilename,
+      })
+    }
 
     return {
       success: true,

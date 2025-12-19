@@ -5,7 +5,11 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
-    "dev": "doppler run -- nuxt dev",
+    "dev": "./scripts/dev-all.sh",
+    "dev:all": "./scripts/dev-all.sh",
+    "dev:nuxt": "nuxt dev",
+    "dev:nuxt-only": "doppler run -- nuxt dev",
+    "dev:wrangler": "doppler run -- wrangler pages dev .output/public --compatibility-date=2024-01-01",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
@@ -16,7 +20,9 @@
     "r2:create": "wrangler r2 bucket create",
     "r2:list": "wrangler r2 bucket list",
     "r2:delete": "wrangler r2 bucket delete",
-    "r2:dev": "wrangler dev"
+    "r2:dev": "wrangler dev",
+    "d2:api:deploy": "cd workers/d2-api && wrangler deploy",
+    "d2:api:dev": "cd workers/d2-api && wrangler dev"
   },
   "dependencies": {
     "@apple/mapkit-loader": "^0.2.1",
@@ -34,6 +40,7 @@
     "@nuxt/eslint": "^1.12.1",
     "@types/apple-mapkit-js-browser": "^5.78.1",
     "@types/node": "^20.10.0",
+    "concurrently": "^9.2.1",
     "typescript": "^5.2.0",
     "wrangler": "^4.56.0"
   }

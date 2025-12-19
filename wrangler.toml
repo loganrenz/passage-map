@@ -19,6 +19,16 @@ binding = "QUERIES_BUCKET"
 bucket_name = "passage-map-queries"
 preview_bucket_name = "passage-map-queries-preview"
 
+# D1 database for passages and locations (D1 is Cloudflare's SQLite database)
+# For local development: remote = true connects to the deployed D1 database
+# This allows local dev to use the same data as production
+[[d1_databases]]
+binding = "passage_map_db"
+database_name = "passage-map-db"
+database_id = "6dae99e4-d07d-44f0-96a7-84a66a70ed6b"
+# Use remote D1 database in local development (connects to production D1)
+remote = true
+
 # Environment variables can be set via wrangler secret put
 # or in .dev.vars for local development
 

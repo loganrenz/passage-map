@@ -1,6 +1,19 @@
 @import 'tailwindcss';
 @import '@nuxt/ui';
 
+/* Prevent body scrolling for full-screen map */
+html, body {
+  overflow: hidden;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#__nuxt {
+  height: 100vh;
+  overflow: hidden;
+}
+
 /* Mobile UX improvements */
 @media (max-width: 640px) {
   /* Improve touch targets */
@@ -12,6 +25,25 @@
   /* Better scrolling on mobile */
   * {
     -webkit-overflow-scrolling: touch;
+  }
+
+  /* Bottom sheet pattern for mobile */
+  .timeline-bottom {
+    border-radius: 1rem 1rem 0 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Swipe indicator for mobile */
+  .timeline-bottom::before {
+    content: '';
+    position: absolute;
+    top: 0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
   }
 }
 

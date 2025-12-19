@@ -1,7 +1,23 @@
 import type { Passage } from '~/types/passage'
 
-export async function loadPassage(filename: string): Promise<Passage | null> {
+export async function loadPassage(filename: string, passageId?: string): Promise<Passage | null> {
   try {
+    // If we have a passage ID, try to load from API (which checks D1 first)
+    if (passageId) {
+      try {
+        const response = await fetch(`/api/passages/${passageId}`)
+        if (response.ok) {
+          const data = await response.json()
+          return data as Passage
+        }
+        // If API fails, fall through to static file
+      } catch (error) {
+        console.warn(`Error loading passage ${passageId} from API, trying static file:`, error)
+        // Fall through to static file
+      }
+    }
+
+    // Fallback to static file
     const response = await fetch(`/data/passages/${filename}`)
     if (!response.ok) {
       throw new Error(`Failed to load passage: ${response.statusText}`)

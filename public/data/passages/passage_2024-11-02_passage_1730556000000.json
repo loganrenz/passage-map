@@ -15,7 +15,7 @@
     "lon": -81.27866791086623
   },
   "description": "Passage from 2024-11-02T14:00:00.000Z to 2024-11-03T17:00:00.000Z",
-  "name": "Passage passage_1730556000000",
+  "name": "From Mount Pleasant to Mount Pleasant",
   "route": "32.76, -79.87 → 29.91, -81.28",
   "exportTimestamp": "2025-08-15T18:56:05.758Z",
   "filename": "passage_2024-11-02_passage_1730556000000.json",
@@ -34,6 +34,22 @@
       "_time": "2024-11-02T14:30:00Z",
       "lat": 32.78992165,
       "lon": -79.9106157
+    }
+  ],
+  "locations": [
+    {
+      "coordinate": {
+        "lat": 32.78989943333334,
+        "lon": -79.9105732
+      },
+      "time": "2024-11-02T14:00:00Z",
+      "name": "Mount Pleasant",
+      "locality": "Mount Pleasant",
+      "administrativeArea": "South Carolina",
+      "country": "United States",
+      "countryCode": "US",
+      "formattedAddress": "Mount Pleasant, Charleston County, South Carolina, United States",
+      "pointsOfInterest": []
     }
   ]
 }

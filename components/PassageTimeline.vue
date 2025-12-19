@@ -1,48 +1,52 @@
 <template>
-  <UCard v-if="passage">
-    <template #header>
-      <div class="flex justify-between items-center">
-        <h3 class="text-sm font-semibold">Timeline</h3>
-        <div class="flex items-center gap-2">
-          <UButton :icon="isPlaying ? 'i-heroicons-pause' : 'i-heroicons-play'" size="xs" color="primary"
-            variant="ghost" @click="togglePlayback" />
-          <div class="flex items-center gap-1 border rounded-md p-0.5">
-            <UButton v-for="option in speedOptions" :key="option.value" size="xs"
-              :color="playbackSpeed === option.value ? 'primary' : 'neutral'"
-              :variant="playbackSpeed === option.value ? 'solid' : 'ghost'" class="min-w-10"
-              @click="playbackSpeed = option.value">
-              {{ option.label }}
-            </UButton>
-          </div>
-        </div>
+  <div v-if="passage" class="timeline-bar">
+    <div class="timeline-content">
+      <!-- Play/Pause Button -->
+      <UButton
+        :icon="isPlaying ? 'i-heroicons-pause' : 'i-heroicons-play'"
+        size="sm"
+        color="primary"
+        variant="solid"
+        class="timeline-play-btn"
+        @click="togglePlayback"
+      />
+      
+      <!-- Speed Controls -->
+      <div class="timeline-speed-controls">
+        <UButton
+          v-for="option in speedOptions"
+          :key="option.value"
+          size="xs"
+          :color="playbackSpeed === option.value ? 'primary' : 'neutral'"
+          :variant="playbackSpeed === option.value ? 'solid' : 'ghost'"
+          class="timeline-speed-btn"
+          @click="playbackSpeed = option.value"
+        >
+          {{ option.label }}
+        </UButton>
       </div>
-    </template>
 
-    <div class="space-y-3">
       <!-- Time Display -->
-      <div class="flex justify-between items-center text-sm">
-        <div>
-          <span class="text-gray-500">Current:</span>
-          <span class="ml-2 font-medium">{{ formatTime(currentTimestamp) }}</span>
-        </div>
-        <div class="text-gray-500">
+      <div class="timeline-time-display">
+        <span class="timeline-current-time">{{ formatTime(currentTimestamp) }}</span>
+        <span class="timeline-range">
           {{ formatTime(passage.startTime) }} → {{ formatTime(passage.endTime) }}
-        </div>
+        </span>
       </div>
 
       <!-- Slider -->
-      <USlider v-model="currentTimeValue" :min="timeRange.start" :max="timeRange.end" :step="stepSize"
-        :disabled="!passage" @update:model-value="handleTimeChange" />
-
-      <!-- Progress Bar -->
-      <div class="flex items-center gap-2 text-xs text-gray-500">
-        <div class="flex-1 bg-gray-200 rounded-full h-1.5 overflow-hidden">
-          <div class="bg-primary h-full transition-all duration-100" :style="{ width: `${progressPercentage}%` }" />
-        </div>
-        <span>{{ Math.round(progressPercentage) }}%</span>
+      <div class="timeline-slider">
+        <USlider
+          v-model="currentTimeValue"
+          :min="timeRange.start"
+          :max="timeRange.end"
+          :step="stepSize"
+          :disabled="!passage"
+          @update:model-value="handleTimeChange"
+        />
       </div>
     </div>
-  </UCard>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -107,13 +111,6 @@ const currentTimestamp = computed(() => {
     return new Date().toISOString() // Fallback if date is invalid
   }
   return date.toISOString()
-})
-
-const progressPercentage = computed(() => {
-  if (!props.passage || timeRange.value.end === timeRange.value.start) {
-    return 0
-  }
-  return ((currentTimeValue.value - timeRange.value.start) / (timeRange.value.end - timeRange.value.start)) * 100
 })
 
 const formatTime = (timestamp: string) => {
@@ -223,3 +220,97 @@ defineExpose({
   pausePlayback,
 })
 </script>
+
+<style scoped>
+.timeline-bar {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+  padding: 0.75rem 1rem;
+  min-height: 60px;
+}
+
+.timeline-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.timeline-play-btn {
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.timeline-speed-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem;
+  padding: 0.25rem;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.timeline-speed-btn {
+  min-width: 36px;
+  min-height: 32px;
+  font-size: 0.75rem;
+}
+
+.timeline-time-display {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  flex-shrink: 0;
+  min-width: 140px;
+}
+
+.timeline-current-time {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.timeline-range {
+  font-size: 0.75rem;
+  color: #6b7280;
+  line-height: 1.2;
+}
+
+.timeline-slider {
+  flex: 1;
+  min-width: 200px;
+}
+
+@media (max-width: 640px) {
+  .timeline-bar {
+    padding: 0.875rem 1rem;
+    min-height: 70px;
+  }
+
+  .timeline-content {
+    gap: 0.5rem;
+  }
+
+  .timeline-time-display {
+    min-width: 120px;
+  }
+
+  .timeline-current-time {
+    font-size: 0.8125rem;
+  }
+
+  .timeline-range {
+    font-size: 0.6875rem;
+  }
+
+  .timeline-slider {
+    width: 100%;
+    order: -1;
+  }
+}
+</style>

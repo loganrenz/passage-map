@@ -15,7 +15,7 @@
     "lon": -76.52818546716985
   },
   "description": "Passage from 2025-05-22T13:00:00.000Z to 2025-05-22T17:00:00.000Z",
-  "name": "Passage passage_1747918800000",
+  "name": "From Exuma to Exuma",
   "route": "24.52, -76.82 → 24.21, -76.53",
   "exportTimestamp": "2025-08-15T18:56:05.771Z",
   "filename": "passage_2025-05-22_passage_1747918800000.json",
@@ -49,6 +49,34 @@
       "_time": "2025-05-22T14:15:00Z",
       "lat": 24.600904999999997,
       "lon": -76.80151405000001
+    }
+  ],
+  "locations": [
+    {
+      "coordinate": {
+        "lat": 24.600902525000002,
+        "lon": -76.8015778
+      },
+      "time": "2025-05-22T13:00:00Z",
+      "name": "Exuma",
+      "locality": "Exuma",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Exuma, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 24.60090085,
+        "lon": -76.801526925
+      },
+      "time": "2025-05-22T13:30:00Z",
+      "name": "Exuma",
+      "locality": "Exuma",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Exuma, The Bahamas",
+      "pointsOfInterest": []
     }
   ]
 }

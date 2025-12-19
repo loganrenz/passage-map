@@ -16,6 +16,16 @@ export default defineNuxtConfig({
     // R2 S3 API credentials (fallback when bindings aren't available)
     r2AccessKeyId: process.env.R2_ACCESS_KEY_ID,
     r2SecretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+    // D2 API configuration (for Vercel/external access)
+    d2ApiUrl: process.env.D2_API_URL, // Cloudflare Worker URL for D2 API
+    d2ApiKey: process.env.D2_API_KEY, // Optional API key for authentication
+  },
+  nitro: {
+    preset: 'cloudflare-pages',
+    // Use wrangler.toml for local development bindings
+    cloudflare: {
+      configPath: 'wrangler.toml',
+    },
   },
   devServer: {
     host: 'phantom.curl-banjo.ts.net',

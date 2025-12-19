@@ -3,12 +3,56 @@
  */
 
 /**
+ * Try to infer vessel type from vessel name
+ * This is a fallback when type is generic or missing
+ */
+function inferTypeFromName(vesselName?: string): string | null {
+  if (!vesselName) return null
+  
+  const name = vesselName.toLowerCase()
+  
+  // Common patterns in vessel names
+  if (name.includes('tanker') || name.includes('tank') || name.includes('oil') || name.includes('crude')) {
+    return 'tanker'
+  }
+  if (name.includes('cargo') || name.includes('container') || name.includes('freight') || name.includes('bulk')) {
+    return 'cargo'
+  }
+  if (name.includes('fishing') || name.includes('fisher') || name.includes('trawler')) {
+    return 'fishing'
+  }
+  if (name.includes('ferry') || name.includes('cruise') || name.includes('passenger') || name.includes('liner')) {
+    return 'passenger'
+  }
+  if (name.includes('tug') || name.includes('tow')) {
+    return 'tug'
+  }
+  if (name.includes('sail') || name.includes('yacht') || name.includes('sailing')) {
+    return 'sail'
+  }
+  if (name.includes('navy') || name.includes('military') || name.includes('warship')) {
+    return 'military'
+  }
+  
+  return null
+}
+
+/**
  * Map vessel types to icon filenames
  * Returns a default icon if type is not recognized
+ * 
+ * @param vesselType - The vessel type string (e.g., "cargo", "tanker")
+ * @param vesselName - Optional vessel name to infer type from if type is generic
  */
-export function getVesselIcon(vesselType?: string): string {
-  if (!vesselType) {
-    return '/images/vessel-marker.svg' // Default icon
+export function getVesselIcon(vesselType?: string, vesselName?: string): string {
+  // If no type provided, try to infer from name
+  if (!vesselType || vesselType.toLowerCase() === 'vessel' || vesselType.toLowerCase() === 'unknown') {
+    const inferredType = inferTypeFromName(vesselName)
+    if (inferredType) {
+      vesselType = inferredType
+    } else {
+      return '/images/vessel-marker.svg' // Default icon
+    }
   }
 
   const type = vesselType.toLowerCase()
@@ -44,8 +88,8 @@ export function getVesselIcon(vesselType?: string): string {
 /**
  * Get icon size based on vessel type (optional customization)
  */
-export function getVesselIconSize(vesselType?: string): { width: number; height: number } {
-  // All vessels use the same size for now, but can be customized
-  return { width: 32, height: 32 }
+export function getVesselIconSize(_vesselType?: string): { width: number; height: number } {
+  // All vessels use 40x40 to match the SVG icon dimensions
+  return { width: 40, height: 40 }
 }
 

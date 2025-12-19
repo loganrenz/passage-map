@@ -30,3 +30,6 @@ AuthKey_*.p8
 
 # Wrangler (Cloudflare Workers) build/cache
 .wrangler
+
+# Temporary D1 SQL files
+.d1-locations-*.sql

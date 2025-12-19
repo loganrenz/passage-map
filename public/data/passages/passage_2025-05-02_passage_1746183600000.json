@@ -15,7 +15,7 @@
     "lon": -76.12669165632406
   },
   "description": "Passage from 2025-05-02T11:00:00.000Z to 2025-05-02T18:00:00.000Z",
-  "name": "Passage passage_1746183600000",
+  "name": "From The Bahamas to The Bahamas",
   "route": "24.32, -75.52 → 24.20, -76.13",
   "exportTimestamp": "2025-08-15T18:56:05.769Z",
   "filename": "passage_2025-05-02_passage_1746183600000.json",
@@ -24,6 +24,20 @@
       "_time": "2025-05-02T12:30:00Z",
       "lat": 24.4007965,
       "lon": -75.08514602999999
+    }
+  ],
+  "locations": [
+    {
+      "coordinate": {
+        "lat": 24.4007965,
+        "lon": -75.08514602999999
+      },
+      "time": "2025-05-02T12:30:00Z",
+      "name": "The Bahamas",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "The Bahamas",
+      "pointsOfInterest": []
     }
   ]
 }

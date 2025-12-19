@@ -15,7 +15,7 @@
     "lon": -75.47428914754447
   },
   "description": "Passage from 2025-04-27T12:00:00.000Z to 2025-04-27T19:00:00.000Z",
-  "name": "Passage passage_1745755200000",
+  "name": "From Cat Island to Cat Island",
   "route": "23.79, -75.40 → 24.32, -75.47",
   "exportTimestamp": "2025-08-15T18:56:05.768Z",
   "filename": "passage_2025-04-27_passage_1745755200000.json",
@@ -89,6 +89,86 @@
       "_time": "2025-04-27T16:15:00Z",
       "lat": 24.115503200000003,
       "lon": -75.52425820833332
+    }
+  ],
+  "locations": [
+    {
+      "coordinate": {
+        "lat": 24.254369909090908,
+        "lon": -75.52492699999999
+      },
+      "time": "2025-04-27T15:15:00Z",
+      "name": "Cat Island",
+      "locality": "Cat Island",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Cat Island, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 24.22135147169812,
+        "lon": -75.53752954716978
+      },
+      "time": "2025-04-27T15:30:00Z",
+      "name": "Cat Island",
+      "locality": "Cat Island",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Cat Island, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 24.144895284000008,
+        "lon": -75.54867660133333
+      },
+      "time": "2025-04-27T16:00:00Z",
+      "name": "Cat Island",
+      "locality": "Cat Island",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Cat Island, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 24.084494034567907,
+        "lon": -75.49650225432097
+      },
+      "time": "2025-04-27T16:30:00Z",
+      "name": "Cat Island",
+      "locality": "Cat Island",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Cat Island, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 24.074150768571435,
+        "lon": -75.42131363142857
+      },
+      "time": "2025-04-27T17:00:00Z",
+      "name": "Cat Island",
+      "locality": "Cat Island",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Cat Island, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 24.072781185714287,
+        "lon": -75.39095248571428
+      },
+      "time": "2025-04-27T17:15:00Z",
+      "name": "Cat Island",
+      "locality": "Cat Island",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Cat Island, The Bahamas",
+      "pointsOfInterest": []
     }
   ]
 }

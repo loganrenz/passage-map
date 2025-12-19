@@ -32,13 +32,15 @@ export const usePassageData = () => {
 
     try {
       const passage = passages.value.find((p) => p.id === passageId)
-      if (passage && passage.filename) {
-        const fullPassage = await loadPassage(passage.filename)
+      if (passage) {
+        // Try to load from API first (which checks D1), then fall back to static file
+        const fullPassage = await loadPassage(passage.filename || '', passageId)
         if (fullPassage && validatePassage(fullPassage)) {
           // Convert readonly arrays to mutable arrays
           const mutablePassage = {
             ...fullPassage,
-            positions: fullPassage.positions ? [...fullPassage.positions] : undefined
+            positions: fullPassage.positions ? [...fullPassage.positions] : undefined,
+            locations: fullPassage.locations ? [...fullPassage.locations] : undefined
           }
           selectedPassage.value = mutablePassage
           return mutablePassage

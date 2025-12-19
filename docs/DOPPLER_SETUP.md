@@ -106,18 +106,72 @@ For Cloudflare R2 storage and Wrangler CLI access:
 
 **Note**: For local development, Wrangler uses OAuth authentication via `wrangler login`, so API tokens are not required. They are primarily needed for CI/CD environments.
 
+### D2 Database Configuration
+
+For local development with D1 database access:
+
+#### Development (`dev` config)
+- `D2_API_URL`: URL for the local D2 API worker
+  - **Value**: `http://localhost:8787`
+  - **Description**: Local D2 API worker URL for accessing D1 database
+  - **Note**: This is automatically set when using `npm run dev:all` which starts both the D2 API worker and Nuxt dev server
+
+- `D2_API_KEY`: (Optional) API key for D2 API worker authentication
+  - **Description**: Optional API key to secure the D2 API worker
+  - **Note**: Not required for local development, but recommended for production
+
+#### Production (`prd` config)
+- `D2_API_URL`: URL for the deployed D2 API worker
+  - **Value**: `https://passage-map-d2-api.YOUR_SUBDOMAIN.workers.dev`
+  - **Description**: Deployed Cloudflare Worker URL for D2 API access
+
+- `D2_API_KEY`: (Optional) API key for D2 API worker authentication
+  - **Description**: API key to secure the D2 API worker in production
+
 ## Running the Development Server
 
-The development server is configured to run on `phantom.curl-banjo.ts.net` by default. To start the server with Doppler secrets:
+The development server is configured to run on `phantom.curl-banjo.ts.net` by default.
+
+### Option 1: Run Everything Together (Recommended)
+
+To start both the D2 API worker and Nuxt dev server together:
+
+```bash
+npm run dev:all
+```
+
+This will:
+1. Load environment variables from Doppler (including `D2_API_URL`)
+2. Start the D2 API worker on `http://localhost:8787`
+3. Wait 3 seconds for the worker to start
+4. Start the Nuxt dev server on `phantom.curl-banjo.ts.net`
+5. Use the `MAPKIT_DEV_TOKEN` from Doppler
+6. Connect to D1 database via the D2 API worker
+
+### Option 2: Run Separately
+
+If you prefer to run services separately:
+
+**Terminal 1 - D2 API Worker:**
+```bash
+cd workers/d2-api
+npm run d2:api:dev
+```
+
+**Terminal 2 - Nuxt Dev Server:**
+```bash
+doppler run -- npm run dev
+```
+
+### Option 3: Nuxt Only (No D1 Access)
+
+To run just Nuxt without D1 access:
 
 ```bash
 doppler run -- npm run dev
 ```
 
-This will:
-1. Load environment variables from Doppler
-2. Start the Nuxt dev server on `phantom.curl-banjo.ts.net`
-3. Use the `MAPKIT_DEV_TOKEN` from Doppler instead of generating JWT tokens
+**Note**: This will show an error when trying to access passages, as D1 is required.
 
 ## How It Works
 

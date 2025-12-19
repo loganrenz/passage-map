@@ -6,6 +6,24 @@ import type { Passage } from '~/types/passage'
 import type { PassageEncounters, VesselEncounter, VesselPosition } from '~/types/vessel-encounter'
 import { processVesselEncounters, type RawVesselData } from '~/utils/encounterProcessor'
 
+/**
+ * Interpolate between two angles (handles wrap-around at 0/360)
+ */
+function interpolateAngle(angle1: number, angle2: number, progress: number): number {
+  // Normalize angles to 0-360
+  angle1 = ((angle1 % 360) + 360) % 360
+  angle2 = ((angle2 % 360) + 360) % 360
+  
+  // Find shortest path (handles wrap-around)
+  let diff = angle2 - angle1
+  if (Math.abs(diff) > 180) {
+    diff = diff > 0 ? diff - 360 : diff + 360
+  }
+  
+  let result = angle1 + diff * progress
+  return ((result % 360) + 360) % 360
+}
+
 export const useVesselEncounters = () => {
   const encounters = ref<PassageEncounters | null>(null)
   const isLoading = ref(false)
@@ -99,23 +117,73 @@ export const useVesselEncounters = () => {
 
         // Check if timestamp is within this segment
         if (targetTime >= segmentStart && targetTime <= segmentEnd) {
-          // Find the closest position in this segment
-          let closestPos: VesselPosition | null = null
-          let minTimeDiff = Infinity
+          // Try to interpolate between positions for better accuracy
+          let interpolatedPos: VesselPosition | null = null
+          
+          // Find the two positions to interpolate between
+          for (let i = 0; i < segment.positions.length - 1; i++) {
+            const pos1 = segment.positions[i]
+            const pos2 = segment.positions[i + 1]
+            if (!pos1 || !pos2) continue
 
-          for (const pos of segment.positions) {
-            const posTime = new Date(pos.timestamp).getTime()
-            const timeDiff = Math.abs(posTime - targetTime)
-            if (timeDiff < minTimeDiff) {
-              minTimeDiff = timeDiff
-              closestPos = pos
+            const time1 = new Date(pos1.timestamp).getTime()
+            const time2 = new Date(pos2.timestamp).getTime()
+
+            // Check if target time is between these two positions
+            if (targetTime >= time1 && targetTime <= time2) {
+              // Calculate interpolation factor
+              const timeDiff = time2 - time1
+              if (timeDiff === 0) {
+                interpolatedPos = pos1
+              } else {
+                const progress = (targetTime - time1) / timeDiff
+                
+                // Linear interpolation
+                const lat = pos1.lat + (pos2.lat - pos1.lat) * progress
+                const lon = pos1.lon + (pos2.lon - pos1.lon) * progress
+                
+                // Interpolate other properties if available
+                const speed = pos1.speed !== undefined && pos2.speed !== undefined
+                  ? pos1.speed + (pos2.speed - pos1.speed) * progress
+                  : pos1.speed ?? pos2.speed
+                const heading = pos1.heading !== undefined && pos2.heading !== undefined
+                  ? interpolateAngle(pos1.heading, pos2.heading, progress)
+                  : pos1.heading ?? pos2.heading
+
+                interpolatedPos = {
+                  timestamp: new Date(targetTime).toISOString(),
+                  lat,
+                  lon,
+                  speed,
+                  heading,
+                  altitude: pos1.altitude ?? pos2.altitude,
+                  accuracy: pos1.accuracy ?? pos2.accuracy,
+                }
+              }
+              break
             }
           }
 
-          if (closestPos) {
+          // If no interpolation found, use closest position
+          if (!interpolatedPos) {
+            let closestPos: VesselPosition | null = null
+            let minTimeDiff = Infinity
+
+            for (const pos of segment.positions) {
+              const posTime = new Date(pos.timestamp).getTime()
+              const timeDiff = Math.abs(posTime - targetTime)
+              if (timeDiff < minTimeDiff) {
+                minTimeDiff = timeDiff
+                closestPos = pos
+              }
+            }
+            interpolatedPos = closestPos
+          }
+
+          if (interpolatedPos) {
             visible.push({
               encounter,
-              position: closestPos,
+              position: interpolatedPos,
               segmentIndex: segIdx,
             })
           }

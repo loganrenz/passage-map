@@ -15,7 +15,7 @@
     "lon": -75.75288772719718
   },
   "description": "Passage from 2025-01-15T14:00:00.000Z to 2025-01-15T15:00:00.000Z",
-  "name": "Passage passage_1736949600000",
+  "name": "From Ragged Island to Ragged Island",
   "route": "22.25, -75.77 → 22.25, -75.75",
   "exportTimestamp": "2025-08-15T18:56:05.763Z",
   "filename": "passage_2025-01-15_passage_1736949600000.json",
@@ -44,6 +44,34 @@
       "_time": "2025-01-15T15:00:00Z",
       "lat": 22.247835025,
       "lon": -75.7525282
+    }
+  ],
+  "locations": [
+    {
+      "coordinate": {
+        "lat": 22.247855424999997,
+        "lon": -75.75255652499999
+      },
+      "time": "2025-01-15T14:00:00Z",
+      "name": "Ragged Island",
+      "locality": "Ragged Island",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Ragged Island, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 22.247836250000002,
+        "lon": -75.7525332
+      },
+      "time": "2025-01-15T14:30:00Z",
+      "name": "Ragged Island",
+      "locality": "Ragged Island",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Ragged Island, The Bahamas",
+      "pointsOfInterest": []
     }
   ]
 }

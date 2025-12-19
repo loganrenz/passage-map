@@ -15,7 +15,7 @@
     "lon": -76.84207956830163
   },
   "description": "Passage from 2025-05-18T16:00:00.000Z to 2025-05-18T22:00:00.000Z",
-  "name": "Passage passage_1747584000000",
+  "name": "From North Eleuthera to North Eleuthera",
   "route": "25.41, -76.86 → 24.82, -76.84",
   "exportTimestamp": "2025-08-15T18:56:05.770Z",
   "filename": "passage_2025-05-18_passage_1747584000000.json",
@@ -74,6 +74,86 @@
       "_time": "2025-05-18T16:45:00Z",
       "lat": 25.393039836363638,
       "lon": -76.72686151818182
+    }
+  ],
+  "locations": [
+    {
+      "coordinate": {
+        "lat": 25.40342974210526,
+        "lon": -76.67853926315789
+      },
+      "time": "2025-05-18T16:00:00Z",
+      "name": "North Eleuthera",
+      "locality": "North Eleuthera",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "North Eleuthera, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 25.395125445454543,
+        "lon": -76.71291721363637
+      },
+      "time": "2025-05-18T16:30:00Z",
+      "name": "North Eleuthera",
+      "locality": "North Eleuthera",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "North Eleuthera, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 25.391225147619046,
+        "lon": -76.7460501952381
+      },
+      "time": "2025-05-18T17:00:00Z",
+      "name": "North Eleuthera",
+      "locality": "North Eleuthera",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "North Eleuthera, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 25.395148750000004,
+        "lon": -76.7695007
+      },
+      "time": "2025-05-18T17:30:00Z",
+      "name": "North Eleuthera",
+      "locality": "North Eleuthera",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "North Eleuthera, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 25.407003781818176,
+        "lon": -76.79591275454545
+      },
+      "time": "2025-05-18T18:00:00Z",
+      "name": "North Eleuthera",
+      "locality": "North Eleuthera",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "North Eleuthera, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 25.4159517,
+        "lon": -76.7976665
+      },
+      "time": "2025-05-18T18:15:00Z",
+      "name": "North Eleuthera",
+      "locality": "North Eleuthera",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "North Eleuthera, The Bahamas",
+      "pointsOfInterest": []
     }
   ]
 }

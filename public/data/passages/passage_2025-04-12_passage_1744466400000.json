@@ -15,7 +15,7 @@
     "lon": -75.1509230397436
   },
   "description": "Passage from 2025-04-12T14:00:00.000Z to 2025-04-12T21:00:00.000Z",
-  "name": "Passage passage_1744466400000",
+  "name": "From Long Island to Long Island",
   "route": "23.02, -75.76 → 23.34, -75.15",
   "exportTimestamp": "2025-08-15T18:56:05.767Z",
   "filename": "passage_2025-04-12_passage_1744466400000.json",
@@ -74,6 +74,60 @@
       "_time": "2025-04-12T21:00:00Z",
       "lat": 23.357376675,
       "lon": -75.135563225
+    }
+  ],
+  "locations": [
+    {
+      "coordinate": {
+        "lat": 23.34518,
+        "lon": -75.1884915
+      },
+      "time": "2025-04-12T18:45:00Z",
+      "name": "Long Island",
+      "locality": "Long Island",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Long Island, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 23.34453834,
+        "lon": -75.17458153999999
+      },
+      "time": "2025-04-12T19:00:00Z",
+      "name": "Long Island",
+      "locality": "Long Island",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Long Island, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 23.35461915,
+        "lon": -75.13809735833333
+      },
+      "time": "2025-04-12T19:30:00Z",
+      "name": "Long Island",
+      "locality": "Long Island",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Long Island, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 23.357377233333334,
+        "lon": -75.13559763333333
+      },
+      "time": "2025-04-12T20:00:00Z",
+      "name": "Long Island",
+      "locality": "Long Island",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Long Island, The Bahamas",
+      "pointsOfInterest": []
     }
   ]
 }

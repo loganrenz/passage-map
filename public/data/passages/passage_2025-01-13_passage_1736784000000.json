@@ -15,7 +15,7 @@
     "lon": -75.83307987825438
   },
   "description": "Passage from 2025-01-13T16:00:00.000Z to 2025-01-13T20:00:00.000Z",
-  "name": "Passage passage_1736784000000",
+  "name": "From Ragged Island to Ragged Island",
   "route": "22.76, -75.91 → 22.38, -75.83",
   "exportTimestamp": "2025-08-15T18:56:05.762Z",
   "filename": "passage_2025-01-13_passage_1736784000000.json",
@@ -79,6 +79,99 @@
       "_time": "2025-01-13T19:30:00Z",
       "lat": 22.638881339999998,
       "lon": -75.91448954
+    }
+  ],
+  "locations": [
+    {
+      "coordinate": {
+        "lat": 22.43431355,
+        "lon": -75.86700611250001
+      },
+      "time": "2025-01-13T17:15:00Z",
+      "name": "Ragged Island",
+      "locality": "Ragged Island",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Ragged Island, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 22.45044512692308,
+        "lon": -75.87050441923076
+      },
+      "time": "2025-01-13T17:30:00Z",
+      "name": "Ragged Island",
+      "locality": "Ragged Island",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Ragged Island, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 22.497322641379316,
+        "lon": -75.87977435172414
+      },
+      "time": "2025-01-13T18:00:00Z",
+      "name": "Ragged Island",
+      "locality": "Ragged Island",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Ragged Island, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 22.54531828275861,
+        "lon": -75.8943774551724
+      },
+      "time": "2025-01-13T18:30:00Z",
+      "name": "Ragged Island",
+      "locality": "Ragged Island",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Ragged Island, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 22.561126442857148,
+        "lon": -75.89896152857143
+      },
+      "time": "2025-01-13T18:45:00Z",
+      "name": "Ragged Island",
+      "locality": "Ragged Island",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Ragged Island, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 22.62094691111111,
+        "lon": -75.91140807777778
+      },
+      "time": "2025-01-13T19:15:00Z",
+      "name": "Ragged Island",
+      "locality": "Ragged Island",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Ragged Island, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 22.638881339999998,
+        "lon": -75.91448954
+      },
+      "time": "2025-01-13T19:30:00Z",
+      "name": "Ragged Island",
+      "locality": "Ragged Island",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Ragged Island, The Bahamas",
+      "pointsOfInterest": []
     }
   ]
 }

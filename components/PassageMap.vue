@@ -1,10 +1,12 @@
 <template>
-    <div class="relative w-full h-full min-h-[400px] sm:min-h-[500px] lg:min-h-[600px]">
+    <div class="relative w-full h-full">
         <div ref="mapContainer" class="w-full h-full" />
         <!-- Map Controls -->
-        <div v-if="props.selectedPassage || props.passages.length > 0"
-            class="absolute top-2 right-2 z-10 flex flex-col gap-2">
-            <UCard class="p-2 shadow-lg">
+        <div
+            v-if="props.selectedPassage || props.passages.length > 0"
+            class="absolute top-16 right-4 z-[1001] flex flex-col gap-2"
+        >
+            <UCard class="p-2 shadow-lg bg-white/95 backdrop-blur-sm">
                 <div class="flex flex-col gap-2">
                     <!-- Show Vessels Toggle -->
                     <UButton v-if="props.selectedPassage" :variant="showVessels ? 'solid' : 'outline'" size="xs"
@@ -16,9 +18,21 @@
                         icon="i-lucide-palette" @click="speedColorCoding = !speedColorCoding">
                         Speed
                     </UButton>
+                    <!-- Show Features Toggle -->
+                    <UButton v-if="props.selectedPassage" :variant="showFeatures ? 'solid' : 'outline'" size="xs"
+                        icon="i-lucide-map-pin" @click="showFeatures = !showFeatures">
+                        Features
+                    </UButton>
                     <!-- Zoom to Fit -->
                     <UButton size="xs" variant="outline" icon="i-lucide-maximize" @click="handleZoomToFit">
                         Fit
+                    </UButton>
+                    <!-- Center on Tideye -->
+                    <UButton v-if="props.selectedPassage && props.currentTime" size="xs"
+                        :variant="lockTideye === 'locked' ? 'solid' : lockTideye === 'center' ? 'soft' : 'outline'"
+                        :icon="lockTideye === 'locked' ? 'i-lucide-lock' : 'i-lucide-crosshair'"
+                        @click="handleCenterOnTideye">
+                        {{ lockTideye === 'locked' ? 'Locked' : lockTideye === 'center' ? 'Centered' : 'Center' }}
                     </UButton>
                 </div>
             </UCard>
@@ -27,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Passage } from '~/types/passage'
+import type { Passage, LocationInfo } from '~/types/passage'
 import { useMapKit } from '~/composables/useMapKit'
 import { getPassageBounds, getAllPassagesBounds, getPositionAtTime, calculateSpeed, calculateBearing, calculateDistanceKm } from '~/utils/mapHelpers'
 import { useVesselEncounters } from '~/composables/useVesselEncounters'
@@ -67,6 +81,11 @@ const vesselIconCache = new Map<string, HTMLImageElement>()
 // Map controls state
 const showVessels = ref(true)
 const speedColorCoding = ref(false)
+const showFeatures = ref(true)
+// Lock tideye state: null = none, 'center' = centered but not locked, 'locked' = locked/following
+const lockTideye = ref<'center' | 'locked' | null>(null)
+// Track feature markers (water features and attractions)
+const featureMarkers = shallowRef<Array<mapkit.Annotation>>([])
 
 const waitForMapKit = (): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -165,6 +184,15 @@ const clearVesselMarkers = () => {
     vesselMarkers.value.clear()
 }
 
+const clearFeatureMarkers = () => {
+    if (!mapInstance.value) return
+
+    featureMarkers.value.forEach((marker) => {
+        mapInstance.value!.removeAnnotation(marker)
+    })
+    featureMarkers.value = []
+}
+
 const removeTimeMarker = () => {
     if (!mapInstance.value || !timeMarker.value) return
     // Type assertion needed because mapInstance is readonly
@@ -172,23 +200,17 @@ const removeTimeMarker = () => {
     timeMarker.value = null
 }
 
-const updateTimeMarker = () => {
-    if (!mapInstance.value || !window.mapkit || !props.currentTime || !markerImage.value) {
-        removeTimeMarker()
-        return
+/**
+ * Get tideye's current coordinate based on currentTime
+ */
+const getTideyeCoordinate = (): mapkit.Coordinate | null => {
+    if (!window.mapkit || !props.currentTime || !props.selectedPassage) {
+        return null
     }
 
-    // Only show time marker if we have a selected passage
     const passage = props.selectedPassage
-    if (!passage) {
-        removeTimeMarker()
-        return
-    }
-
-    // Find the exact coordinate from the polyline that matches the current time
-    // This ensures the marker is always positioned at a point that exists on the polyline
-    let coord: mapkit.Coordinate | null = null
     const targetTime = Date.parse(props.currentTime)
+    let coord: mapkit.Coordinate | null = null
 
     if (currentPolylineCoordinates.value.length > 0) {
         // Find the closest position in the polyline coordinates
@@ -236,16 +258,35 @@ const updateTimeMarker = () => {
         // Fallback to interpolation if no polyline coordinates are stored
         const position = getPositionAtTime(passage, props.currentTime)
         if (!position) {
-            removeTimeMarker()
-            return
+            return null
         }
         coord = new window.mapkit.Coordinate(position.lat, position.lon)
     }
 
+    return coord
+}
+
+const updateTimeMarker = () => {
+    if (!mapInstance.value || !window.mapkit || !props.currentTime || !markerImage.value) {
+        removeTimeMarker()
+        return
+    }
+
+    // Only show time marker if we have a selected passage
+    const passage = props.selectedPassage
+    if (!passage) {
+        removeTimeMarker()
+        return
+    }
+
+    // Get tideye's current coordinate
+    const coord = getTideyeCoordinate()
     if (!coord) {
         removeTimeMarker()
         return
     }
+
+    const targetTime = Date.parse(props.currentTime)
 
     const currentDate = new Date(props.currentTime)
 
@@ -577,13 +618,110 @@ watch(
     { deep: true }
 )
 
+/**
+ * Parse points of interest and extract coordinates for features
+ */
+const parseFeaturePoints = (locations: LocationInfo[]): Array<{
+    coord: mapkit.Coordinate
+    name: string
+    type: 'water' | 'attraction'
+    distance?: string
+}> => {
+    const features: Array<{
+        coord: mapkit.Coordinate
+        name: string
+        type: 'water' | 'attraction'
+        distance?: string
+    }> = []
+
+    for (const location of locations) {
+        if (!location.pointsOfInterest || location.pointsOfInterest.length === 0) {
+            continue
+        }
+
+        const baseCoord = new window.mapkit.Coordinate(
+            location.coordinate.lat,
+            location.coordinate.lon
+        )
+
+        for (const poi of location.pointsOfInterest) {
+            // Parse water features (🌊 prefix)
+            if (poi.startsWith('🌊')) {
+                const match = poi.match(/🌊\s*(.+?)\s*\(([^,]+),\s*([\d.]+)km away\)/)
+                if (match) {
+                    features.push({
+                        coord: baseCoord, // Use location coordinate as approximation
+                        name: match[1],
+                        type: 'water',
+                        distance: match[3] + 'km',
+                    })
+                }
+            }
+            // Parse attractions (📍 prefix)
+            else if (poi.startsWith('📍')) {
+                const match = poi.match(/📍\s*(.+?)\s*\(([\d.]+)km away\)/)
+                if (match) {
+                    features.push({
+                        coord: baseCoord, // Use location coordinate as approximation
+                        name: match[1],
+                        type: 'attraction',
+                        distance: match[2] + 'km',
+                    })
+                }
+            }
+        }
+    }
+
+    return features
+}
+
+/**
+ * Create markers for water features and attractions
+ */
+const createFeatureMarkers = (passage: Passage) => {
+    if (!mapInstance.value || !window.mapkit || !passage.locations) return
+
+    clearFeatureMarkers()
+
+    if (!showFeatures.value) return
+
+    const features = parseFeaturePoints(passage.locations)
+
+    for (const feature of features) {
+        // Create a simple marker annotation
+        // For water features, use anchor icon style; for attractions, use landmark style
+        const marker = new window.mapkit.MarkerAnnotation(feature.coord, {
+            title: feature.name,
+            subtitle: feature.distance ? `${feature.distance} from route` : 'Near route',
+            displayPriority: feature.type === 'water' ? 600 : 550,
+            color: feature.type === 'water' ? '#0066CC' : '#FF6600', // Blue for water, orange for attractions
+            glyphText: feature.type === 'water' ? '⚓' : '📍',
+            selectedGlyphColor: '#FFFFFF',
+        })
+
+        const rawMarker = markRaw(marker)
+        mapInstance.value.addAnnotation(rawMarker)
+        featureMarkers.value.push(rawMarker)
+    }
+
+    if (features.length > 0) {
+        console.log(`[PassageMap] Added ${features.length} feature markers (${features.filter(f => f.type === 'water').length} water, ${features.filter(f => f.type === 'attraction').length} attractions)`)
+    }
+}
+
 const redrawSelectedPassage = async (passage: Passage) => {
     if (!isInitialized.value || !passage) return
 
     clearOverlays()
     clearVesselMarkers()
+    clearFeatureMarkers()
     removeTimeMarker()
     drawPassage(passage, '#007AFF')
+    
+    // Create feature markers if locations are available
+    if (passage.locations && passage.locations.length > 0) {
+        createFeatureMarkers(passage)
+    }
 
     // Load vessel encounters for this passage
     await loadEncounters(passage)
@@ -599,6 +737,13 @@ const redrawSelectedPassage = async (passage: Passage) => {
             setTimeout(() => {
                 // fitToPassage uses getPassageBounds which includes positions if available
                 fitToPassage(passage)
+                
+                // After fitting to show all points, center on tideye if currentTime is set
+                if (props.currentTime) {
+                    setTimeout(() => {
+                        centerMapOnTideye()
+                    }, 50)
+                }
             }, 100)
         })
     }
@@ -623,8 +768,11 @@ watch(
             if (isInitialized.value) {
                 clearOverlays()
                 clearVesselMarkers()
+                clearFeatureMarkers()
                 removeTimeMarker()
             }
+            // Reset lock state when passage is deselected
+            lockTideye.value = null
         }
     }
 )
@@ -662,6 +810,13 @@ watch(
                 nextTick(() => {
                     setTimeout(() => {
                         fitToPassage(passage)
+                        
+                        // After fitting to show all points, center on tideye if currentTime is set
+                        if (props.currentTime) {
+                            setTimeout(() => {
+                                centerMapOnTideye()
+                            }, 50)
+                        }
                     }, 150) // Slightly longer delay to ensure polyline is rendered
                 })
 
@@ -671,6 +826,13 @@ watch(
                         updateTimeMarker()
                     })
                 }
+                
+                // Create feature markers if locations are available
+                if (passage.locations && passage.locations.length > 0 && showFeatures.value) {
+                    nextTick(() => {
+                        createFeatureMarkers(passage)
+                    })
+                }
             }
         }
     }
@@ -678,32 +840,48 @@ watch(
 
 /**
  * Load vessel icon image
+ * Uses cache busting on first load to ensure new icons are loaded after updates
  */
 const loadVesselIcon = async (iconPath: string): Promise<HTMLImageElement> => {
-    if (vesselIconCache.has(iconPath)) {
-        return vesselIconCache.get(iconPath)!
+    const cacheKey = iconPath
+    
+    if (vesselIconCache.has(cacheKey)) {
+        return vesselIconCache.get(cacheKey)!
     }
 
     return new Promise((resolve, reject) => {
         const img = new Image()
-        img.src = iconPath
+        // Add cache busting only on first load to force browser to check for updates
+        // Use a version constant that can be updated when icons change
+        const version = '2' // Increment this when icons are updated
+        img.src = `${iconPath}?v=${version}`
         img.onload = () => {
-            vesselIconCache.set(iconPath, img)
+            vesselIconCache.set(cacheKey, img)
             resolve(img)
         }
         img.onerror = () => {
-            // Fallback to default icon
-            const defaultIcon = '/images/vessel-marker.svg'
-            if (vesselIconCache.has(defaultIcon)) {
-                resolve(vesselIconCache.get(defaultIcon)!)
-            } else {
-                const defaultImg = new Image()
-                defaultImg.src = defaultIcon
-                defaultImg.onload = () => {
-                    vesselIconCache.set(defaultIcon, defaultImg)
-                    resolve(defaultImg)
+            // If versioned load fails, try without version
+            const img2 = new Image()
+            img2.src = iconPath
+            img2.onload = () => {
+                vesselIconCache.set(cacheKey, img2)
+                resolve(img2)
+            }
+            img2.onerror = () => {
+                // Fallback to default icon
+                console.warn(`Failed to load vessel icon: ${iconPath}, using default`)
+                const defaultIcon = '/images/vessel-marker.svg'
+                if (vesselIconCache.has(defaultIcon)) {
+                    resolve(vesselIconCache.get(defaultIcon)!)
+                } else {
+                    const defaultImg = new Image()
+                    defaultImg.src = defaultIcon
+                    defaultImg.onload = () => {
+                        vesselIconCache.set(defaultIcon, defaultImg)
+                        resolve(defaultImg)
+                    }
+                    defaultImg.onerror = reject
                 }
-                defaultImg.onerror = reject
             }
         }
     })
@@ -722,6 +900,61 @@ const handleZoomToFit = () => {
     }
 }
 
+const centerMapOnTideye = () => {
+    if (!mapInstance.value || !window.mapkit) return
+
+    const coord = getTideyeCoordinate()
+    if (!coord) return
+
+    // Center the map on tideye's position with current zoom level
+    const currentRegion = mapInstance.value.region
+    const region = new window.mapkit.CoordinateRegion(
+        coord,
+        currentRegion.span
+    )
+
+    mapInstance.value.setRegionAnimated(region, true)
+}
+
+const centerMapOnTime = (timestamp: string) => {
+    if (!mapInstance.value || !window.mapkit || !props.selectedPassage) return
+
+    const position = getPositionAtTime(props.selectedPassage, timestamp)
+    if (!position) return
+
+    const coord = new window.mapkit.Coordinate(position.lat, position.lon)
+    
+    // Center the map on the position with current zoom level
+    const currentRegion = mapInstance.value.region
+    const region = new window.mapkit.CoordinateRegion(
+        coord,
+        currentRegion.span
+    )
+
+    mapInstance.value.setRegionAnimated(region, true)
+    
+    // Also update currentTime so the marker updates
+    // We'll need to emit this or handle it via props
+}
+
+const handleCenterOnTideye = () => {
+    if (!mapInstance.value || !window.mapkit || !props.selectedPassage || !props.currentTime) return
+
+    // Cycle through states: null -> 'center' -> 'locked' -> null
+    if (lockTideye.value === null) {
+        // First click: center once
+        lockTideye.value = 'center'
+        centerMapOnTideye()
+    } else if (lockTideye.value === 'center') {
+        // Second click: lock (auto-center)
+        lockTideye.value = 'locked'
+        centerMapOnTideye()
+    } else {
+        // Third click: unlock
+        lockTideye.value = null
+    }
+}
+
 const updateVesselMarkers = async () => {
     if (!mapInstance.value || !window.mapkit || !props.currentTime || !props.selectedPassage || !showVessels.value) {
         clearVesselMarkers()
@@ -737,8 +970,14 @@ const updateVesselMarkers = async () => {
             const vesselId = `${encounter.vessel.id}-${segmentIndex}`
             currentVesselIds.add(vesselId)
 
-            const iconPath = getVesselIcon(encounter.vessel.type)
+            const iconPath = getVesselIcon(encounter.vessel.type, encounter.vessel.name)
             const iconSize = getVesselIconSize(encounter.vessel.type)
+            
+            // Debug logging for icon selection
+            if (process.dev) {
+                console.debug(`Vessel ${encounter.vessel.id} (${encounter.vessel.name}) type: "${encounter.vessel.type}" -> icon: ${iconPath}`)
+            }
+            
             const iconImg = await loadVesselIcon(iconPath)
 
             const coord = new window.mapkit.Coordinate(position.lat, position.lon)
@@ -841,6 +1080,10 @@ watch(
             updateTimeMarker()
             updateVesselMarkers()
         }
+        // Auto-center if locked
+        if (lockTideye.value === 'locked') {
+            centerMapOnTideye()
+        }
     }
 )
 
@@ -853,6 +1096,27 @@ watch(showVessels, (shouldShow) => {
         updateVesselMarkers()
     }
 })
+
+// Watch showFeatures toggle to update feature markers visibility
+watch(showFeatures, (shouldShow) => {
+    if (!isInitialized.value) return
+    if (!shouldShow) {
+        clearFeatureMarkers()
+    } else if (props.selectedPassage) {
+        createFeatureMarkers(props.selectedPassage)
+    }
+})
+
+// Watch for location updates to refresh feature markers
+watch(
+    () => props.selectedPassage?.locations,
+    () => {
+        if (isInitialized.value && props.selectedPassage && showFeatures.value) {
+            createFeatureMarkers(props.selectedPassage)
+        }
+    },
+    { deep: true }
+)
 
 // Watch speedColorCoding to redraw passage with color coding
 watch(speedColorCoding, () => {
@@ -879,6 +1143,32 @@ watch(speedColorCoding, () => {
 onUnmounted(() => {
     clearOverlays()
     clearVesselMarkers()
+    clearFeatureMarkers()
     removeTimeMarker()
+})
+
+const handleResize = () => {
+    if (!mapInstance.value) return
+    // MapKit should automatically handle resize, but we can trigger it explicitly
+    // by dispatching a resize event or calling map methods
+    // MapKit JS automatically handles container size changes, but we can force a refresh
+    if (mapInstance.value) {
+        // Trigger a region update to ensure map recalculates its bounds
+        const currentRegion = mapInstance.value.region
+        if (currentRegion) {
+            // Small delay to ensure DOM has updated
+            nextTick(() => {
+                // Force map to recalculate by setting the same region
+                mapInstance.value?.setRegionAnimated(currentRegion, false)
+            })
+        }
+    }
+}
+
+// Expose methods for parent component
+defineExpose({
+    centerMapOnTime,
+    centerMapOnTideye,
+    handleResize,
 })
 </script>

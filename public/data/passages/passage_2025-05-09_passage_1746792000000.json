@@ -15,7 +15,7 @@
     "lon": -76.7467335474663
   },
   "description": "Passage from 2025-05-09T12:00:00.000Z to 2025-05-09T21:00:00.000Z",
-  "name": "Passage passage_1746792000000",
+  "name": "From North Eleuthera to Spanish Wells",
   "route": "24.90, -76.24 → 25.54, -76.75",
   "exportTimestamp": "2025-08-15T18:56:05.770Z",
   "filename": "passage_2025-05-09_passage_1746792000000.json",
@@ -114,6 +114,125 @@
       "_time": "2025-05-09T18:30:00Z",
       "lat": 25.44293805,
       "lon": -76.83855166666666
+    }
+  ],
+  "locations": [
+    {
+      "coordinate": {
+        "lat": 25.410915,
+        "lon": -76.7931882
+      },
+      "time": "2025-05-09T17:00:00Z",
+      "name": "North Eleuthera",
+      "locality": "North Eleuthera",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "North Eleuthera, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 25.412693877777777,
+        "lon": -76.80936931111113
+      },
+      "time": "2025-05-09T17:30:00Z",
+      "name": "North Eleuthera",
+      "locality": "North Eleuthera",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "North Eleuthera, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 25.42621738571429,
+        "lon": -76.82498058571427
+      },
+      "time": "2025-05-09T18:00:00Z",
+      "name": "North Eleuthera",
+      "locality": "North Eleuthera",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "North Eleuthera, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 25.446603323076925,
+        "lon": -76.8425032076923
+      },
+      "time": "2025-05-09T18:30:00Z",
+      "name": "North Eleuthera",
+      "locality": "North Eleuthera",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "North Eleuthera, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 25.45875362608696,
+        "lon": -76.85629421739128
+      },
+      "time": "2025-05-09T19:00:00Z",
+      "name": "Spanish Wells",
+      "locality": "Spanish Wells",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Spanish Wells, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 25.47380206666666,
+        "lon": -76.87161073333334
+      },
+      "time": "2025-05-09T19:30:00Z",
+      "name": "Spanish Wells",
+      "locality": "Spanish Wells",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Spanish Wells, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 25.49162091363637,
+        "lon": -76.88870736363636
+      },
+      "time": "2025-05-09T20:00:00Z",
+      "name": "Spanish Wells",
+      "locality": "Spanish Wells",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Spanish Wells, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 25.493184175,
+        "lon": -76.888511125
+      },
+      "time": "2025-05-09T20:30:00Z",
+      "name": "Spanish Wells",
+      "locality": "Spanish Wells",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Spanish Wells, The Bahamas",
+      "pointsOfInterest": []
+    },
+    {
+      "coordinate": {
+        "lat": 25.493205,
+        "lon": -76.888558225
+      },
+      "time": "2025-05-09T21:00:00Z",
+      "name": "Spanish Wells",
+      "locality": "Spanish Wells",
+      "country": "The Bahamas",
+      "countryCode": "BS",
+      "formattedAddress": "Spanish Wells, The Bahamas",
+      "pointsOfInterest": []
     }
   ]
 }

@@ -2,7 +2,8 @@
     <div class="space-y-3">
         <div class="flex items-center justify-between gap-2">
             <UInput v-model="searchQuery" placeholder="Search queries..." icon="i-lucide-search" size="sm" class="flex-1" />
-            <UButton v-if="!isLoading" icon="i-lucide-refresh-cw" variant="ghost" size="sm" @click="loadQueries" />
+            <UButton v-if="!isLoading" icon="i-lucide-refresh-cw" variant="ghost" size="sm" @click="loadQueries"
+              @touchstart.prevent="loadQueries()" />
         </div>
 
         <div v-if="isLoading" class="text-center py-8">
@@ -31,11 +32,13 @@
                             </p>
                         </div>
                         <div class="flex gap-2 flex-shrink-0">
-                            <UButton icon="i-lucide-copy" variant="ghost" size="xs" @click="copyQuery(query.query)">
+                            <UButton icon="i-lucide-copy" variant="ghost" size="xs" @click="copyQuery(query.query)"
+                              @touchstart.prevent="copyQuery(query.query)">
                                 Copy
                             </UButton>
                             <UButton v-if="query.passageId" icon="i-lucide-external-link" variant="ghost" size="xs"
-                                @click="viewPassage(query.passageId!)">
+                                @click="viewPassage(query.passageId!)"
+                                @touchstart.prevent="viewPassage(query.passageId!)">
                                 View Passage
                             </UButton>
                         </div>
@@ -53,7 +56,8 @@
                     <div class="bg-gray-50 rounded-md p-3 mb-3">
                         <div class="flex justify-between items-center mb-2">
                             <span class="text-xs font-mono text-gray-600">Flux Query</span>
-                            <UButton icon="i-lucide-copy" variant="ghost" size="xs" @click="copyQuery(query.query)">
+                            <UButton icon="i-lucide-copy" variant="ghost" size="xs" @click="copyQuery(query.query)"
+                              @touchstart.prevent="copyQuery(query.query)">
                                 Copy Query
                             </UButton>
                         </div>

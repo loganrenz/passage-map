@@ -31,11 +31,27 @@ html, body {
   button, [role="button"], .cursor-pointer {
     -webkit-tap-highlight-color: transparent;
     user-select: none;
+    touch-action: manipulation; /* Eliminates 300ms delay on iOS */
   }
 
   /* Better input handling on mobile */
   input, textarea, select {
     font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+/* iOS-specific touch improvements */
+@supports (-webkit-touch-callout: none) {
+  /* This targets iOS Safari specifically */
+  button, [role="button"], .cursor-pointer, a {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    cursor: pointer;
+  }
+  
+  /* Ensure all interactive elements respond immediately */
+  button:active, [role="button"]:active, .cursor-pointer:active {
+    opacity: 0.7;
   }
 }
 
@@ -77,6 +93,13 @@ html, body {
 /* Touch manipulation for better performance */
 .touch-manipulation {
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ensure all buttons have proper touch handling */
+button, [role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Vessel position annotation styling */
@@ -194,5 +217,24 @@ html, body {
   font-size: 11px;
   color: #9ca3af;
   text-align: center;
+}
+
+/* Ensure MapKit's native controls (map type selector, zoom controls) are visible on desktop */
+@media (min-width: 769px) {
+  /* MapKit controls should be above our custom floating controls */
+  /* Target all MapKit-generated elements that are likely controls */
+  div[class*="mapkitjs"] > div,
+  div[class*="mapkitjs"] button,
+  div[class*="mapkitjs"] [role="button"] {
+    z-index: 1003 !important;
+    pointer-events: auto !important;
+  }
+  
+  /* Ensure elements positioned in bottom-right (where map type selector typically is) are visible */
+  .map-container > div > div:last-child,
+  .map-container [style*="bottom"] {
+    z-index: 1003 !important;
+    pointer-events: auto !important;
+  }
 }
 

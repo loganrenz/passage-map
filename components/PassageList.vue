@@ -48,6 +48,7 @@
                         : 'hover:bg-gray-50 dark:hover:bg-gray-800/50 border-gray-200 dark:border-gray-700 shadow-sm',
                 ]"
                 @click="selectPassage(passage)"
+                @touchstart.prevent="selectPassage(passage)"
             >
                 <div class="p-4">
                     <div class="flex justify-between items-start mb-3 gap-2">

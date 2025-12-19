@@ -100,6 +100,7 @@
               icon="i-lucide-download"
               class="sidebar-action-btn"
               @click="exportGPX"
+              @touchstart.prevent="exportGPX"
             >
               Export GPX
             </UButton>
@@ -109,6 +110,7 @@
               icon="i-lucide-download"
               class="sidebar-action-btn"
               @click="exportGeoJSON"
+              @touchstart.prevent="exportGeoJSON"
             >
               Export GeoJSON
             </UButton>
@@ -118,6 +120,7 @@
               icon="i-lucide-file-text"
               class="sidebar-action-btn"
               @click="generateReport"
+              @touchstart.prevent="generateReport"
             >
               Generate Report
             </UButton>

@@ -22,17 +22,38 @@ export class D2ApiClient {
       headers['Authorization'] = `Bearer ${this.config.apiKey}`
     }
 
-    const response = await fetch(url, {
-      ...options,
-      headers,
-    })
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers,
+      })
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Unknown error' }))
-      throw new Error(error.error || `HTTP ${response.status}`)
+      if (!response.ok) {
+        let errorMessage = `HTTP ${response.status}`
+        try {
+          const error = await response.json()
+          errorMessage = error.error || error.message || errorMessage
+          if (error.message && error.message !== error.error) {
+            errorMessage += `: ${error.message}`
+          }
+        } catch {
+          // If response isn't JSON, try to get text
+          const text = await response.text().catch(() => '')
+          if (text) {
+            errorMessage = text
+          }
+        }
+        throw new Error(errorMessage)
+      }
+
+      return response.json()
+    } catch (error) {
+      if (error instanceof Error) {
+        // Re-throw with more context
+        throw new Error(`D2 API request failed: ${error.message}`)
+      }
+      throw error
     }
-
-    return response.json()
   }
 
   async healthCheck(): Promise<{ status: string; database: string }> {
@@ -68,16 +89,54 @@ export class D2ApiClient {
 
 /**
  * Get D2 API client from environment
+ * Checks both process.env and runtime config (for Nuxt)
  */
 export function getD2ApiClient(): D2ApiClient | null {
-  const apiUrl = process.env.D2_API_URL
+  // In serverless environments (Vercel), process.env is more reliable
+  // Try process.env first, then runtime config
+  let apiUrl: string | undefined = process.env.D2_API_URL
+  let apiKey: string | undefined = process.env.D2_API_KEY
+  
+  // Also try runtime config if process.env doesn't have it
   if (!apiUrl) {
+    try {
+      const config = useRuntimeConfig()
+      apiUrl = config.d2ApiUrl
+      apiKey = config.d2ApiKey || apiKey
+    } catch (error) {
+      // useRuntimeConfig might fail in some contexts, that's okay
+    }
+  }
+
+  // Log in production to help diagnose issues
+  console.log('🔍 D2 API Client check:')
+  console.log(`   process.env.D2_API_URL: ${process.env.D2_API_URL ? 'set (hidden)' : 'not set'}`)
+  try {
+    const config = useRuntimeConfig()
+    console.log(`   config.d2ApiUrl: ${config.d2ApiUrl || 'not set'}`)
+  } catch {
+    console.log(`   config.d2ApiUrl: useRuntimeConfig not available`)
+  }
+
+  if (!apiUrl) {
+    // Always log to help diagnose
+    console.error('❌ D2_API_URL not set. D2 API client will not be available.')
+    console.error('   Checked:')
+    console.error('   - process.env.D2_API_URL (primary)')
+    console.error('   - config.d2ApiUrl (from useRuntimeConfig)')
+    console.error('   NODE_ENV:', process.env.NODE_ENV)
+    console.error('   VERCEL:', process.env.VERCEL)
+    const envKeys = Object.keys(process.env).filter(k => k.includes('D2') || k.includes('API')).slice(0, 10)
+    console.error('   Relevant env keys:', envKeys.length > 0 ? envKeys.join(', ') : 'none found')
     return null
   }
 
+  // Always log to confirm it's working
+  console.log(`✅ D2 API client configured with URL: ${apiUrl}`)
+
   return new D2ApiClient({
     apiUrl,
-    apiKey: process.env.D2_API_KEY,
+    apiKey,
   })
 }
 

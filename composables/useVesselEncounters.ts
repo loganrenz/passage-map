@@ -94,6 +94,8 @@ export const useVesselEncounters = () => {
 
   /**
    * Get vessels that are visible at a specific time
+   * Includes vessels that were in AIS range within 30 minutes of the selected time
+   * Vessels that were visible within this window will remain visible
    */
   const getVisibleVessels = (timestamp: string): Array<{
     encounter: VesselEncounter
@@ -103,6 +105,8 @@ export const useVesselEncounters = () => {
     if (!encounters.value) return []
 
     const targetTime = new Date(timestamp).getTime()
+    // 30 minutes in milliseconds
+    const LEEWAY_MS = 30 * 60 * 1000
     const visible: Array<{
       encounter: VesselEncounter
       position: VesselPosition
@@ -115,57 +119,81 @@ export const useVesselEncounters = () => {
         const segmentStart = new Date(segment.startTime).getTime()
         const segmentEnd = new Date(segment.endTime).getTime()
 
-        // Check if timestamp is within this segment
-        if (targetTime >= segmentStart && targetTime <= segmentEnd) {
+        // Check if the segment overlaps with a 30-minute window around the target time
+        // A segment overlaps if any part of it falls within 30 minutes of the target time
+        // This ensures vessels visible within 30 minutes of the selected time stay visible
+        const windowStart = targetTime - LEEWAY_MS
+        const windowEnd = targetTime + LEEWAY_MS
+        const overlapsWindow = segmentEnd >= windowStart && segmentStart <= windowEnd
+        
+        if (overlapsWindow) {
+          const isWithinSegment = targetTime >= segmentStart && targetTime <= segmentEnd
           // Try to interpolate between positions for better accuracy
           let interpolatedPos: VesselPosition | null = null
           
-          // Find the two positions to interpolate between
-          for (let i = 0; i < segment.positions.length - 1; i++) {
-            const pos1 = segment.positions[i]
-            const pos2 = segment.positions[i + 1]
-            if (!pos1 || !pos2) continue
+          if (isWithinSegment) {
+            // Find the two positions to interpolate between (only if currently in segment)
+            for (let i = 0; i < segment.positions.length - 1; i++) {
+              const pos1 = segment.positions[i]
+              const pos2 = segment.positions[i + 1]
+              if (!pos1 || !pos2) continue
 
-            const time1 = new Date(pos1.timestamp).getTime()
-            const time2 = new Date(pos2.timestamp).getTime()
+              const time1 = new Date(pos1.timestamp).getTime()
+              const time2 = new Date(pos2.timestamp).getTime()
 
-            // Check if target time is between these two positions
-            if (targetTime >= time1 && targetTime <= time2) {
-              // Calculate interpolation factor
-              const timeDiff = time2 - time1
-              if (timeDiff === 0) {
-                interpolatedPos = pos1
-              } else {
-                const progress = (targetTime - time1) / timeDiff
-                
-                // Linear interpolation
-                const lat = pos1.lat + (pos2.lat - pos1.lat) * progress
-                const lon = pos1.lon + (pos2.lon - pos1.lon) * progress
-                
-                // Interpolate other properties if available
-                const speed = pos1.speed !== undefined && pos2.speed !== undefined
-                  ? pos1.speed + (pos2.speed - pos1.speed) * progress
-                  : pos1.speed ?? pos2.speed
-                const heading = pos1.heading !== undefined && pos2.heading !== undefined
-                  ? interpolateAngle(pos1.heading, pos2.heading, progress)
-                  : pos1.heading ?? pos2.heading
+              // Check if target time is between these two positions
+              if (targetTime >= time1 && targetTime <= time2) {
+                // Calculate interpolation factor
+                const timeDiff = time2 - time1
+                if (timeDiff === 0) {
+                  interpolatedPos = pos1
+                } else {
+                  const progress = (targetTime - time1) / timeDiff
+                  
+                  // Linear interpolation
+                  const lat = pos1.lat + (pos2.lat - pos1.lat) * progress
+                  const lon = pos1.lon + (pos2.lon - pos1.lon) * progress
+                  
+                  // Interpolate other properties if available
+                  const speed = pos1.speed !== undefined && pos2.speed !== undefined
+                    ? pos1.speed + (pos2.speed - pos1.speed) * progress
+                    : pos1.speed ?? pos2.speed
+                  const heading = pos1.heading !== undefined && pos2.heading !== undefined
+                    ? interpolateAngle(pos1.heading, pos2.heading, progress)
+                    : pos1.heading ?? pos2.heading
 
-                interpolatedPos = {
-                  timestamp: new Date(targetTime).toISOString(),
-                  lat,
-                  lon,
-                  speed,
-                  heading,
-                  altitude: pos1.altitude ?? pos2.altitude,
-                  accuracy: pos1.accuracy ?? pos2.accuracy,
+                  interpolatedPos = {
+                    timestamp: new Date(targetTime).toISOString(),
+                    lat,
+                    lon,
+                    speed,
+                    heading,
+                    altitude: pos1.altitude ?? pos2.altitude,
+                    accuracy: pos1.accuracy ?? pos2.accuracy,
+                  }
+                }
+                break
+              }
+            }
+
+            // If no interpolation found, use closest position
+            if (!interpolatedPos) {
+              let closestPos: VesselPosition | null = null
+              let minTimeDiff = Infinity
+
+              for (const pos of segment.positions) {
+                const posTime = new Date(pos.timestamp).getTime()
+                const timeDiff = Math.abs(posTime - targetTime)
+                if (timeDiff < minTimeDiff) {
+                  minTimeDiff = timeDiff
+                  closestPos = pos
                 }
               }
-              break
+              interpolatedPos = closestPos
             }
-          }
-
-          // If no interpolation found, use closest position
-          if (!interpolatedPos) {
+          } else if (segment.positions.length > 0) {
+            // Segment overlaps the window but target time is not within it
+            // Use the position closest to the target time within the segment
             let closestPos: VesselPosition | null = null
             let minTimeDiff = Infinity
 

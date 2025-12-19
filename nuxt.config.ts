@@ -21,11 +21,15 @@ export default defineNuxtConfig({
     d2ApiKey: process.env.D2_API_KEY, // Optional API key for authentication
   },
   nitro: {
-    preset: 'cloudflare-pages',
-    // Use wrangler.toml for local development bindings
-    cloudflare: {
-      configPath: 'wrangler.toml',
-    },
+    // For Vercel: omit preset (defaults to node-server)
+    // For Cloudflare Pages: use 'cloudflare-pages' preset
+    // Vercel automatically sets VERCEL=1, so we check for that
+    ...(process.env.VERCEL ? {} : {
+      preset: 'cloudflare-pages',
+      cloudflare: {
+        configPath: 'wrangler.toml',
+      },
+    }),
   },
   devServer: {
     host: 'phantom.curl-banjo.ts.net',
@@ -36,7 +40,7 @@ export default defineNuxtConfig({
       title: 'Passage Map',
       meta: [
         { charset: 'utf-8' },
-        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover' },
       ],
       script: [
         {

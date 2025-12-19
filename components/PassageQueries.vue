@@ -1,13 +1,9 @@
 <template>
-    <div class="space-y-4">
-        <div class="flex items-center justify-between">
-            <h2 class="text-xl font-semibold">Passage Queries</h2>
-            <UButton v-if="!isLoading" icon="i-lucide-refresh-cw" variant="ghost" size="sm" @click="loadQueries">
-                Refresh
-            </UButton>
+    <div class="space-y-3">
+        <div class="flex items-center justify-between gap-2">
+            <UInput v-model="searchQuery" placeholder="Search queries..." icon="i-lucide-search" size="sm" class="flex-1" />
+            <UButton v-if="!isLoading" icon="i-lucide-refresh-cw" variant="ghost" size="sm" @click="loadQueries" />
         </div>
-
-        <UInput v-model="searchQuery" placeholder="Search queries..." icon="i-lucide-search" size="sm" />
 
         <div v-if="isLoading" class="text-center py-8">
             <UIcon name="i-lucide-loader-2" class="animate-spin text-2xl" />
@@ -22,7 +18,7 @@
             <p class="text-sm text-gray-500">No queries found</p>
         </div>
 
-        <div v-else class="space-y-3 max-h-[600px] overflow-y-auto -mx-1 px-1">
+        <div v-else class="space-y-3 max-h-[500px] overflow-y-auto -mx-1 px-1">
             <UCard v-for="query in filteredQueries" :key="query.id" class="hover:bg-gray-50 transition-colors">
                 <div class="p-4">
                     <div class="flex justify-between items-start mb-3 gap-2">

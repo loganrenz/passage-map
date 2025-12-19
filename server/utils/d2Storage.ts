@@ -55,19 +55,27 @@ export function getD2Database(env?: { [key: string]: unknown }): D2Database | nu
   }
   
   if (db && typeof db === 'object' && 'prepare' in db && 'exec' in db) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('✅ D2 database binding found and available')
+    // Always log in production to help diagnose issues
+    if (process.env.NODE_ENV === 'production') {
+      console.log('✅ D1 database binding found and available (passage_map_db)')
+    } else {
+      console.log('✅ D1 database binding found and available')
     }
     return db
   }
   
-  // In local development, D2 bindings aren't available - this is expected
-  // The code will fall back to local D1 access via wrangler commands
-  // Only log if we're in a context where D2 should be available (production or explicit debug)
+  // In local development, D1 bindings aren't available - this is expected
+  // The code will fall back to D2 API client or local D1 access via wrangler commands
+  // Only log if we're in a context where D1 should be available (production or explicit debug)
   if (process.env.NODE_ENV === 'production' || process.env.DEBUG_D2) {
-    console.log('⚠️  D2 database binding not found. Available env keys:', Object.keys(env))
-    if ((env as any).cloudflare?.env) {
-      console.log('   Cloudflare env keys:', Object.keys((env as any).cloudflare.env))
+    console.warn('⚠️  D1 database binding not found')
+    console.warn('   Looking for binding: passage_map_db or PASSAGES_DB')
+    console.warn('   Available env keys:', Object.keys(env || {}))
+    if ((env as any)?.cloudflare?.env) {
+      console.warn('   Cloudflare env keys:', Object.keys((env as any).cloudflare.env))
+    }
+    if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
+      console.warn('   This is Cloudflare Pages production - D1 binding must be configured in Pages settings')
     }
   }
   

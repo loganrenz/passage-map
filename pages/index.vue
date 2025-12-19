@@ -1,144 +1,263 @@
 <template>
-  <div class="fullscreen-map-container">
-    <!-- Full Screen Map -->
-    <div class="map-wrapper" :class="{ 'details-collapsed': isDetailsCollapsed && selectedPassage, 'has-timeline': selectedPassage }">
-      <PassageMap ref="mapRef" :passages="displayedPassages" :selected-passage="mutableSelectedPassage" :auto-fit="true"
-        :current-time="currentTime" />
+  <div class="app-container">
+    <!-- Main Layout: Sidebar + Map -->
+    <div class="main-layout">
+      <!-- Mobile Menu Toggle Button -->
+      <UButton
+        icon="i-lucide-menu"
+        size="lg"
+        color="white"
+        variant="solid"
+        class="mobile-menu-toggle"
+        @click="isSidebarOpen = true"
+      />
 
-      <!-- Map Controls Overlay -->
-      <div class="map-controls-overlay">
-        <div class="flex items-center justify-between w-full">
-          <div class="flex items-center gap-2">
-            <h1 class="text-xl font-bold text-white drop-shadow-lg">Passage Map</h1>
-            <ClientOnly>
-              <UButton variant="ghost" icon="i-lucide-database" to="/queries" size="sm"
-                class="text-white hover:bg-white/20">
-                Queries
-              </UButton>
-              <template #fallback>
-                <div />
-              </template>
-            </ClientOnly>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Passage List Modal Button -->
-    <div class="absolute top-[280px] right-4 z-[1001]">
-      <UCard class="p-2 shadow-lg bg-white/95 backdrop-blur-sm">
-        <UButton
-          icon="i-lucide-list"
-          size="xs"
-          variant="outline"
-          @click="isPassageModalOpen = true"
+      <!-- Left Sidebar -->
+      <div 
+        class="sidebar-wrapper" 
+        :class="{ 'sidebar-open': isSidebarOpen }"
+      >
+        <div class="sidebar-overlay" @click="isSidebarOpen = false"></div>
+        <div 
+          class="sidebar-content" 
+          :class="{ 'swiping': sidebarSwipeStart !== null }"
+          :style="sidebarSwipeOffset !== 0 ? { transform: `translateX(${sidebarSwipeOffset}px)` } : {}"
+          @touchstart="handleSidebarTouchStart"
+          @touchmove="handleSidebarTouchMove"
+          @touchend="handleSidebarTouchEnd"
         >
-          Passages
-        </UButton>
-      </UCard>
-    </div>
-
-    <!-- Passage List Modal -->
-    <UModal
-      v-model:open="isPassageModalOpen"
-      title="Select Passage"
-      :ui="{ width: 'w-full sm:max-w-2xl' }"
-      scrollable
-    >
-      <template #body>
-        <div class="max-h-[60vh]">
-          <PassageList
-            :passages="mutablePassages"
-            :selected-passage="mutableSelectedPassage"
-            :is-loading="isLoading"
-            :error="error"
-            @select="handlePassageSelectFromModal"
-          />
-        </div>
-      </template>
-    </UModal>
-
-    <!-- Details and Timeline at Bottom -->
-    <div v-if="selectedPassage" class="timeline-bottom" :class="{ 'details-collapsed': isDetailsCollapsed }">
-      <!-- Details Section Header -->
-      <div class="details-header">
-        <div class="flex items-center justify-between">
-          <UTabs v-model="activeTab" :items="tabItems" class="flex-1" />
-          <UButton
-            :icon="isDetailsCollapsed ? 'i-lucide-chevron-down' : 'i-lucide-chevron-up'"
-            size="xs"
-            variant="ghost"
-            color="neutral"
-            class="ml-2"
-            @click="toggleDetails"
-          />
-        </div>
-        <!-- Collapsible Date/Time Picker -->
-        <UButton
-          v-if="!isDatePickerVisible"
-          icon="i-lucide-calendar"
-          size="xs"
-          variant="ghost"
-          color="neutral"
-          class="mt-2"
-          @click="isDatePickerVisible = true"
-        >
-          Jump to Date/Time
-        </UButton>
-        <div v-if="isDatePickerVisible" class="date-picker-compact">
-          <div class="flex gap-2">
-            <UInput
-              v-model="selectedDateTime"
-              type="datetime-local"
-              :min="minDateTime"
-              :max="maxDateTime"
-              size="sm"
-              class="flex-1"
-            />
-            <UButton
-              icon="i-lucide-map-pin"
-              size="sm"
-              color="primary"
-              :disabled="!selectedDateTime"
-              @click="handleCenterOnDate"
-            >
-              Center
-            </UButton>
+          <div class="sidebar-header">
+            <h2 class="sidebar-title">Menu</h2>
             <UButton
               icon="i-lucide-x"
               size="sm"
               variant="ghost"
-              @click="isDatePickerVisible = false"
+              color="neutral"
+              class="sidebar-close"
+              title="Close menu"
+              @click="isSidebarOpen = false"
             />
           </div>
+          <PassageSidebar
+            :passage="mutableSelectedPassage"
+            :passages="mutablePassages"
+            :selected-passage="mutableSelectedPassage"
+            :is-loading="isLoading"
+            :error="error"
+            :layers="layers"
+            :view-mode="viewMode"
+            @update:layers="layers = $event"
+            @update:view-mode="viewMode = $event"
+            @export-gpx="handleExportGPX"
+            @export-geojson="handleExportGeoJSON"
+            @generate-report="handleGenerateReport"
+            @select-passage="handlePassageSelect"
+          />
         </div>
       </div>
 
-      <!-- Details Section -->
-      <div v-if="!isDetailsCollapsed" class="details-section">
-        <div v-if="activeTab === 'overview'">
-          <PassageInfo :passage="mutableSelectedPassage" />
-        </div>
-        <div v-else-if="activeTab === 'locations'">
-          <PassageLocations :passage="mutableSelectedPassage" @update:locations="handleLocationsUpdate" />
+      <!-- Map Canvas -->
+      <div class="map-container">
+        <PassageMap
+          ref="mapRef"
+          :passages="displayedPassages"
+          :selected-passage="mutableSelectedPassage"
+          :auto-fit="true"
+          :current-time="currentTime"
+          :speed-color-coding="layers.speed"
+          :show-features="layers.waypoints"
+          :show-vessels="showVessels"
+          :lock-tideye="lockTideye"
+          @update:lock-tideye="lockTideye = $event"
+          @time-update="handleTimeUpdate"
+        />
+
+        <!-- Map Controls: Positioned to the bottom left -->
+        <div class="map-controls-bottom-left">
+          <!-- Vessels Button -->
+          <UButton
+            v-if="selectedPassage"
+            :variant="showVessels ? 'solid' : 'outline'"
+            size="sm"
+            icon="i-lucide-ship"
+            class="shadow-lg map-control-btn"
+            :class="showVessels ? 'bg-primary-600 text-white hover:bg-primary-700' : ''"
+            @click="showVessels = !showVessels"
+          >
+            <span class="map-control-label">Vessels</span>
+          </UButton>
+          
+          <!-- Fit Button -->
+          <UButton
+            size="sm"
+            variant="outline"
+            icon="i-lucide-maximize"
+            class="shadow-lg map-control-btn"
+            @click="handleMapFit"
+          >
+            <span class="map-control-label">Fit</span>
+          </UButton>
+          
+          <!-- Center Button -->
+          <UButton
+            v-if="selectedPassage && currentTime"
+            size="sm"
+            :variant="lockTideye === 'locked' ? 'solid' : lockTideye === 'center' ? 'soft' : 'outline'"
+            :icon="lockTideye === 'locked' ? 'i-lucide-lock' : 'i-lucide-crosshair'"
+            class="shadow-lg map-control-btn"
+            :class="lockTideye === 'locked' ? 'bg-primary-600 text-white hover:bg-primary-700' : ''"
+            @click="handleCenterToggle"
+          >
+            <span class="map-control-label">{{ lockTideye === 'locked' ? 'Locked' : lockTideye === 'center' ? 'Centered' : 'Center' }}</span>
+          </UButton>
         </div>
       </div>
-
-      <!-- Timeline -->
-      <PassageTimeline :passage="mutableSelectedPassage!" @time-update="handleTimeUpdate" />
     </div>
+
+    <!-- Details Panel (Collapsible) -->
+    <div v-if="selectedPassage && !isDetailsCollapsed" class="details-panel">
+      <div class="details-header-controls">
+        <UButton
+          icon="i-lucide-x"
+          size="xs"
+          variant="ghost"
+          color="neutral"
+          @click="isDetailsCollapsed = true"
+        >
+          Close
+        </UButton>
+      </div>
+      <PassageDetailsCollapsible :passage="mutableSelectedPassage" :default-expanded="['stats']">
+        <template #stats="{ passage }">
+          <div class="stats-content">
+            <div class="stat-item">
+              <span class="stat-label">Distance</span>
+              <span class="stat-value">{{ formatDistance(passage.distance) }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Duration</span>
+              <span class="stat-value">{{ formatDuration(passage.duration) }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Average Speed</span>
+              <span class="stat-value">{{ passage.avgSpeed.toFixed(1) }} kt</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Max Speed</span>
+              <span class="stat-value">{{ passage.maxSpeed.toFixed(1) }} kt</span>
+            </div>
+          </div>
+        </template>
+        <template #start-end="{ passage }">
+          <div class="location-content">
+            <div class="location-item">
+              <span class="location-label">Start</span>
+              <span class="location-time">{{ formatDateTime(passage.startTime) }}</span>
+              <span class="location-coords">{{ passage.startLocation.lat.toFixed(4) }}, {{ passage.startLocation.lon.toFixed(4) }}</span>
+            </div>
+            <div class="location-item">
+              <span class="location-label">End</span>
+              <span class="location-time">{{ formatDateTime(passage.endTime) }}</span>
+              <span class="location-coords">{{ passage.endLocation.lat.toFixed(4) }}, {{ passage.endLocation.lon.toFixed(4) }}</span>
+            </div>
+          </div>
+        </template>
+        <template #performance="{ passage }">
+          <div class="performance-content">
+            <div class="performance-item">
+              <span class="performance-label">Route</span>
+              <span class="performance-value">{{ passage.route || 'N/A' }}</span>
+            </div>
+          </div>
+        </template>
+        <template #notes="{ passage }">
+          <div class="notes-content">
+            <p class="text-sm text-gray-500">Notes feature coming soon...</p>
+          </div>
+        </template>
+      </PassageDetailsCollapsible>
+    </div>
+
+    <!-- Timeline Strip at Bottom -->
+    <PassageTimelineEnhanced
+      v-if="selectedPassage"
+      :passage="mutableSelectedPassage"
+      :show-speed-graph="true"
+      :current-time="currentTime"
+      :show-passage-info="true"
+      @time-update="handleTimeUpdate"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { Passage, PassageLocation } from '~/types/passage'
 import { usePassageData } from '~/composables/usePassageData'
+import { formatDuration, formatDistance } from '~/utils/mapHelpers'
 
 const route = useRoute()
 const router = useRouter()
 
 const { passages, selectedPassage, isLoading, error, loadAllPassages, selectPassage, loadPassageById } =
   usePassageData()
+
+// Layer and view mode state
+const layers = ref({
+  track: true,
+  speed: false,
+  wind: false,
+  currents: false,
+  waypoints: false,
+  ais: false,
+})
+
+const viewMode = ref<'clean' | 'analysis' | 'playback'>('clean')
+
+// Details panel state
+const isDetailsCollapsed = ref(true)
+
+// Mobile sidebar state
+const isSidebarOpen = ref(false)
+
+// Swipe gesture state for mobile menu
+const sidebarSwipeStart = ref<{ x: number; y: number; time: number } | null>(null)
+const sidebarSwipeOffset = ref(0)
+const SWIPE_THRESHOLD = 50 // Minimum distance to trigger close
+
+const handleSidebarTouchStart = (e: TouchEvent) => {
+  if (!isSidebarOpen.value) return
+  const touch = e.touches[0]
+  sidebarSwipeStart.value = { x: touch.clientX, y: touch.clientY, time: Date.now() }
+  sidebarSwipeOffset.value = 0
+}
+
+const handleSidebarTouchMove = (e: TouchEvent) => {
+  if (!isSidebarOpen.value || !sidebarSwipeStart.value) return
+  
+  const touch = e.touches[0]
+  const deltaX = touch.clientX - sidebarSwipeStart.value.x
+  const deltaY = Math.abs(touch.clientY - sidebarSwipeStart.value.y)
+  
+  // Only allow horizontal swipe (not vertical scrolling)
+  if (Math.abs(deltaX) > deltaY && deltaX < 0) {
+    sidebarSwipeOffset.value = Math.max(deltaX, -280) // Limit to sidebar max width
+    e.preventDefault()
+  }
+}
+
+const handleSidebarTouchEnd = () => {
+  if (!isSidebarOpen.value || !sidebarSwipeStart.value) return
+  
+  const shouldClose = sidebarSwipeOffset.value < -SWIPE_THRESHOLD
+  
+  if (shouldClose) {
+    isSidebarOpen.value = false
+  }
+  
+  // Reset
+  sidebarSwipeStart.value = null
+  sidebarSwipeOffset.value = 0
+}
 
 // Helper to convert readonly arrays to mutable arrays
 type ReadonlyPassage = {
@@ -191,98 +310,35 @@ const handleTimeUpdate = (timestamp: string) => {
   currentTime.value = timestamp
 }
 
-// Details collapse state
-const isDetailsCollapsed = ref(false)
+// Vessels and lock state
+const showVessels = ref(true)
+const lockTideye = ref<'center' | 'locked' | null>('locked')
 
-// Passage modal state
-const isPassageModalOpen = ref(false)
-
-// Tab state
-const activeTab = ref('overview')
-const tabItems = [
-  { label: 'Overview', value: 'overview' },
-  { label: 'Locations', value: 'locations' },
-]
-
-// Date picker visibility
-const isDatePickerVisible = ref(false)
-
-const toggleDetails = () => {
-  isDetailsCollapsed.value = !isDetailsCollapsed.value
-  // Trigger map resize after details section toggles
-  // MapKit should automatically detect container size changes
-  nextTick(() => {
-    // Small delay to ensure DOM has updated and CSS transition has started
-    setTimeout(() => {
-      if (mapRef.value && 'handleResize' in mapRef.value) {
-        (mapRef.value as { handleResize: () => void }).handleResize()
-      }
-      // Also trigger window resize event for MapKit to recalculate
-      window.dispatchEvent(new Event('resize'))
-    }, 350) // Wait for CSS transition to complete (300ms + 50ms buffer)
-  })
+// Export handlers
+const handleExportGPX = () => {
+  // TODO: Implement GPX export
+  console.log('Export GPX')
 }
 
-// Date/Time picker state
-const selectedDateTime = ref<string>('')
-
-const minDateTime = computed(() => {
-  if (!mutableSelectedPassage.value) return ''
-  const date = new Date(mutableSelectedPassage.value.startTime)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  return `${year}-${month}-${day}T${hours}:${minutes}`
-})
-
-const maxDateTime = computed(() => {
-  if (!mutableSelectedPassage.value) return ''
-  const date = new Date(mutableSelectedPassage.value.endTime)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  return `${year}-${month}-${day}T${hours}:${minutes}`
-})
-
-const handleCenterOnDate = () => {
-  if (!selectedDateTime.value || !mutableSelectedPassage.value) return
-
-  const localDate = new Date(selectedDateTime.value)
-
-  if (isNaN(localDate.getTime())) {
-    console.error('Invalid date selected')
-    return
-  }
-
-  const isoString = localDate.toISOString()
-  currentTime.value = isoString
-  nextTick(() => {
-    if (mapRef.value) {
-      mapRef.value.centerMapOnTime(isoString)
-    }
-  })
+const handleExportGeoJSON = () => {
+  // TODO: Implement GeoJSON export
+  console.log('Export GeoJSON')
 }
 
-// Reset date picker when passage changes
-watch(() => mutableSelectedPassage.value, (newPassage) => {
-  if (newPassage) {
-    const startDate = new Date(newPassage.startTime)
-    const year = startDate.getFullYear()
-    const month = String(startDate.getMonth() + 1).padStart(2, '0')
-    const day = String(startDate.getDate()).padStart(2, '0')
-    const hours = String(startDate.getHours()).padStart(2, '0')
-    const minutes = String(startDate.getMinutes()).padStart(2, '0')
-    selectedDateTime.value = `${year}-${month}-${day}T${hours}:${minutes}`
-    isDatePickerVisible.value = false
-  } else {
-    selectedDateTime.value = ''
-    isDatePickerVisible.value = false
-  }
-}, { immediate: true })
+const handleGenerateReport = () => {
+  // TODO: Implement PDF report generation
+  console.log('Generate Report')
+}
+
+const formatDateTime = (dateString: string) => {
+  return new Date(dateString).toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
 
 // Flag to prevent infinite loops when updating URL
 const isUpdatingFromUrl = ref(false)
@@ -303,16 +359,38 @@ const handlePassageSelect = async (passage: Passage, updateUrl = true) => {
   // Reset timeline to start when passage changes
   currentTime.value = passage.startTime
 
+  // Close mobile sidebar after selection
+  isSidebarOpen.value = false
+
   // Update URL with passage ID (unless we're loading from URL)
   if (updateUrl && !isUpdatingFromUrl.value) {
     await router.push({ query: { passage: passage.id } })
   }
 }
 
-const handlePassageSelectFromModal = async (passage: Passage) => {
-  await handlePassageSelect(passage, true)
-  // Close modal after selection
-  isPassageModalOpen.value = false
+const handleMapFit = () => {
+  if (mapRef.value && 'handleZoomToFit' in mapRef.value) {
+    ;(mapRef.value as any).handleZoomToFit()
+  }
+}
+
+const handleMapCenter = () => {
+  if (mapRef.value && 'handleCenterOnTideye' in mapRef.value) {
+    ;(mapRef.value as any).handleCenterOnTideye()
+  }
+}
+
+const handleCenterToggle = () => {
+  // Toggle lockTideye: null -> 'center' -> 'locked' -> null
+  if (lockTideye.value === null) {
+    lockTideye.value = 'center'
+    handleMapCenter()
+  } else if (lockTideye.value === 'center') {
+    lockTideye.value = 'locked'
+    handleMapCenter()
+  } else {
+    lockTideye.value = null
+  }
 }
 
 const handleLocationsUpdate = (locations: Passage['locations']) => {
@@ -327,7 +405,11 @@ const handleLocationsUpdate = (locations: Passage['locations']) => {
   }
 }
 
-const mapRef = ref<{ centerMapOnTime: (timestamp: string) => void } | null>(null)
+const mapRef = ref<{ 
+  centerMapOnTime: (timestamp: string) => void
+  handleZoomToFit?: () => void
+  handleCenterOnTideye?: () => void
+} | null>(null)
 
 // Function to load passage from URL
 const loadPassageFromUrl = async () => {
@@ -363,104 +445,362 @@ onMounted(async () => {
 
   // Check if there's a passage ID in the URL after loading passages
   await loadPassageFromUrl()
+
+  // If no passage is selected and we have passages, automatically select the first one
+  if (!selectedPassage.value && passages.value.length > 0) {
+    const firstPassage = toMutablePassage(passages.value[0])
+    await handlePassageSelect(firstPassage, true)
+  }
 })
 </script>
 
 <style scoped>
-.fullscreen-map-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
+.app-container {
+  display: flex;
+  flex-direction: column;
   height: 100vh;
+  width: 100vw;
   overflow: hidden;
 }
 
-.map-wrapper {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  transition: bottom 0.3s ease;
-}
-
-/* Adjust map bottom when timeline exists */
-.map-wrapper.has-timeline:not(.details-collapsed) {
-  bottom: 35vh;
-}
-
-.map-wrapper.has-timeline.details-collapsed {
-  bottom: 80px;
-}
-
-.map-controls-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  padding: 1rem;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent);
-  pointer-events: none;
-}
-
-.map-controls-overlay>* {
-  pointer-events: all;
-}
-
-.timeline-bottom {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 998;
-  padding: 0.75rem 1rem;
-  background: linear-gradient(to top, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));
-  backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-  max-height: 35vh;
-  overflow-y: auto;
-  transition: max-height 0.3s ease;
+.main-layout {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.timeline-bottom.details-collapsed {
-  max-height: 80px;
-}
-
-.details-header {
-  flex-shrink: 0;
-}
-
-.details-section {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  max-height: 25vh;
+  overflow: hidden;
+  position: relative;
 }
 
-.date-picker-compact {
-  margin-top: 0.5rem;
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+  display: none;
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1001;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Sidebar Wrapper */
+.sidebar-wrapper {
+  position: relative;
+  display: block;
+}
+
+.sidebar-overlay {
+  display: none;
+}
+
+.sidebar-content {
+  height: 100%;
+  width: 100%;
+}
+
+.sidebar-header {
+  display: none;
+}
+
+/* Map Container */
+.map-container {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+}
+
+.map-controls-bottom-left {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1002;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  pointer-events: auto;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
   padding: 0.5rem;
-  background: rgba(0, 0, 0, 0.02);
-  border-radius: 0.375rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-@media (max-width: 640px) {
-  .timeline-bottom {
+.map-control-btn {
+  white-space: nowrap;
+}
+
+.map-control-label {
+  display: inline;
+}
+
+.details-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 400px;
+  max-width: 90vw;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.05);
+  z-index: 999;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.details-header-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.stats-content {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.location-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.location-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.location-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.location-time {
+  font-size: 0.875rem;
+  color: #111827;
+  font-weight: 500;
+}
+
+.location-coords {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  font-family: ui-monospace, monospace;
+}
+
+.performance-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.performance-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.performance-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.performance-value {
+  font-size: 0.875rem;
+  color: #111827;
+}
+
+.notes-content {
+  padding: 1rem 0;
+}
+
+/* Tablet and below */
+@media (max-width: 1024px) {
+  .main-layout {
+    flex-direction: column;
+  }
+
+  .details-panel {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    max-height: 60vh;
+    border-left: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 1rem 1rem 0 0;
+  }
+
+  .stats-content {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .mobile-menu-toggle {
+    display: block;
+  }
+
+  .sidebar-wrapper {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    display: block;
+  }
+
+  .sidebar-wrapper:not(.sidebar-open) {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .sidebar-wrapper.sidebar-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .sidebar-overlay {
+    display: block;
+  }
+
+  .sidebar-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 75%;
+    max-width: 280px;
+    background: white;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  }
+
+  .sidebar-wrapper.sidebar-open .sidebar-content:not(.swiping) {
+    transform: translateX(0);
+  }
+
+  /* Disable transition during swipe gesture */
+  .sidebar-content.swiping {
+    transition: none !important;
+  }
+
+  .sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+
+  .sidebar-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+  }
+
+  .map-controls-bottom-left {
+    top: auto;
+    bottom: calc(240px + 0.75rem);
+    right: auto;
+    left: 0.75rem;
+    padding: 0.25rem;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+    max-width: calc(100vw - 5rem);
+  }
+
+  .map-control-label {
+    display: none;
+  }
+
+  .map-control-btn {
+    min-width: 36px !important;
+    min-height: 36px !important;
+    padding: 0.375rem !important;
+    font-size: 0.75rem;
+  }
+
+  .details-panel {
+    max-height: 70vh;
     padding: 0.75rem;
-    max-height: 50vh;
   }
 
-  .timeline-bottom.details-collapsed {
-    max-height: 80px;
+  .stats-content {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
   }
 
-  .details-section {
-    max-height: 35vh;
+  .stat-value {
+    font-size: 1rem;
+  }
+}
+
+/* Small mobile */
+@media (max-width: 640px) {
+  .mobile-menu-toggle {
+    top: 0.75rem;
+    left: 0.75rem;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .map-controls-bottom-left {
+    bottom: calc(260px + 0.5rem);
+    left: 0.5rem;
+    padding: 0.25rem;
+    gap: 0.25rem;
+  }
+
+  .map-control-btn {
+    min-width: 32px !important;
+    min-height: 32px !important;
+    padding: 0.25rem !important;
+    font-size: 0.6875rem;
+  }
+
+  .details-panel {
+    max-height: 75vh;
+    padding: 0.5rem;
   }
 }
 </style>

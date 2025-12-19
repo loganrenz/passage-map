@@ -15,138 +15,155 @@
                 </div>
             </div>
 
-            <!-- Common Queries Section -->
-            <UCard class="mb-3 sm:mb-4">
-                <template #header>
-                    <h2 class="text-base sm:text-lg font-semibold">Common Queries</h2>
-                </template>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                    <UButton v-for="query in commonQueries" :key="query.id" variant="outline"
-                        class="justify-start h-auto p-3" @click="useCommonQuery(query)">
-                        <div class="text-left w-full">
-                            <div class="font-medium text-sm mb-1">{{ query.name }}</div>
-                            <div class="text-xs text-gray-500">{{ query.description }}</div>
+            <!-- Tabs for Queries and Controls -->
+            <UTabs :items="tabs" class="w-full">
+                <template #queries>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mt-4">
+                        <!-- Main Content -->
+                        <div class="lg:col-span-2">
+                            <UCard>
+                                <template #header>
+                                    <h2 class="text-base sm:text-lg font-semibold">Query Registry</h2>
+                                </template>
+                                <PassageQueries />
+                            </UCard>
                         </div>
-                    </UButton>
-                </div>
-            </UCard>
 
-            <!-- Query Runner Section -->
-            <UCard class="mb-3 sm:mb-4">
-                <template #header>
-                    <div class="flex items-center justify-between">
-                        <h2 class="text-base sm:text-lg font-semibold">Query Runner</h2>
-                        <div class="flex gap-2">
-                            <UButton icon="i-lucide-copy" variant="ghost" size="sm" :disabled="!queryInput.trim()"
-                                @click="copyQueryInput">
-                                Copy Query
-                            </UButton>
-                            <UButton icon="i-lucide-trash-2" variant="ghost" size="sm" :disabled="!queryInput.trim()"
-                                @click="clearQuery">
-                                Clear
-                            </UButton>
+                        <!-- Sidebar -->
+                        <div class="lg:col-span-1">
+                            <UCard>
+                                <template #header>
+                                    <h2 class="text-base sm:text-lg font-semibold">InfluxDB Explorer</h2>
+                                </template>
+                                <InfluxExplorer />
+                            </UCard>
                         </div>
                     </div>
                 </template>
-                <div class="mb-4">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="text-sm font-medium text-gray-700">Diagnostic Queries:</span>
-                        <UButton size="xs" variant="outline" @click="loadDiagnosticQuery('check-data')">
-                            Check Data Exists
-                        </UButton>
-                        <UButton size="xs" variant="outline" @click="loadDiagnosticQuery('check-measurements')">
-                            List Measurements
-                        </UButton>
-                        <UButton size="xs" variant="outline" @click="loadDiagnosticQuery('check-fields')">
-                            Check Fields
-                        </UButton>
-                        <UButton size="xs" variant="outline" @click="loadDiagnosticQuery('check-tags')">
-                            Check Tags
-                        </UButton>
-                        <UButton size="xs" variant="outline" @click="loadDiagnosticQuery('no-self-filter')">
-                            Without Self Filter
-                        </UButton>
-                        <UButton size="xs" variant="outline" @click="loadDiagnosticQuery('longer-range')">
-                            Longer Time Range
-                        </UButton>
-                    </div>
-                </div>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Flux Query
-                        </label>
-                        <textarea v-model="queryInput"
-                            class="w-full font-mono text-sm border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                            rows="8" placeholder="Enter your Flux query here..." />
-                    </div>
 
-                    <div class="flex gap-2">
-                        <UButton icon="i-lucide-play" :loading="isRunningQuery" :disabled="!queryInput.trim()"
-                            @click="runQuery">
-                            Run Query
-                        </UButton>
-                        <UButton v-if="queryResults !== null" icon="i-lucide-download" variant="outline"
-                            @click="downloadResults">
-                            Download Results
-                        </UButton>
-                    </div>
-
-                    <!-- Query Results -->
-                    <div v-if="queryError" class="bg-red-50 border border-red-200 rounded-md p-4">
-                        <div class="flex items-start gap-2">
-                            <UIcon name="i-lucide-alert-circle" class="text-red-600 mt-0.5" />
-                            <div class="flex-1">
-                                <div class="text-sm font-medium text-red-800 mb-1">Query Error</div>
-                                <div class="text-sm text-red-700 font-mono whitespace-pre-wrap">{{ queryError }}</div>
+                <template #controls>
+                    <div class="mt-4 space-y-4">
+                        <!-- Common Queries Section -->
+                        <UCard>
+                            <template #header>
+                                <h2 class="text-base sm:text-lg font-semibold">Common Queries</h2>
+                            </template>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                <UButton v-for="query in commonQueries" :key="query.id" variant="outline"
+                                    class="justify-start h-auto p-3" @click="useCommonQuery(query)">
+                                    <div class="text-left w-full">
+                                        <div class="font-medium text-sm mb-1">{{ query.name }}</div>
+                                        <div class="text-xs text-gray-500">{{ query.description }}</div>
+                                    </div>
+                                </UButton>
                             </div>
-                        </div>
-                    </div>
+                        </UCard>
 
-                    <div v-if="queryResults !== null && !queryError" class="space-y-2">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <UIcon name="i-lucide-check-circle" class="text-green-600" />
-                                <span class="text-sm font-medium text-gray-700">
-                                    Query executed successfully
-                                </span>
-                                <UBadge color="success" variant="subtle" size="sm">
-                                    {{ queryResults.length }} result{{ queryResults.length !== 1 ? 's' : '' }}
-                                </UBadge>
+                        <!-- Query Runner Section -->
+                        <UCard>
+                            <template #header>
+                                <div class="flex items-center justify-between">
+                                    <h2 class="text-base sm:text-lg font-semibold">Query Runner</h2>
+                                    <div class="flex gap-2">
+                                        <UButton icon="i-lucide-copy" variant="ghost" size="sm" :disabled="!queryInput.trim()"
+                                            @click="copyQueryInput">
+                                            Copy Query
+                                        </UButton>
+                                        <UButton icon="i-lucide-trash-2" variant="ghost" size="sm" :disabled="!queryInput.trim()"
+                                            @click="clearQuery">
+                                            Clear
+                                        </UButton>
+                                    </div>
+                                </div>
+                            </template>
+                            <div class="mb-4">
+                                <div class="flex items-center gap-2 mb-2 flex-wrap">
+                                    <span class="text-sm font-medium text-gray-700">Diagnostic Queries:</span>
+                                    <UButton size="xs" variant="outline" @click="loadDiagnosticQuery('check-data')">
+                                        Check Data Exists
+                                    </UButton>
+                                    <UButton size="xs" variant="outline" @click="loadDiagnosticQuery('check-measurements')">
+                                        List Measurements
+                                    </UButton>
+                                    <UButton size="xs" variant="outline" @click="loadDiagnosticQuery('check-fields')">
+                                        Check Fields
+                                    </UButton>
+                                    <UButton size="xs" variant="outline" @click="loadDiagnosticQuery('check-tags')">
+                                        Check Tags
+                                    </UButton>
+                                    <UButton size="xs" variant="outline" @click="loadDiagnosticQuery('no-self-filter')">
+                                        Without Self Filter
+                                    </UButton>
+                                    <UButton size="xs" variant="outline" @click="loadDiagnosticQuery('longer-range')">
+                                        Longer Time Range
+                                    </UButton>
+                                </div>
                             </div>
-                            <UButton icon="i-lucide-x" variant="ghost" size="xs" @click="clearResults">
-                                Clear Results
-                            </UButton>
-                        </div>
-                        <div class="bg-gray-50 border border-gray-200 rounded-md p-4 max-h-96 overflow-auto">
-                            <pre class="text-xs font-mono text-gray-800 whitespace-pre-wrap break-words">{{ formattedResults }}
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Flux Query
+                                    </label>
+                                    <textarea v-model="queryInput"
+                                        class="w-full font-mono text-sm border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                        rows="8" placeholder="Enter your Flux query here..." />
+                                </div>
+
+                                <div class="flex gap-2">
+                                    <UButton icon="i-lucide-play" :loading="isRunningQuery" :disabled="!queryInput.trim()"
+                                        @click="runQuery">
+                                        Run Query
+                                    </UButton>
+                                    <UButton v-if="queryResults !== null" icon="i-lucide-download" variant="outline"
+                                        @click="downloadResults">
+                                        Download Results
+                                    </UButton>
+                                </div>
+
+                                <!-- Query Results -->
+                                <div v-if="queryError" class="bg-red-50 border border-red-200 rounded-md p-4">
+                                    <div class="flex items-start gap-2">
+                                        <UIcon name="i-lucide-alert-circle" class="text-red-600 mt-0.5" />
+                                        <div class="flex-1">
+                                            <div class="text-sm font-medium text-red-800 mb-1">Query Error</div>
+                                            <div class="text-sm text-red-700 font-mono whitespace-pre-wrap">{{ queryError }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div v-if="queryResults !== null && !queryError" class="space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <UIcon name="i-lucide-check-circle" class="text-green-600" />
+                                            <span class="text-sm font-medium text-gray-700">
+                                                Query executed successfully
+                                            </span>
+                                            <UBadge color="success" variant="subtle" size="sm">
+                                                {{ queryResults.length }} result{{ queryResults.length !== 1 ? 's' : '' }}
+                                            </UBadge>
+                                        </div>
+                                        <UButton icon="i-lucide-x" variant="ghost" size="xs" @click="clearResults">
+                                            Clear Results
+                                        </UButton>
+                                    </div>
+                                    <div class="bg-gray-50 border border-gray-200 rounded-md p-4 max-h-96 overflow-auto">
+                                        <pre class="text-xs font-mono text-gray-800 whitespace-pre-wrap wrap-break-word">{{ formattedResults }}
                 </pre>
-                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </UCard>
+
+                        <!-- InfluxDB Explorer in Controls Tab -->
+                        <UCard>
+                            <template #header>
+                                <h2 class="text-base sm:text-lg font-semibold">InfluxDB Explorer</h2>
+                            </template>
+                            <InfluxExplorer />
+                        </UCard>
                     </div>
-                </div>
-            </UCard>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
-                <!-- Main Content -->
-                <div class="lg:col-span-2">
-                    <UCard>
-                        <template #header>
-                            <h2 class="text-base sm:text-lg font-semibold">Query Registry</h2>
-                        </template>
-                        <PassageQueries />
-                    </UCard>
-                </div>
-
-                <!-- Sidebar -->
-                <div class="lg:col-span-1">
-                    <UCard>
-                        <template #header>
-                            <h2 class="text-base sm:text-lg font-semibold">InfluxDB Explorer</h2>
-                        </template>
-                        <InfluxExplorer />
-                    </UCard>
-                </div>
-            </div>
+                </template>
+            </UTabs>
         </UContainer>
     </div>
 </template>
@@ -166,6 +183,17 @@ interface CommonQuery {
 }
 
 const toast = useToast()
+
+const tabs = [
+    {
+        key: 'queries',
+        label: 'Queries',
+    },
+    {
+        key: 'controls',
+        label: 'Controls',
+    },
+]
 
 const commonQueries: CommonQuery[] = [
     {

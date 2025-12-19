@@ -33,3 +33,4 @@ AuthKey_*.p8
 
 # Temporary D1 SQL files
 .d1-locations-*.sql
+.env*.local

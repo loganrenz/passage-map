@@ -9,7 +9,7 @@
     "dev:all": "./scripts/dev-all.sh",
     "dev:nuxt": "nuxt dev",
     "dev:nuxt-only": "doppler run -- nuxt dev",
-    "dev:wrangler": "doppler run -- wrangler pages dev .output/public --compatibility-date=2024-01-01",
+    "dev:wrangler": "doppler run -- wrangler pages dev .output/public --compatibility-date=2025-12-01",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
@@ -22,7 +22,8 @@
     "r2:delete": "wrangler r2 bucket delete",
     "r2:dev": "wrangler dev",
     "d2:api:deploy": "cd workers/d2-api && wrangler deploy",
-    "d2:api:dev": "cd workers/d2-api && wrangler dev"
+    "d2:api:dev": "cd workers/d2-api && wrangler dev --port 8787",
+    "verify:d1": "npx tsx scripts/verify-d1-config.ts"
   },
   "dependencies": {
     "@apple/mapkit-loader": "^0.2.1",

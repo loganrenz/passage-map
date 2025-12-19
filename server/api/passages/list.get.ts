@@ -62,6 +62,13 @@ export default defineEventHandler(async (event) => {
     
     // If direct D2 didn't work, try D2 API client (for Vercel/external access)
     if (passages.length === 0) {
+      // Always log in production to help diagnose
+      if (process.env.NODE_ENV === 'production') {
+        console.log('🔍 Attempting to use D2 API client...')
+        console.log(`   process.env.D2_API_URL: ${process.env.D2_API_URL ? 'set (hidden)' : 'NOT SET'}`)
+        console.log(`   config.d2ApiUrl: ${config.d2ApiUrl || 'not set'}`)
+      }
+      
       const d2Client = getD2ApiClient()
       if (d2Client) {
         try {

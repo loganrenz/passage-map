@@ -100,23 +100,38 @@ export function getD2ApiClient(): D2ApiClient | null {
     const config = useRuntimeConfig()
     apiUrl = config.d2ApiUrl || process.env.D2_API_URL
     apiKey = config.d2ApiKey || process.env.D2_API_KEY
-  } catch {
+    
+    // Log in production to help diagnose issues
+    if (process.env.NODE_ENV === 'production') {
+      console.log('🔍 D2 API Client check:')
+      console.log(`   config.d2ApiUrl: ${config.d2ApiUrl || 'not set'}`)
+      console.log(`   process.env.D2_API_URL: ${process.env.D2_API_URL ? 'set (hidden)' : 'not set'}`)
+    }
+  } catch (error) {
     // If useRuntimeConfig fails (not in Nuxt context), fall back to process.env
     apiUrl = process.env.D2_API_URL
     apiKey = process.env.D2_API_KEY
+    
+    if (process.env.NODE_ENV === 'production') {
+      console.log('⚠️  useRuntimeConfig failed, using process.env directly')
+      console.log(`   process.env.D2_API_URL: ${process.env.D2_API_URL ? 'set (hidden)' : 'not set'}`)
+    }
   }
 
   if (!apiUrl) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('⚠️  D2_API_URL not set. D2 API client will not be available.')
-      console.log('   Set D2_API_URL in Doppler or environment variables to use D2 API worker.')
-    }
+    // Always log in production to help diagnose
+    console.error('❌ D2_API_URL not set. D2 API client will not be available.')
+    console.error('   Checked:')
+    console.error('   - config.d2ApiUrl (from useRuntimeConfig)')
+    console.error('   - process.env.D2_API_URL')
+    console.error('   NODE_ENV:', process.env.NODE_ENV)
+    console.error('   VERCEL:', process.env.VERCEL)
+    console.error('   Available env keys (first 10):', Object.keys(process.env).slice(0, 10).join(', '))
     return null
   }
 
-  if (process.env.NODE_ENV !== 'production') {
-    console.log(`✅ D2 API client configured with URL: ${apiUrl}`)
-  }
+  // Always log in production to confirm it's working
+  console.log(`✅ D2 API client configured with URL: ${apiUrl}`)
 
   return new D2ApiClient({
     apiUrl,

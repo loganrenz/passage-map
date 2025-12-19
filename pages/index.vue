@@ -4,11 +4,11 @@
     <div class="main-layout flex flex-1 min-h-0 overflow-hidden relative flex-col md:flex-row">
       <!-- Mobile Menu Toggle Button -->
       <UButton v-if="!isSidebarOpen" icon="i-lucide-menu" size="lg" color="neutral" variant="solid"
-        class="mobile-menu-toggle block md:hidden fixed top-4 left-4 z-[1001] shadow-lg" @click="isSidebarOpen = true"
+        class="mobile-menu-toggle block md:hidden fixed top-4 left-4 z-1001 shadow-lg" @click="isSidebarOpen = true"
         @touchstart.prevent="isSidebarOpen = true" />
 
       <!-- Left Sidebar -->
-      <div class="sidebar-wrapper relative block md:w-80 md:flex-shrink-0" :class="{ 'sidebar-open': isSidebarOpen }">
+      <div class="sidebar-wrapper relative block md:w-80 md:shrink-0" :class="{ 'sidebar-open': isSidebarOpen }">
         <div class="sidebar-overlay hidden md:hidden" :class="{ 'block': isSidebarOpen }" @click="isSidebarOpen = false"
           @touchstart.prevent="isSidebarOpen = false"></div>
         <div class="sidebar-content h-full w-full md:relative" :class="{ 'swiping': sidebarSwipeStart !== null }"
@@ -21,7 +21,9 @@
           </div>
           <PassageSidebar :passage="mutableSelectedPassage" :passages="mutablePassages"
             :selected-passage="mutableSelectedPassage" :is-loading="isLoading" :error="error" :layers="layers"
-            :view-mode="viewMode" @update:layers="layers = $event" @update:view-mode="viewMode = $event"
+            :view-mode="viewMode"
+            @update:layers="(newLayers) => { if (newLayers) layers = newLayers }"
+            @update:view-mode="viewMode = $event"
             @export-gpx="handleExportGPX" @export-geojson="handleExportGeoJSON" @generate-report="handleGenerateReport"
             @select-passage="handlePassageSelect" />
         </div>
@@ -97,7 +99,7 @@
             <div class="location-item flex flex-col gap-1">
               <span class="location-label text-xs text-gray-500 font-medium">Start</span>
               <span class="location-time text-sm text-gray-900 font-medium">{{ formatDateTime(passage.startTime)
-                }}</span>
+              }}</span>
               <span class="location-coords text-xs text-gray-400 font-mono">{{ passage.startLocation.lat.toFixed(4) }},
                 {{
                   passage.startLocation.lon.toFixed(4) }}</span>
@@ -498,13 +500,39 @@ onUnmounted(() => {
   transition: none !important;
 }
 
-.sidebar-wrapper:not(.sidebar-open) {
-  opacity: 0;
-  visibility: hidden;
+/* Desktop: sidebar should always be visible */
+@media (min-width: 769px) {
+  .sidebar-wrapper {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    position: relative !important;
+  }
+  
+  .sidebar-content {
+    transform: none !important;
+    position: relative !important;
+  }
+  
+  .sidebar-overlay {
+    display: none !important;
+  }
+  
+  .sidebar-header {
+    display: none !important;
+  }
 }
 
-.sidebar-wrapper.sidebar-open .sidebar-content:not(.swiping) {
-  transform: translateX(0);
+/* Mobile: hide sidebar when not open */
+@media (max-width: 768px) {
+  .sidebar-wrapper:not(.sidebar-open) {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .sidebar-wrapper.sidebar-open .sidebar-content:not(.swiping) {
+    transform: translateX(0);
+  }
 }
 
 /* Map container - iOS jittering prevention */

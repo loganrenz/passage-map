@@ -31,7 +31,7 @@
                                 {{ formatDate(query.timestamp) }}
                             </p>
                         </div>
-                        <div class="flex gap-2 flex-shrink-0">
+                        <div class="flex gap-2 shrink-0">
                             <UButton icon="i-lucide-copy" variant="ghost" size="xs" @click="copyQuery(query.query)"
                               @touchstart.prevent="copyQuery(query.query)">
                                 Copy

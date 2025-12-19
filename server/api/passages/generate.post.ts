@@ -11,15 +11,20 @@ import {
 } from '~/server/utils/passageTransformer'
 import { addQuery } from '~/server/utils/queryRegistry'
 import { getPassagesStorage } from '~/server/utils/storage'
+import { getCloudflareEnv } from '~/server/utils/cloudflareEnv'
 import type { Passage } from '~/types/passage'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const config = getInfluxDBConfig()
+  const influxConfig = getInfluxDBConfig()
   
-  // Get storage adapter (R2 in production, filesystem in dev)
-  const env = event.context.cloudflare?.env || {}
-  const storage = getPassagesStorage(env)
+  // Get storage adapter (R2 bindings > R2 S3 API > filesystem)
+  const env = getCloudflareEnv(event)
+  const runtimeConfig = useRuntimeConfig(event)
+  const storage = getPassagesStorage(env, {
+    r2AccessKeyId: runtimeConfig.r2AccessKeyId,
+    r2SecretAccessKey: runtimeConfig.r2SecretAccessKey,
+  })
 
   // Support both direct query string or query parameters
   let queryString: string | undefined
@@ -63,17 +68,17 @@ export default defineEventHandler(async (event) => {
 
     if (queryString) {
       // Execute custom query
-      positionResults = await executeQuery(config, queryString)
+      positionResults = await executeQuery(influxConfig, queryString)
     } else if (queryParams) {
       // Build and execute queries using query builder
-      const positionQuery = buildPassagePositionQuery(config.bucket, queryParams)
-      positionResults = await executeQuery(config, positionQuery)
+      const positionQuery = buildPassagePositionQuery(influxConfig.bucket, queryParams)
+      positionResults = await executeQuery(influxConfig, positionQuery)
 
       // Optionally get speed data
       if (body.includeSpeed !== false) {
         try {
-          const speedQuery = buildPassageSpeedQuery(config.bucket, queryParams)
-          speedResults = await executeQuery(config, speedQuery)
+          const speedQuery = buildPassageSpeedQuery(influxConfig.bucket, queryParams)
+          speedResults = await executeQuery(influxConfig, speedQuery)
         } catch (error) {
           console.warn('Failed to fetch speed data:', error)
           // Continue without speed data
@@ -109,12 +114,15 @@ export default defineEventHandler(async (event) => {
 
     // Store query in registry
     const queryMetadata = await addQuery({
-      query: queryString || buildPassagePositionQuery(config.bucket, queryParams!),
+      query: queryString || buildPassagePositionQuery(influxConfig.bucket, queryParams!),
       parameters: queryParams || {},
       passageId: passage.id,
       description,
       passageFilename: filename,
-    }, env)
+    }, env, {
+      r2AccessKeyId: runtimeConfig.r2AccessKeyId,
+      r2SecretAccessKey: runtimeConfig.r2SecretAccessKey,
+    })
 
     // Add query metadata to passage
     passage.queryMetadata = {

@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@apple/mapkit-loader": "^0.2.1",
+    "@aws-sdk/client-s3": "^3.956.0",
     "@influxdata/influxdb-client": "^1.35.0",
     "@nuxt/ui": "^4.3.0",
     "@types/jsonwebtoken": "^9.0.10",
@@ -29,6 +30,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20251219.0",
+    "@iconify-json/lucide": "^1.2.81",
     "@nuxt/eslint": "^1.12.1",
     "@types/apple-mapkit-js-browser": "^5.78.1",
     "@types/node": "^20.10.0",

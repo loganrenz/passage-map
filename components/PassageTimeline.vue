@@ -9,7 +9,7 @@
           <div class="flex items-center gap-1 border rounded-md p-0.5">
             <UButton v-for="option in speedOptions" :key="option.value" size="xs"
               :color="playbackSpeed === option.value ? 'primary' : 'neutral'"
-              :variant="playbackSpeed === option.value ? 'solid' : 'ghost'" class="min-w-[2.5rem]"
+              :variant="playbackSpeed === option.value ? 'solid' : 'ghost'" class="min-w-10"
               @click="playbackSpeed = option.value">
               {{ option.label }}
             </UButton>
@@ -64,65 +64,22 @@ const playbackSpeed = ref(1)
 const animationFrameId = ref<number | null>(null)
 const lastUpdateTime = ref<number>(0)
 
-// Calculate passage duration in hours
-const passageDurationHours = computed(() => {
-  if (!props.passage || timeRange.value.end === timeRange.value.start) {
-    return 0
-  }
-  return (timeRange.value.end - timeRange.value.start) / (1000 * 60 * 60)
-})
+// Baseline: 1 second of playback = 30 minutes of passage time
+// 30 minutes = 30 * 60 * 1000 = 1,800,000 ms
+// So baseline speed = 1,800,000 ms passage per 1000 ms real = 1800x
+const BASELINE_SPEED = 1800 // 1 sec playback = 30 mins passage
 
-// Dynamic speed options based on passage length
-const speedOptions = computed(() => {
-  const duration = passageDurationHours.value
-  
-  // Very short passages (< 30 minutes): slower speeds for detail
-  if (duration < 0.5) {
-    return [
-      { label: '0.5x', value: 0.5 },
-      { label: '1x', value: 1 },
-      { label: '2x', value: 2 },
-      { label: '4x', value: 4 },
-    ]
-  }
-  
-  // Short passages (30 min - 2 hours): standard speeds
-  if (duration < 2) {
-    return [
-      { label: '1x', value: 1 },
-      { label: '2x', value: 2 },
-      { label: '4x', value: 4 },
-      { label: '8x', value: 8 },
-    ]
-  }
-  
-  // Medium passages (2-6 hours): faster speeds
-  if (duration < 6) {
-    return [
-      { label: '2x', value: 2 },
-      { label: '4x', value: 4 },
-      { label: '8x', value: 8 },
-      { label: '16x', value: 16 },
-    ]
-  }
-  
-  // Long passages (6-24 hours): very fast speeds
-  if (duration < 24) {
-    return [
-      { label: '4x', value: 4 },
-      { label: '8x', value: 8 },
-      { label: '16x', value: 16 },
-      { label: '32x', value: 32 },
-    ]
-  }
-  
-  // Very long passages (> 24 hours): maximum speeds
-  return [
-    { label: '8x', value: 8 },
-    { label: '16x', value: 16 },
-    { label: '32x', value: 32 },
-    { label: '64x', value: 64 },
-  ]
+// Speed options: multipliers on top of baseline (1 sec = 30 mins)
+const speedOptions = [
+  { label: '1x', value: 1 },   // 1 sec = 30 mins
+  { label: '2x', value: 2 },   // 1 sec = 15 mins
+  { label: '4x', value: 4 },   // 1 sec = 7.5 mins
+  { label: '8x', value: 8 },   // 1 sec = 3.75 mins
+] as const
+
+// Calculate actual playback speed multiplier
+const actualPlaybackSpeed = computed(() => {
+  return BASELINE_SPEED * playbackSpeed.value
 })
 
 const timeRange = computed(() => {
@@ -201,7 +158,7 @@ const startPlayback = () => {
     if (!isPlaying.value) return
 
     const elapsed = timestamp - lastUpdateTime.value
-    const timeDelta = elapsed * playbackSpeed.value
+    const timeDelta = elapsed * actualPlaybackSpeed.value
 
     const newTime = currentTimeValue.value + timeDelta
 
@@ -243,6 +200,8 @@ watch(
   () => props.passage,
   (newPassage) => {
     pausePlayback()
+    // Reset playback speed to 1x (baseline) when passage changes
+    playbackSpeed.value = 1
     if (newPassage && timeRange.value.start > 0 && timeRange.value.end > 0) {
       currentTimeValue.value = timeRange.value.start
       handleTimeChange(timeRange.value.start)

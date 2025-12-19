@@ -209,6 +209,32 @@ export function addVesselPositionToMap(
 }
 
 /**
+ * Updates a vessel position annotation's coordinate and subtitle
+ * This prevents blinking by updating the existing annotation instead of recreating it
+ * 
+ * @param annotationRef Annotation reference returned from addVesselPositionToMap
+ * @param coordinate New coordinate for the annotation
+ * @param subtitle New subtitle text (optional)
+ */
+export function updateVesselPositionAnnotation(
+    annotationRef: VesselPositionAnnotation,
+    coordinate: mapkit.Coordinate,
+    subtitle?: string
+): void {
+    if (!annotationRef || !annotationRef.annotation) {
+        return
+    }
+    
+    // Update the coordinate - MapKit JS will automatically update the annotation position
+    annotationRef.annotation.coordinate = coordinate
+    
+    // Update subtitle if provided
+    if (subtitle !== undefined && 'subtitle' in annotationRef.annotation) {
+        annotationRef.annotation.subtitle = subtitle
+    }
+}
+
+/**
  * Removes a vessel position annotation from the map
  * 
  * @param map MapKit map instance (can be readonly ref)

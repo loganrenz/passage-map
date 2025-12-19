@@ -32,7 +32,7 @@ import { useMapKit } from '~/composables/useMapKit'
 import { getPassageBounds, getAllPassagesBounds, getPositionAtTime, calculateSpeed, calculateBearing, calculateDistanceKm } from '~/utils/mapHelpers'
 import { useVesselEncounters } from '~/composables/useVesselEncounters'
 import { getVesselIcon, getVesselIconSize } from '~/utils/vesselIcons'
-import { addVesselPositionToMap, removeVesselPositionFromMap, type VesselPositionAnnotation } from '~/composables/useVesselPositionAnnotation'
+import { addVesselPositionToMap, removeVesselPositionFromMap, updateVesselPositionAnnotation, type VesselPositionAnnotation } from '~/composables/useVesselPositionAnnotation'
 import { preloadVesselNameMap, getVesselDisplayNameSync } from '~/utils/vesselNameMapper'
 
 interface Props {
@@ -348,26 +348,29 @@ const updateTimeMarker = () => {
         subtitleParts.push(`${distance.toFixed(1)} km`)
     }
 
-    // Remove existing time marker if it exists
-    if (timeMarker.value) {
-        // Type assertion needed because mapInstance is readonly
-        removeVesselPositionFromMap(mapInstance.value as mapkit.Map, timeMarker.value)
-    }
+    const newSubtitle = subtitleParts.join(' • ')
 
-    // Create vessel position annotation using the custom composable
-    const vesselAnnotation = addVesselPositionToMap(mapInstance.value as mapkit.Map, {
-        coordinate: coord,
-        iconImage: markerImage.value,
-        size: { width: 40, height: 40 },
-        title: 'Vessel Position',
-        subtitle: subtitleParts.join(' • '),
-        displayPriority: 1000,
-        showDebugBorder: false, // Debug border disabled
-    })
+    // Update existing annotation if it exists, otherwise create a new one
+    if (timeMarker.value && timeMarker.value.annotation) {
+        // Update the existing annotation's coordinate and subtitle
+        // This prevents blinking by avoiding removal and recreation
+        updateVesselPositionAnnotation(timeMarker.value, coord, newSubtitle)
+    } else {
+        // Create vessel position annotation using the custom composable
+        const vesselAnnotation = addVesselPositionToMap(mapInstance.value as mapkit.Map, {
+            coordinate: coord,
+            iconImage: markerImage.value,
+            size: { width: 40, height: 40 },
+            title: 'Vessel Position',
+            subtitle: newSubtitle,
+            displayPriority: 1000,
+            showDebugBorder: false, // Debug border disabled
+        })
 
-    // Store the annotation reference for cleanup
-    timeMarker.value = {
-        annotation: markRaw(vesselAnnotation.annotation),
+        // Store the annotation reference for cleanup
+        timeMarker.value = {
+            annotation: markRaw(vesselAnnotation.annotation),
+        }
     }
 }
 

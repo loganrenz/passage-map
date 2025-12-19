@@ -1,14 +1,26 @@
 import type { Passage } from '~/types/passage'
 import { getPassagesStorage } from '~/server/utils/storage'
+import { getCloudflareEnv } from '~/server/utils/cloudflareEnv'
 
 export default defineEventHandler(async (event) => {
   try {
-    // Get storage adapter (R2 in production, filesystem in dev)
-    const env = event.context.cloudflare?.env || {}
-    const storage = getPassagesStorage(env)
+    // Get storage adapter (R2 bindings > R2 S3 API > filesystem)
+    const env = getCloudflareEnv(event)
+    const config = useRuntimeConfig(event)
+    
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Accessing storage - env keys:', Object.keys(env))
+    }
+    const storage = getPassagesStorage(env, {
+      r2AccessKeyId: config.r2AccessKeyId,
+      r2SecretAccessKey: config.r2SecretAccessKey,
+    })
     
     // List all passage files
     const files = await storage.list('passage_')
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`Found ${files.length} files with prefix 'passage_'`)
+    }
     
     // Filter for passage JSON files (exclude index/list files)
     const passageFiles = files.filter(

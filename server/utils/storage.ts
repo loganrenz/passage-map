@@ -8,6 +8,7 @@ import { join } from 'path'
 import { existsSync } from 'fs'
 import type { R2Bucket } from './r2Storage'
 import { readR2JSON, writeR2JSON, listR2Objects, readR2Text } from './r2Storage'
+import { R2S3Storage } from './r2S3Storage'
 
 export interface StorageAdapter {
   readJSON<T = unknown>(key: string): Promise<T | null>
@@ -122,11 +123,12 @@ class R2Storage implements StorageAdapter {
 
 /**
  * Get storage adapter based on environment
- * Uses R2 if available, otherwise falls back to filesystem
+ * Priority: 1. R2 bindings, 2. R2 S3 API, 3. Filesystem
  */
 export function getStorageAdapter(
   bucketName: 'passages' | 'vessel-data' | 'queries',
-  env?: { [key: string]: unknown }
+  env?: { [key: string]: unknown },
+  config?: { r2AccessKeyId?: string; r2SecretAccessKey?: string }
 ): StorageAdapter {
   // Try to get R2 bucket from environment (Cloudflare Workers)
   // Match wrangler.toml bindings: PASSAGES_BUCKET, VESSEL_DATA_BUCKET, QUERIES_BUCKET
@@ -137,13 +139,49 @@ export function getStorageAdapter(
   }
 
   const binding = bucketBindings[bucketName]
-  const r2Bucket = env?.[binding] as R2Bucket | undefined
-
-  if (r2Bucket) {
+  
+  // Try multiple ways to access the R2 binding (for different Nitro/Cloudflare setups)
+  let r2Bucket: R2Bucket | undefined
+  
+  if (env) {
+    // Standard way: env[binding]
+    r2Bucket = env[binding] as R2Bucket | undefined
+    
+    // Alternative: try accessing via cloudflare.env if env itself is not the bindings
+    if (!r2Bucket && (env as any).cloudflare?.env) {
+      r2Bucket = (env as any).cloudflare.env[binding] as R2Bucket | undefined
+    }
+  }
+  
+  // Check if we have a valid R2 bucket binding
+  if (r2Bucket && typeof r2Bucket === 'object' && 'get' in r2Bucket && 'put' in r2Bucket) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`Using R2 bindings for ${bucketName} bucket`)
+    }
     return new R2Storage(r2Bucket)
   }
 
+  // Try R2 S3 API as fallback (if credentials are available)
+  const bucketNames = {
+    passages: 'passage-map-passages',
+    'vessel-data': 'passage-map-vessel-data',
+    queries: 'passage-map-queries',
+  }
+
+  const r2AccessKeyId = config?.r2AccessKeyId || process.env.R2_ACCESS_KEY_ID
+  const r2SecretAccessKey = config?.r2SecretAccessKey || process.env.R2_SECRET_ACCESS_KEY
+
+  if (r2AccessKeyId && r2SecretAccessKey) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`Using R2 S3 API for ${bucketName} bucket`)
+    }
+    return new R2S3Storage(bucketNames[bucketName], r2AccessKeyId, r2SecretAccessKey)
+  }
+
   // Fall back to filesystem (local development)
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`Using filesystem storage for ${bucketName} bucket (R2 not available)`)
+  }
   const baseDirs = {
     passages: join(process.cwd(), 'public', 'data', 'passages'),
     'vessel-data': join(process.cwd(), 'public', 'data', 'passages_vessel_data'),
@@ -156,21 +194,21 @@ export function getStorageAdapter(
 /**
  * Get passages storage
  */
-export function getPassagesStorage(env?: { [key: string]: unknown }): StorageAdapter {
-  return getStorageAdapter('passages', env)
+export function getPassagesStorage(env?: { [key: string]: unknown }, config?: { r2AccessKeyId?: string; r2SecretAccessKey?: string }): StorageAdapter {
+  return getStorageAdapter('passages', env, config)
 }
 
 /**
  * Get vessel data storage
  */
-export function getVesselDataStorage(env?: { [key: string]: unknown }): StorageAdapter {
-  return getStorageAdapter('vessel-data', env)
+export function getVesselDataStorage(env?: { [key: string]: unknown }, config?: { r2AccessKeyId?: string; r2SecretAccessKey?: string }): StorageAdapter {
+  return getStorageAdapter('vessel-data', env, config)
 }
 
 /**
  * Get queries storage
  */
-export function getQueriesStorage(env?: { [key: string]: unknown }): StorageAdapter {
-  return getStorageAdapter('queries', env)
+export function getQueriesStorage(env?: { [key: string]: unknown }, config?: { r2AccessKeyId?: string; r2SecretAccessKey?: string }): StorageAdapter {
+  return getStorageAdapter('queries', env, config)
 }
 

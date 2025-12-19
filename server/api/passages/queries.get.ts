@@ -4,6 +4,7 @@ import {
   getQueriesByPassageId,
   getQueriesByFilename,
 } from '~/server/utils/queryRegistry'
+import { getCloudflareEnv } from '~/server/utils/cloudflareEnv'
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
@@ -12,12 +13,17 @@ export default defineEventHandler(async (event) => {
   const filename = query.filename as string | undefined
 
   // Get environment for storage access
-  const env = event.context.cloudflare?.env || {}
+  const env = getCloudflareEnv(event)
+  const config = useRuntimeConfig(event)
+  const storageConfig = {
+    r2AccessKeyId: config.r2AccessKeyId,
+    r2SecretAccessKey: config.r2SecretAccessKey,
+  }
 
   try {
     if (id) {
       // Get single query by ID
-      const queryData = await getQueryById(id, env)
+      const queryData = await getQueryById(id, env, storageConfig)
       if (!queryData) {
         throw createError({
           statusCode: 404,
@@ -29,16 +35,16 @@ export default defineEventHandler(async (event) => {
 
     if (passageId) {
       // Get queries by passage ID
-      return await getQueriesByPassageId(passageId, env)
+      return await getQueriesByPassageId(passageId, env, storageConfig)
     }
 
     if (filename) {
       // Get queries by filename
-      return await getQueriesByFilename(filename, env)
+      return await getQueriesByFilename(filename, env, storageConfig)
     }
 
     // Get all queries
-    return await getAllQueries(env)
+    return await getAllQueries(env, storageConfig)
   } catch (error: any) {
     console.error('Error fetching queries:', error)
     throw createError({

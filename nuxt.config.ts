@@ -13,6 +13,9 @@ export default defineNuxtConfig({
     influxToken: process.env.INFLUX_API_KEY,
     influxOrgId: process.env.INFLUX_ORG_ID,
     influxBucket: process.env.INFLUX_BUCKET_DEFAULT || 'Tideye',
+    // R2 S3 API credentials (fallback when bindings aren't available)
+    r2AccessKeyId: process.env.R2_ACCESS_KEY_ID,
+    r2SecretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
   },
   devServer: {
     host: 'phantom.curl-banjo.ts.net',

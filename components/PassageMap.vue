@@ -166,6 +166,7 @@ onMounted(async () => {
             // MapKit JS uses addEventListener for region change events
             mapInstance.value.addEventListener('region-change-end', () => {
                 // If locked and this wasn't a programmatic change, re-center on tideye
+                // This handles the case where user manually pans the map while locked
                 if (props.lockTideye === 'locked' && !isProgrammaticRegionChange.value) {
                     const tideyeCoord = getTideyeCoordinate()
                     if (tideyeCoord && mapInstance.value) {
@@ -923,33 +924,17 @@ const fitToPassage = (passage: Passage) => {
         lockTideye: props.lockTideye
     })
 
-    // If locked, keep tideye centered and fit polyline in view
+    // If locked, keep tideye centered but preserve user's zoom level
+    // Only change zoom if explicitly called via "Fit" button
     if (props.lockTideye === 'locked' && props.currentTime) {
         const tideyeCoord = getTideyeCoordinate()
         if (tideyeCoord) {
-            // Calculate the distance from tideye to each edge of the bounds
-            const latDistNorth = Math.abs(bounds.north - tideyeCoord.latitude)
-            const latDistSouth = Math.abs(tideyeCoord.latitude - bounds.south)
-            const lonDistEast = Math.abs(bounds.east - tideyeCoord.longitude)
-            const lonDistWest = Math.abs(tideyeCoord.longitude - bounds.west)
-            
-            // Use the maximum distance in each direction to ensure everything fits
-            const maxLatSpan = Math.max(latDistNorth, latDistSouth) * 2
-            const maxLonSpan = Math.max(lonDistEast, lonDistWest) * 2
-            
-            // Add small padding to ensure polyline is fully visible
-            const padding = 0.1 // 10% padding
-            const latSpan = maxLatSpan * (1 + padding)
-            const lonSpan = maxLonSpan * (1 + padding)
-            
-            // Ensure minimum span to prevent invalid regions
-            const minSpan = 0.0001
-            const finalLatSpan = Math.max(latSpan, minSpan)
-            const finalLonSpan = Math.max(lonSpan, minSpan)
-            
+            // When locked, just center on tideye with current zoom
+            // Don't recalculate zoom - preserve what user has set
+            const currentRegion = mapInstance.value.region
             const region = new window.mapkit.CoordinateRegion(
-                tideyeCoord, // Center on tideye
-                new window.mapkit.CoordinateSpan(finalLatSpan, finalLonSpan)
+                tideyeCoord,
+                currentRegion.span  // Preserve user's zoom level
             )
             
             isProgrammaticRegionChange.value = true
@@ -1357,11 +1342,12 @@ const centerMapOnTideye = () => {
     const coord = getTideyeCoordinate()
     if (!coord) return
 
-    // Center the map on tideye's position with current zoom level
+    // Center the map on tideye's position while preserving the current zoom level
+    // Never change the zoom - only change the center position
     const currentRegion = mapInstance.value.region
     const region = new window.mapkit.CoordinateRegion(
         coord,
-        currentRegion.span
+        currentRegion.span  // Preserve exact zoom level user has set
     )
 
     isProgrammaticRegionChange.value = true
@@ -1739,10 +1725,35 @@ const fadeOutMarker = (vesselId: string) => {
     }
 
     vesselData.fadeTimeout = window.setTimeout(() => {
+        // Verify the marker still exists
         const data = vesselMarkers.value.get(vesselId)
-        if (data && mapInstance.value) {
+        if (!data || !mapInstance.value) return
+
+        // CRITICAL FIX: Re-check if vessel should still be removed
+        // This prevents vessels from being removed if they became visible again
+        // during the fade-out delay period
+        if (!props.currentTime || !props.selectedPassage || !props.showVessels) {
+            // Conditions changed - safe to remove
             mapInstance.value.removeAnnotation(data.marker)
             vesselMarkers.value.delete(vesselId)
+            return
+        }
+
+        // Re-check visibility at current time
+        const visibleVessels = getVisibleVessels(props.currentTime)
+        const currentVesselIds = new Set(
+            visibleVessels.map(({ encounter, segmentIndex }) => `${encounter.vessel.id}-${segmentIndex}`)
+        )
+        
+        // Only remove if vessel is still not in the visible set
+        if (!currentVesselIds.has(vesselId)) {
+            mapInstance.value.removeAnnotation(data.marker)
+            vesselMarkers.value.delete(vesselId)
+        } else {
+            // Vessel should be visible again - cancel fade-out and ensure it's visible
+            // This can happen if currentTime changed during the fade-out delay
+            data.opacity = 1
+            data.fadeTimeout = undefined
         }
     }, 300) // 300ms delay for fade-out effect
 }

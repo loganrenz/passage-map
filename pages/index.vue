@@ -13,9 +13,19 @@
       />
 
       <!-- Left Sidebar -->
-      <div class="sidebar-wrapper" :class="{ 'sidebar-open': isSidebarOpen }">
+      <div 
+        class="sidebar-wrapper" 
+        :class="{ 'sidebar-open': isSidebarOpen }"
+      >
         <div class="sidebar-overlay" @click="isSidebarOpen = false"></div>
-        <div class="sidebar-content">
+        <div 
+          class="sidebar-content" 
+          :class="{ 'swiping': sidebarSwipeStart !== null }"
+          :style="sidebarSwipeOffset !== 0 ? { transform: `translateX(${sidebarSwipeOffset}px)` } : {}"
+          @touchstart="handleSidebarTouchStart"
+          @touchmove="handleSidebarTouchMove"
+          @touchend="handleSidebarTouchEnd"
+        >
           <div class="sidebar-header">
             <h2 class="sidebar-title">Menu</h2>
             <UButton
@@ -24,6 +34,7 @@
               variant="ghost"
               color="neutral"
               class="sidebar-close"
+              title="Close menu"
               @click="isSidebarOpen = false"
             />
           </div>
@@ -207,6 +218,46 @@ const isDetailsCollapsed = ref(true)
 
 // Mobile sidebar state
 const isSidebarOpen = ref(false)
+
+// Swipe gesture state for mobile menu
+const sidebarSwipeStart = ref<{ x: number; y: number; time: number } | null>(null)
+const sidebarSwipeOffset = ref(0)
+const SWIPE_THRESHOLD = 50 // Minimum distance to trigger close
+
+const handleSidebarTouchStart = (e: TouchEvent) => {
+  if (!isSidebarOpen.value) return
+  const touch = e.touches[0]
+  sidebarSwipeStart.value = { x: touch.clientX, y: touch.clientY, time: Date.now() }
+  sidebarSwipeOffset.value = 0
+}
+
+const handleSidebarTouchMove = (e: TouchEvent) => {
+  if (!isSidebarOpen.value || !sidebarSwipeStart.value) return
+  
+  const touch = e.touches[0]
+  const deltaX = touch.clientX - sidebarSwipeStart.value.x
+  const deltaY = Math.abs(touch.clientY - sidebarSwipeStart.value.y)
+  
+  // Only allow horizontal swipe (not vertical scrolling)
+  if (Math.abs(deltaX) > deltaY && deltaX < 0) {
+    sidebarSwipeOffset.value = Math.max(deltaX, -280) // Limit to sidebar max width
+    e.preventDefault()
+  }
+}
+
+const handleSidebarTouchEnd = () => {
+  if (!isSidebarOpen.value || !sidebarSwipeStart.value) return
+  
+  const shouldClose = sidebarSwipeOffset.value < -SWIPE_THRESHOLD
+  
+  if (shouldClose) {
+    isSidebarOpen.value = false
+  }
+  
+  // Reset
+  sidebarSwipeStart.value = null
+  sidebarSwipeOffset.value = 0
+}
 
 // Helper to convert readonly arrays to mutable arrays
 type ReadonlyPassage = {
@@ -458,8 +509,8 @@ onMounted(async () => {
 
 .map-controls-bottom-left {
   position: fixed;
-  bottom: calc(220px + 1rem);
-  left: 1rem;
+  top: 1rem;
+  right: 1rem;
   z-index: 1002;
   display: flex;
   flex-direction: row;
@@ -646,18 +697,24 @@ onMounted(async () => {
     left: 0;
     top: 0;
     bottom: 0;
-    width: 85%;
-    max-width: 320px;
+    width: 75%;
+    max-width: 280px;
     background: white;
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
     transform: translateX(-100%);
     transition: transform 0.3s ease;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
   }
 
-  .sidebar-wrapper.sidebar-open .sidebar-content {
+  .sidebar-wrapper.sidebar-open .sidebar-content:not(.swiping) {
     transform: translateX(0);
+  }
+
+  /* Disable transition during swipe gesture */
+  .sidebar-content.swiping {
+    transition: none !important;
   }
 
   .sidebar-header {
@@ -673,6 +730,7 @@ onMounted(async () => {
     z-index: 10;
   }
 
+
   .sidebar-title {
     font-size: 1.125rem;
     font-weight: 600;
@@ -681,10 +739,12 @@ onMounted(async () => {
   }
 
   .map-controls-bottom-left {
+    top: auto;
     bottom: calc(240px + 0.75rem);
+    right: auto;
     left: 0.75rem;
-    padding: 0.375rem;
-    gap: 0.375rem;
+    padding: 0.25rem;
+    gap: 0.25rem;
     flex-wrap: wrap;
     max-width: calc(100vw - 5rem);
   }
@@ -694,9 +754,10 @@ onMounted(async () => {
   }
 
   .map-control-btn {
-    min-width: 44px;
-    min-height: 44px;
-    padding: 0.5rem;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    padding: 0.375rem !important;
+    font-size: 0.75rem;
   }
 
   .details-panel {
@@ -728,6 +789,13 @@ onMounted(async () => {
     left: 0.5rem;
     padding: 0.25rem;
     gap: 0.25rem;
+  }
+
+  .map-control-btn {
+    min-width: 32px !important;
+    min-height: 32px !important;
+    padding: 0.25rem !important;
+    font-size: 0.6875rem;
   }
 
   .details-panel {

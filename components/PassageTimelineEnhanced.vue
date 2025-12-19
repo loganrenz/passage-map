@@ -68,9 +68,38 @@
 
     <!-- Time Display and Slider -->
     <div class="timeline-scrubbing">
-      <div class="time-display">
-        <span class="current-time">{{ formatTime(currentTimestamp) }}</span>
-        <span class="time-range">{{ formatTime(passage.startTime) }} → {{ formatTime(passage.endTime) }}</span>
+      <div class="time-display-container">
+        <!-- Current Date/Time -->
+        <div class="current-datetime">
+          <div class="datetime-label">Current Time</div>
+          <div class="datetime-value">{{ formatDateTime(currentTimestamp) }}</div>
+        </div>
+        
+        <!-- Elapsed and Remaining Time -->
+        <div class="time-progress">
+          <div class="time-progress-item elapsed">
+            <div class="time-progress-label">Elapsed</div>
+            <div class="time-progress-value">{{ formatElapsedTime }}</div>
+          </div>
+          <div class="time-progress-separator">/</div>
+          <div class="time-progress-item remaining">
+            <div class="time-progress-label">Remaining</div>
+            <div class="time-progress-value">{{ formatRemainingTime }}</div>
+          </div>
+        </div>
+        
+        <!-- Start/End Times -->
+        <div class="time-range">
+          <div class="time-range-item">
+            <span class="time-range-label">Start:</span>
+            <span class="time-range-value">{{ formatDateTime(passage.startTime) }}</span>
+          </div>
+          <div class="time-range-separator">→</div>
+          <div class="time-range-item">
+            <span class="time-range-label">End:</span>
+            <span class="time-range-value">{{ formatDateTime(passage.endTime) }}</span>
+          </div>
+        </div>
       </div>
       <div class="slider-container">
         <USlider
@@ -251,6 +280,68 @@ const formatFullTime = (timestamp: string) => {
     hour12: false,
   })
 }
+
+// Format date and time in industry standard format
+const formatDateTime = (timestamp: string): string => {
+  if (!timestamp) return '-- -- ---- --:--:--'
+  const date = new Date(timestamp)
+  if (isNaN(date.getTime())) {
+    return '-- -- ---- --:--:--'
+  }
+  
+  // Format: "Jan 15, 2024 14:30:45"
+  const dateStr = date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+  const timeStr = date.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  })
+  
+  return `${dateStr} ${timeStr}`
+}
+
+// Format duration in HH:MM:SS format from milliseconds
+const formatDurationFromMs = (milliseconds: number): string => {
+  if (milliseconds < 0) return '00:00:00'
+  
+  const totalSeconds = Math.floor(milliseconds / 1000)
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+  
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+}
+
+// Calculate elapsed time (from start to current)
+const elapsedTime = computed(() => {
+  if (!props.passage) return 0
+  const current = currentTimeValue.value
+  const start = timeRange.value.start
+  return Math.max(0, current - start)
+})
+
+// Calculate remaining time (from current to end)
+const remainingTime = computed(() => {
+  if (!props.passage) return 0
+  const current = currentTimeValue.value
+  const end = timeRange.value.end
+  return Math.max(0, end - current)
+})
+
+// Formatted elapsed time
+const formatElapsedTime = computed(() => {
+  return formatDurationFromMs(elapsedTime.value)
+})
+
+// Formatted remaining time
+const formatRemainingTime = computed(() => {
+  return formatDurationFromMs(remainingTime.value)
+})
 
 const formatDateRange = (startTime: string, endTime: string): string => {
   const start = new Date(startTime)
@@ -528,24 +619,133 @@ watch(
 .timeline-scrubbing {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  gap: 0.75rem;
 }
 
-.time-display {
+.time-display-container {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-.current-time {
-  font-size: 0.8125rem;
+.current-datetime {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.datetime-label {
+  font-size: 0.6875rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+}
+
+.datetime-value {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
   color: #111827;
+  letter-spacing: -0.01em;
+}
+
+.time-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  border-radius: 0.5rem;
+}
+
+.time-progress-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.time-progress-item.elapsed {
+  text-align: left;
+}
+
+.time-progress-item.remaining {
+  text-align: right;
+}
+
+.time-progress-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+}
+
+.time-progress-value {
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+  color: #1e40af;
+  letter-spacing: -0.01em;
+}
+
+.time-progress-item.remaining .time-progress-value {
+  color: #7c3aed;
+}
+
+.time-progress-separator {
+  font-size: 1.125rem;
+  font-weight: 400;
+  color: #9ca3af;
+  padding: 0 0.25rem;
 }
 
 .time-range {
-  font-size: 0.6875rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+}
+
+.time-range-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex: 1;
+}
+
+.time-range-item:first-child {
+  justify-content: flex-start;
+}
+
+.time-range-item:last-child {
+  justify-content: flex-end;
+}
+
+.time-range-label {
+  font-weight: 600;
   color: #6b7280;
+  text-transform: uppercase;
+  font-size: 0.625rem;
+  letter-spacing: 0.05em;
+}
+
+.time-range-value {
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+  color: #374151;
+  font-weight: 500;
+}
+
+.time-range-separator {
+  color: #9ca3af;
+  font-weight: 500;
+  padding: 0 0.25rem;
 }
 
 .slider-container {
@@ -614,12 +814,27 @@ watch(
 
   .timeline-controls {
     flex-wrap: wrap;
-    gap: 0.375rem;
+    gap: 0.25rem;
   }
 
   .speed-controls {
     flex: 1;
     min-width: 0;
+    padding: 0.125rem;
+    gap: 0.125rem;
+  }
+
+  .timeline-controls :deep(button) {
+    min-width: 32px !important;
+    min-height: 28px !important;
+    padding: 0.25rem 0.375rem !important;
+    font-size: 0.6875rem;
+  }
+
+  .timeline-controls > :deep(button:first-child) {
+    min-width: 32px !important;
+    min-height: 32px !important;
+    padding: 0.375rem !important;
   }
 
   .data-label {
@@ -627,18 +842,41 @@ watch(
     font-size: 0.625rem;
   }
 
-  .time-display {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
+  .time-display-container {
+    gap: 0.5rem;
   }
 
-  .current-time {
-    font-size: 0.75rem;
+  .datetime-value {
+    font-size: 0.8125rem;
+  }
+
+  .time-progress {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .time-progress-value {
+    font-size: 0.875rem;
   }
 
   .time-range {
-    font-size: 0.625rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.375rem;
+    padding: 0.5rem;
+  }
+
+  .time-range-item {
+    width: 100%;
+    justify-content: space-between !important;
+  }
+
+  .time-range-separator {
+    display: none;
+  }
+
+  .time-range-value {
+    font-size: 0.6875rem;
   }
 }
 
@@ -676,6 +914,21 @@ watch(
     order: 2;
     width: 100%;
     margin-top: 0.25rem;
+    padding: 0.125rem;
+    gap: 0.125rem;
+  }
+
+  .speed-controls :deep(button) {
+    min-width: 28px !important;
+    min-height: 24px !important;
+    padding: 0.1875rem 0.25rem !important;
+    font-size: 0.625rem;
+  }
+
+  .timeline-controls > :deep(button:first-child) {
+    min-width: 28px !important;
+    min-height: 28px !important;
+    padding: 0.25rem !important;
   }
 
   .data-label {
@@ -687,12 +940,47 @@ watch(
     height: 28px;
   }
 
-  .current-time {
-    font-size: 0.6875rem;
+  .time-display-container {
+    gap: 0.375rem;
+  }
+
+  .datetime-label {
+    font-size: 0.625rem;
+  }
+
+  .datetime-value {
+    font-size: 0.75rem;
+  }
+
+  .time-progress {
+    padding: 0.375rem;
+    gap: 0.375rem;
+  }
+
+  .time-progress-label {
+    font-size: 0.625rem;
+  }
+
+  .time-progress-value {
+    font-size: 0.75rem;
+  }
+
+  .time-progress-separator {
+    font-size: 0.875rem;
   }
 
   .time-range {
+    padding: 0.375rem;
+    font-size: 0.6875rem;
+    gap: 0.25rem;
+  }
+
+  .time-range-label {
     font-size: 0.5625rem;
+  }
+
+  .time-range-value {
+    font-size: 0.625rem;
   }
 }
 </style>

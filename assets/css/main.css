@@ -1,17 +1,35 @@
 @import 'tailwindcss';
 @import '@nuxt/ui';
 
+/* CSS variable for dynamic viewport height (set by JavaScript) */
+:root {
+  --vh: 1vh;
+}
+
 /* Prevent body scrolling for full-screen map */
 html, body {
   overflow: hidden;
   height: 100%;
   margin: 0;
   padding: 0;
+  /* Fix iOS viewport height issues - use dvh for Safari address bar */
+  height: 100dvh; /* Dynamic viewport height - accounts for Safari address bar */
+  height: calc(var(--vh, 1vh) * 100); /* JavaScript fallback for older browsers */
+  height: -webkit-fill-available; /* Fallback for older Safari */
+  position: fixed;
+  width: 100%;
 }
 
 #__nuxt {
   height: 100vh;
+  height: 100dvh; /* Dynamic viewport height - accounts for Safari address bar */
+  height: calc(var(--vh, 1vh) * 100); /* JavaScript fallback for older browsers */
+  height: -webkit-fill-available; /* Fallback for older Safari */
   overflow: hidden;
+  position: fixed;
+  width: 100%;
+  /* Prevent iOS Safari bottom bar from causing layout shifts */
+  min-height: -webkit-fill-available;
 }
 
 /* Mobile UX improvements */
@@ -81,6 +99,48 @@ html, body {
     padding-bottom: env(safe-area-inset-bottom);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+    /* Use fixed height to prevent iOS Safari bottom bar from causing jitter */
+    height: 100vh;
+    height: -webkit-fill-available;
+    position: fixed;
+    width: 100%;
+  }
+}
+
+/* iOS-specific fixes to prevent jittering */
+@supports (-webkit-touch-callout: none) {
+  html, body, #__nuxt {
+    /* Prevent iOS Safari from resizing viewport when address bar appears/disappears */
+    /* Use dvh (dynamic viewport height) which accounts for address bar */
+    height: 100dvh;
+    height: -webkit-fill-available; /* Fallback for older Safari */
+    position: fixed;
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  /* Handle Safari address bar show/hide with JavaScript fallback */
+  /* The viewport will adjust automatically with dvh, but we add extra protection */
+  .app-container {
+    height: 100dvh;
+    height: -webkit-fill-available;
+    min-height: -webkit-fill-available;
+  }
+  
+  /* Prevent momentum scrolling from causing jitter */
+  * {
+    -webkit-overflow-scrolling: touch;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+  
+  /* Fix for elements that might cause repaints */
+  .sidebar-content,
+  .map-container,
+  .timeline-enhanced {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: transform;
   }
 }
 

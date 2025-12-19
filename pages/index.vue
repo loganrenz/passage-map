@@ -3,8 +3,8 @@
     <!-- Main Layout: Sidebar + Map -->
     <div class="main-layout">
       <!-- Mobile Menu Toggle Button -->
-      <UButton icon="i-lucide-menu" size="lg" color="white" variant="solid" class="mobile-menu-toggle"
-        @click="isSidebarOpen = true" @touchstart.prevent="isSidebarOpen = true" />
+      <UButton v-if="!isSidebarOpen" icon="i-lucide-menu" size="lg" color="neutral" variant="solid"
+        class="mobile-menu-toggle" @click="isSidebarOpen = true" @touchstart.prevent="isSidebarOpen = true" />
 
       <!-- Left Sidebar -->
       <div class="sidebar-wrapper" :class="{ 'sidebar-open': isSidebarOpen }">
@@ -123,8 +123,18 @@
     </div>
 
     <!-- Timeline Strip at Bottom -->
-    <PassageTimelineEnhanced v-if="selectedPassage" :passage="mutableSelectedPassage" :show-speed-graph="true"
-      :current-time="currentTime" :show-passage-info="true" @time-update="handleTimeUpdate" />
+    <div v-if="selectedPassage" class="timeline-wrapper" :class="{ 'timeline-hidden': !isTimelineVisible }">
+      <div class="timeline-toggle-container">
+        <UButton :icon="isTimelineVisible ? 'i-lucide-chevron-down' : 'i-lucide-chevron-up'" size="xs" variant="ghost"
+          color="neutral" class="timeline-toggle-btn" :title="isTimelineVisible ? 'Hide timeline' : 'Show timeline'"
+          @click="isTimelineVisible = !isTimelineVisible"
+          @touchstart.prevent="isTimelineVisible = !isTimelineVisible" />
+      </div>
+      <div v-if="isTimelineVisible" class="timeline-content-wrapper">
+        <PassageTimelineEnhanced :passage="mutableSelectedPassage" :show-speed-graph="true" :current-time="currentTime"
+          :show-passage-info="true" @time-update="handleTimeUpdate" />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -153,6 +163,9 @@ const viewMode = ref<'clean' | 'analysis' | 'playback'>('clean')
 
 // Details panel state
 const isDetailsCollapsed = ref(true)
+
+// Timeline visibility state
+const isTimelineVisible = ref(true)
 
 // Mobile sidebar state
 const isSidebarOpen = ref(false)
@@ -333,7 +346,8 @@ const handleCenterToggle = () => {
   }
 }
 
-const handleLocationsUpdate = (locations: Passage['locations']) => {
+// Reserved for future use when PassageLocations is added to details panel
+const _handleLocationsUpdate = (locations: Passage['locations']) => {
   if (mutableSelectedPassage.value && selectedPassage.value) {
     // Create updated passage with locations
     const updatedPassage: Passage = {
@@ -380,6 +394,16 @@ watch(() => route.query.passage, async () => {
   }
 })
 
+// Handle Safari address bar show/hide
+const handleViewportResize = () => {
+  // Force a reflow to update viewport height when Safari address bar appears/disappears
+  const vh = window.innerHeight * 0.01
+  document.documentElement.style.setProperty('--vh', `${vh}px`)
+}
+
+// Track scroll listener for cleanup
+let scrollHeightChecker: (() => void) | null = null
+
 onMounted(async () => {
   await loadAllPassages()
 
@@ -391,6 +415,30 @@ onMounted(async () => {
     const firstPassage = toMutablePassage(passages.value[0])
     await handlePassageSelect(firstPassage, true)
   }
+
+  // Handle Safari address bar show/hide
+  handleViewportResize()
+  window.addEventListener('resize', handleViewportResize)
+  window.addEventListener('orientationchange', handleViewportResize)
+  // Also listen for scroll events which can trigger address bar show/hide
+  let lastHeight = window.innerHeight
+  scrollHeightChecker = () => {
+    const currentHeight = window.innerHeight
+    if (Math.abs(currentHeight - lastHeight) > 50) {
+      // Significant height change, likely address bar
+      handleViewportResize()
+      lastHeight = currentHeight
+    }
+  }
+  window.addEventListener('scroll', scrollHeightChecker, { passive: true })
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleViewportResize)
+  window.removeEventListener('orientationchange', handleViewportResize)
+  if (scrollHeightChecker) {
+    window.removeEventListener('scroll', scrollHeightChecker)
+  }
 })
 </script>
 
@@ -399,8 +447,17 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
+  /* Dynamic viewport height - accounts for Safari address bar */
+  height: calc(var(--vh, 1vh) * 100);
+  /* JavaScript fallback for older browsers */
+  height: -webkit-fill-available;
+  /* Fallback for older Safari */
   width: 100vw;
   overflow: hidden;
+  position: fixed;
+  /* Prevent iOS Safari bottom bar from causing layout shifts */
+  min-height: -webkit-fill-available;
 }
 
 .main-layout {
@@ -419,6 +476,10 @@ onMounted(async () => {
   left: 1rem;
   z-index: 1001;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  /* Prevent iOS jittering */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 /* Sidebar Wrapper */
@@ -445,6 +506,10 @@ onMounted(async () => {
   flex: 1;
   position: relative;
   min-width: 0;
+  /* Prevent iOS jittering */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .map-controls-bottom-left {
@@ -663,6 +728,10 @@ onMounted(async () => {
     pointer-events: none;
     transition: opacity 0.2s ease;
     display: block;
+    /* Prevent iOS jittering */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: transform, opacity;
   }
 
   .sidebar-wrapper:not(.sidebar-open) {
@@ -676,8 +745,15 @@ onMounted(async () => {
     pointer-events: auto;
   }
 
+  .sidebar-wrapper.sidebar-open .mobile-menu-toggle {
+    display: none !important;
+  }
+
   .sidebar-overlay {
     display: block;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
   }
 
   .sidebar-content {
@@ -687,13 +763,17 @@ onMounted(async () => {
     bottom: 0;
     width: 75%;
     max-width: 280px;
-    background: white;
+    background: #ffffff;
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
     transform: translateX(-100%);
     transition: transform 0.3s ease;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
+    /* Prevent iOS jittering */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: transform;
   }
 
   .sidebar-wrapper.sidebar-open .sidebar-content:not(.swiping) {
@@ -711,8 +791,7 @@ onMounted(async () => {
     align-items: center;
     padding: 1rem;
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(10px);
+    background: #ffffff;
     position: sticky;
     top: 0;
     z-index: 10;
@@ -828,6 +907,70 @@ onMounted(async () => {
   .details-panel {
     max-height: 75vh;
     padding: 0.5rem;
+  }
+}
+
+/* Timeline wrapper with toggle */
+.timeline-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.timeline-content-wrapper {
+  width: 100%;
+  transition: transform 0.3s ease, opacity 0.3s ease, max-height 0.3s ease;
+  max-height: 1000px;
+  overflow: hidden;
+}
+
+.timeline-wrapper.timeline-hidden .timeline-content-wrapper {
+  transform: translateY(100%);
+  opacity: 0;
+  max-height: 0;
+  pointer-events: none;
+}
+
+.timeline-toggle-container {
+  position: absolute;
+  top: -2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1003;
+  display: flex;
+  justify-content: center;
+  pointer-events: auto;
+  /* Always visible, even when timeline is hidden */
+  opacity: 1;
+  visibility: visible;
+}
+
+.timeline-toggle-btn {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem 0.5rem 0 0;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  min-width: 44px;
+  min-height: 36px;
+  padding: 0.375rem 0.75rem;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  /* Prevent iOS jittering */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+@media (max-width: 768px) {
+  .timeline-toggle-container {
+    top: -2rem;
+  }
+
+  .timeline-toggle-btn {
+    min-width: 40px;
+    min-height: 32px;
+    padding: 0.25rem 0.5rem;
   }
 }
 </style>

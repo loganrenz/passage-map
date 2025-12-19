@@ -7,6 +7,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     // Server-side only (private)
     mapkitDevToken: process.env.MAPKIT_DEV_TOKEN || 'eyJraWQiOiJMUTMzNzk2QkNLIiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJpc3MiOiJGVlNZN0NGQzNTIiwiaWF0IjoxNzU2NzY1NjI4LCJvcmlnaW4iOiIqLmN1cmwtYmFuam8udHMubmV0In0.mmnNH7Ncawf_uJrM5wX0AFS52l8HjlwPC2gDlfxBHuLxDHfFJ-n6tGgyMpcxHWAiAZta9j5AoFquJVWrZ-oA_w', // Dev token from Doppler or fallback
+    mapkitProdToken: process.env.MAPKIT_PROD_TOKEN, // Production token from Doppler (for *.tideye.com)
     // InfluxDB URL - configured in Cloudflare to point to tideye-server.curl-banjo.ts.net:8086
     influxUrl: process.env.INFLUX_URL || 'http://influx.tideye.com:8086',
     influxToken: process.env.INFLUX_API_KEY,

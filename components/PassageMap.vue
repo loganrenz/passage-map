@@ -1,11 +1,35 @@
 <template>
-    <div ref="mapContainer" class="w-full h-full min-h-[400px] sm:min-h-[500px] lg:min-h-[600px]" />
+    <div class="relative w-full h-full min-h-[400px] sm:min-h-[500px] lg:min-h-[600px]">
+        <div ref="mapContainer" class="w-full h-full" />
+        <!-- Map Controls -->
+        <div v-if="props.selectedPassage || props.passages.length > 0"
+            class="absolute top-2 right-2 z-10 flex flex-col gap-2">
+            <UCard class="p-2 shadow-lg">
+                <div class="flex flex-col gap-2">
+                    <!-- Show Vessels Toggle -->
+                    <UButton v-if="props.selectedPassage" :variant="showVessels ? 'solid' : 'outline'" size="xs"
+                        icon="i-lucide-ship" @click="showVessels = !showVessels">
+                        Vessels
+                    </UButton>
+                    <!-- Speed Color Coding Toggle -->
+                    <UButton v-if="props.selectedPassage" :variant="speedColorCoding ? 'solid' : 'outline'" size="xs"
+                        icon="i-lucide-palette" @click="speedColorCoding = !speedColorCoding">
+                        Speed
+                    </UButton>
+                    <!-- Zoom to Fit -->
+                    <UButton size="xs" variant="outline" icon="i-lucide-maximize" @click="handleZoomToFit">
+                        Fit
+                    </UButton>
+                </div>
+            </UCard>
+        </div>
+    </div>
 </template>
 
 <script setup lang="ts">
 import type { Passage } from '~/types/passage'
 import { useMapKit } from '~/composables/useMapKit'
-import { getPassageBounds, getAllPassagesBounds, getPositionAtTime } from '~/utils/mapHelpers'
+import { getPassageBounds, getAllPassagesBounds, getPositionAtTime, calculateSpeed, calculateBearing, calculateDistanceKm } from '~/utils/mapHelpers'
 import { useVesselEncounters } from '~/composables/useVesselEncounters'
 import { getVesselIcon, getVesselIconSize } from '~/utils/vesselIcons'
 import { addVesselPositionToMap, removeVesselPositionFromMap, type VesselPositionAnnotation } from '~/composables/useVesselPositionAnnotation'
@@ -40,6 +64,9 @@ const { loadEncounters, getVisibleVessels, isVesselEntering, isVesselExiting } =
 const vesselMarkers = shallowRef<Map<string, { marker: mapkit.ImageAnnotation; opacity: number; fadeTimeout?: number }>>(new Map())
 // Cache for vessel icon images
 const vesselIconCache = new Map<string, HTMLImageElement>()
+// Map controls state
+const showVessels = ref(true)
+const speedColorCoding = ref(false)
 
 const waitForMapKit = (): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -222,6 +249,82 @@ const updateTimeMarker = () => {
 
     const currentDate = new Date(props.currentTime)
 
+    // Calculate speed and heading if we have position data
+    let speed: number | undefined
+    let heading: number | undefined
+    let distance: number | undefined
+
+    if (passage.positions && passage.positions.length > 0) {
+        // Find the closest position to current time
+        let closestPosIndex = -1
+        let minTimeDiff = Infinity
+
+        for (let i = 0; i < passage.positions.length; i++) {
+            const pos = passage.positions[i]
+            if (!pos) continue
+            const timeDiff = Math.abs(Date.parse(pos._time) - targetTime)
+            if (timeDiff < minTimeDiff) {
+                minTimeDiff = timeDiff
+                closestPosIndex = i
+            }
+        }
+
+        if (closestPosIndex >= 0) {
+            const currentPos = passage.positions[closestPosIndex]
+            const startPos = passage.positions[0]
+
+            // Calculate distance from start
+            if (startPos && currentPos) {
+                distance = calculateDistanceKm(
+                    startPos.lat,
+                    startPos.lon,
+                    currentPos.lat,
+                    currentPos.lon
+                )
+            }
+
+            // Calculate speed and heading from previous position
+            if (closestPosIndex > 0 && currentPos) {
+                const prevPos = passage.positions[closestPosIndex - 1]
+                if (prevPos) {
+                    speed = calculateSpeed(
+                        prevPos.lat,
+                        prevPos.lon,
+                        prevPos._time,
+                        currentPos.lat,
+                        currentPos.lon,
+                        currentPos._time
+                    )
+                    heading = calculateBearing(
+                        prevPos.lat,
+                        prevPos.lon,
+                        currentPos.lat,
+                        currentPos.lon
+                    )
+                }
+            } else if (closestPosIndex < passage.positions.length - 1 && currentPos) {
+                // If at first position, calculate from next position
+                const nextPos = passage.positions[closestPosIndex + 1]
+                if (nextPos) {
+                    speed = calculateSpeed(
+                        currentPos.lat,
+                        currentPos.lon,
+                        currentPos._time,
+                        nextPos.lat,
+                        nextPos.lon,
+                        nextPos._time
+                    )
+                    heading = calculateBearing(
+                        currentPos.lat,
+                        currentPos.lon,
+                        nextPos.lat,
+                        nextPos.lon
+                    )
+                }
+            }
+        }
+    }
+
     // Format time string
     const timeString = currentDate.toLocaleString('en-US', {
         month: 'short',
@@ -232,6 +335,18 @@ const updateTimeMarker = () => {
         second: '2-digit',
         timeZoneName: 'short'
     })
+
+    // Build subtitle with additional data
+    const subtitleParts = [timeString]
+    if (speed !== undefined && !isNaN(speed)) {
+        subtitleParts.push(`${speed.toFixed(1)} kn`)
+    }
+    if (heading !== undefined && !isNaN(heading)) {
+        subtitleParts.push(`Hdg: ${Math.round(heading)}°`)
+    }
+    if (distance !== undefined && !isNaN(distance)) {
+        subtitleParts.push(`${distance.toFixed(1)} km`)
+    }
 
     // Remove existing time marker if it exists
     if (timeMarker.value) {
@@ -245,7 +360,7 @@ const updateTimeMarker = () => {
         iconImage: markerImage.value,
         size: { width: 40, height: 40 },
         title: 'Vessel Position',
-        subtitle: timeString,
+        subtitle: subtitleParts.join(' • '),
         displayPriority: 1000,
         showDebugBorder: false, // Debug border disabled
     })
@@ -295,29 +410,79 @@ const drawPassage = (passage: Passage, color = '#007AFF') => {
     // Store coordinates for accurate marker placement
     currentPolylineCoordinates.value = allPositions
 
-    // Create polyline for route
-    const polyline = new window.mapkit.PolylineOverlay(coordinates, {
-        style: new window.mapkit.Style({
-            strokeColor: color,
-            lineWidth: 3,
-            lineCap: 'round',
-            lineJoin: 'round',
-        }),
-    })
+    // Helper function to get color based on speed
+    const getSpeedColor = (speedKnots: number): string => {
+        if (speedKnots < 5) return '#4CAF50' // Green for slow (0-5 kn)
+        if (speedKnots < 10) return '#8BC34A' // Light green (5-10 kn)
+        if (speedKnots < 15) return '#FFC107' // Yellow (10-15 kn)
+        if (speedKnots < 20) return '#FF9800' // Orange (15-20 kn)
+        return '#F44336' // Red for fast (20+ kn)
+    }
 
-    // Log polyline point count
-    console.log(`[PassageMap] Polyline created with ${coordinates.length} points`)
+    if (speedColorCoding.value && passage.positions && passage.positions.length > 1) {
+        // Create multiple polyline segments with speed-based colors
+        const sortedPositions = [...passage.positions].sort((a, b) => {
+            const timeA = new Date(a._time).getTime()
+            const timeB = new Date(b._time).getTime()
+            return timeA - timeB
+        })
 
-    // Mark MapKit objects as non-reactive to prevent Vue reactivity warnings
-    const rawPolyline = markRaw(polyline)
-    mapInstance.value.addOverlay(rawPolyline)
-    overlays.value.push(rawPolyline)
+        for (let i = 0; i < sortedPositions.length - 1; i++) {
+            const pos1 = sortedPositions[i]
+            const pos2 = sortedPositions[i + 1]
+            if (!pos1 || !pos2) continue
+
+            const speed = calculateSpeed(
+                pos1.lat,
+                pos1.lon,
+                pos1._time,
+                pos2.lat,
+                pos2.lon,
+                pos2._time
+            )
+
+            const segmentColor = getSpeedColor(speed)
+            const coord1 = new window.mapkit.Coordinate(pos1.lat, pos1.lon)
+            const coord2 = new window.mapkit.Coordinate(pos2.lat, pos2.lon)
+
+            const segment = new window.mapkit.PolylineOverlay([coord1, coord2], {
+                style: new window.mapkit.Style({
+                    strokeColor: segmentColor,
+                    lineWidth: 4,
+                    lineCap: 'round',
+                    lineJoin: 'round',
+                }),
+            })
+
+            const rawSegment = markRaw(segment)
+            mapInstance.value.addOverlay(rawSegment)
+            overlays.value.push(rawSegment)
+        }
+    } else {
+        // Create single polyline for route
+        const polyline = new window.mapkit.PolylineOverlay(coordinates, {
+            style: new window.mapkit.Style({
+                strokeColor: color,
+                lineWidth: 3,
+                lineCap: 'round',
+                lineJoin: 'round',
+            }),
+        })
+
+        // Log polyline point count
+        console.log(`[PassageMap] Polyline created with ${coordinates.length} points`)
+
+        // Mark MapKit objects as non-reactive to prevent Vue reactivity warnings
+        const rawPolyline = markRaw(polyline)
+        mapInstance.value.addOverlay(rawPolyline)
+        overlays.value.push(rawPolyline)
+    }
 
     // No individual markers - we only show the polyline and a single custom marker
     // The custom marker is managed separately via updateTimeMarker()
 
-    // Return the polyline so we can fit to it if needed
-    return rawPolyline
+    // Return null since we might have multiple overlays
+    return null
 }
 
 const fitToPassages = (passages: Passage[]) => {
@@ -544,8 +709,18 @@ const loadVesselIcon = async (iconPath: string): Promise<HTMLImageElement> => {
 /**
  * Update vessel markers based on current time
  */
+const handleZoomToFit = () => {
+    if (!mapInstance.value) return
+
+    if (props.selectedPassage) {
+        fitToPassage(props.selectedPassage)
+    } else if (props.passages.length > 0) {
+        fitToPassages(props.passages)
+    }
+}
+
 const updateVesselMarkers = async () => {
-    if (!mapInstance.value || !window.mapkit || !props.currentTime || !props.selectedPassage) {
+    if (!mapInstance.value || !window.mapkit || !props.currentTime || !props.selectedPassage || !showVessels.value) {
         clearVesselMarkers()
         return
     }
@@ -665,6 +840,38 @@ watch(
         }
     }
 )
+
+// Watch showVessels toggle to update vessel markers visibility
+watch(showVessels, (shouldShow) => {
+    if (!isInitialized.value) return
+    if (!shouldShow) {
+        clearVesselMarkers()
+    } else if (props.currentTime && props.selectedPassage && markerImage.value) {
+        updateVesselMarkers()
+    }
+})
+
+// Watch speedColorCoding to redraw passage with color coding
+watch(speedColorCoding, () => {
+    if (!isInitialized.value) return
+    if (props.selectedPassage) {
+        redrawSelectedPassage(props.selectedPassage)
+    } else if (props.passages.length > 0) {
+        clearOverlays()
+        const colors = ['#007AFF', '#34C759', '#FF9500', '#FF3B30', '#AF52DE', '#FF2D55']
+        props.passages.forEach((passage, index) => {
+            const color = colors[index % colors.length]
+            drawPassage(passage, color)
+        })
+        if (props.passages.length > 0) {
+            nextTick(() => {
+                setTimeout(() => {
+                    fitToPassages(props.passages)
+                }, 100)
+            })
+        }
+    }
+})
 
 onUnmounted(() => {
     clearOverlays()

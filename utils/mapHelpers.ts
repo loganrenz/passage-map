@@ -145,3 +145,116 @@ export function getPositionAtTime(
   return { lat, lon }
 }
 
+/**
+ * Calculate distance between two coordinates using Haversine formula
+ * Returns distance in kilometers
+ */
+export function calculateDistanceKm(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  const R = 6371 // Earth's radius in kilometers
+  const dLat = ((lat2 - lat1) * Math.PI) / 180
+  const dLon = ((lon2 - lon1) * Math.PI) / 180
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return R * c
+}
+
+/**
+ * Calculate bearing/heading from point 1 to point 2
+ * Returns heading in degrees (0-360)
+ */
+export function calculateBearing(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  const dLon = ((lon2 - lon1) * Math.PI) / 180
+  const lat1Rad = (lat1 * Math.PI) / 180
+  const lat2Rad = (lat2 * Math.PI) / 180
+
+  const y = Math.sin(dLon) * Math.cos(lat2Rad)
+  const x =
+    Math.cos(lat1Rad) * Math.sin(lat2Rad) -
+    Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(dLon)
+
+  let bearing = (Math.atan2(y, x) * 180) / Math.PI
+  bearing = (bearing + 360) % 360 // Normalize to 0-360
+  return bearing
+}
+
+/**
+ * Calculate speed from two positions
+ * Returns speed in knots
+ */
+export function calculateSpeed(
+  lat1: number,
+  lon1: number,
+  time1: string,
+  lat2: number,
+  lon2: number,
+  time2: string
+): number {
+  const distanceKm = calculateDistanceKm(lat1, lon1, lat2, lon2)
+  const timeDiffMs = Date.parse(time2) - Date.parse(time1)
+  const timeDiffHours = timeDiffMs / (1000 * 60 * 60)
+  
+  if (timeDiffHours <= 0) return 0
+  
+  const speedKmh = distanceKm / timeDiffHours
+  const speedKnots = speedKmh / 1.852 // Convert km/h to knots
+  return speedKnots
+}
+
+/**
+ * Get position data with calculated speed, heading, and distance
+ */
+export function getPositionData(
+  position: { _time: string; lat: number; lon: number },
+  prevPosition?: { _time: string; lat: number; lon: number },
+  startPosition?: { lat: number; lon: number }
+): {
+  speed?: number
+  heading?: number
+  distance?: number
+} {
+  const data: { speed?: number; heading?: number; distance?: number } = {}
+  
+  if (prevPosition) {
+    data.speed = calculateSpeed(
+      prevPosition.lat,
+      prevPosition.lon,
+      prevPosition._time,
+      position.lat,
+      position.lon,
+      position._time
+    )
+    data.heading = calculateBearing(
+      prevPosition.lat,
+      prevPosition.lon,
+      position.lat,
+      position.lon
+    )
+  }
+  
+  if (startPosition) {
+    data.distance = calculateDistanceKm(
+      startPosition.lat,
+      startPosition.lon,
+      position.lat,
+      position.lon
+    )
+  }
+  
+  return data
+}
+

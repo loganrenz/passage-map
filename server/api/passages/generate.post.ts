@@ -1,6 +1,3 @@
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
 import { getInfluxDBConfig, executeQuery } from '~/server/utils/influxClient'
 import {
   buildPassagePositionQuery,
@@ -13,19 +10,16 @@ import {
   parseInfluxResults,
 } from '~/server/utils/passageTransformer'
 import { addQuery } from '~/server/utils/queryRegistry'
+import { getPassagesStorage } from '~/server/utils/storage'
 import type { Passage } from '~/types/passage'
-
-const PASSAGES_DIR = join(process.cwd(), 'public', 'data', 'passages')
-
-async function ensurePassagesDir(): Promise<void> {
-  if (!existsSync(PASSAGES_DIR)) {
-    await mkdir(PASSAGES_DIR, { recursive: true })
-  }
-}
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const config = getInfluxDBConfig()
+  
+  // Get storage adapter (R2 in production, filesystem in dev)
+  const env = event.context.cloudflare?.env || {}
+  const storage = getPassagesStorage(env)
 
   // Support both direct query string or query parameters
   let queryString: string | undefined
@@ -110,10 +104,8 @@ export default defineEventHandler(async (event) => {
     const filename = body.filename || `passage_${dateStr}_passage_${timestamp}.json`
     passage.filename = filename
 
-    // Save passage to file
-    await ensurePassagesDir()
-    const filePath = join(PASSAGES_DIR, filename)
-    await writeFile(filePath, JSON.stringify(passage, null, 2), 'utf-8')
+    // Save passage to storage (R2 or filesystem)
+    await storage.writeJSON(filename, passage)
 
     // Store query in registry
     const queryMetadata = await addQuery({
@@ -122,7 +114,7 @@ export default defineEventHandler(async (event) => {
       passageId: passage.id,
       description,
       passageFilename: filename,
-    })
+    }, env)
 
     // Add query metadata to passage
     passage.queryMetadata = {
@@ -134,7 +126,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Update the saved file with query metadata
-    await writeFile(filePath, JSON.stringify(passage, null, 2), 'utf-8')
+    await storage.writeJSON(filename, passage)
 
     return {
       success: true,

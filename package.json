@@ -11,7 +11,12 @@
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "typecheck": "nuxt typecheck"
+    "typecheck": "nuxt typecheck",
+    "wrangler": "wrangler",
+    "r2:create": "wrangler r2 bucket create",
+    "r2:list": "wrangler r2 bucket list",
+    "r2:delete": "wrangler r2 bucket delete",
+    "r2:dev": "wrangler dev"
   },
   "dependencies": {
     "@apple/mapkit-loader": "^0.2.1",
@@ -23,9 +28,11 @@
     "vue": "^3.5.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20251219.0",
     "@nuxt/eslint": "^1.12.1",
     "@types/apple-mapkit-js-browser": "^5.78.1",
     "@types/node": "^20.10.0",
-    "typescript": "^5.2.0"
+    "typescript": "^5.2.0",
+    "wrangler": "^4.56.0"
   }
 }

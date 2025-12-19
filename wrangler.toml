@@ -1,0 +1,23 @@
+name = "passage-map"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+# R2 buckets for storing passage data
+[[r2_buckets]]
+binding = "PASSAGES_BUCKET"
+bucket_name = "passage-map-passages"
+preview_bucket_name = "passage-map-passages-preview"
+
+[[r2_buckets]]
+binding = "VESSEL_DATA_BUCKET"
+bucket_name = "passage-map-vessel-data"
+preview_bucket_name = "passage-map-vessel-data-preview"
+
+[[r2_buckets]]
+binding = "QUERIES_BUCKET"
+bucket_name = "passage-map-queries"
+preview_bucket_name = "passage-map-queries-preview"
+
+# Environment variables can be set via wrangler secret put
+# or in .dev.vars for local development
+

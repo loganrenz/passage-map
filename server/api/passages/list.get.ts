@@ -1,13 +1,14 @@
-import { readdir, readFile } from 'fs/promises'
-import { join } from 'path'
 import type { Passage } from '~/types/passage'
+import { getPassagesStorage } from '~/server/utils/storage'
 
-export default defineEventHandler(async (_event) => {
+export default defineEventHandler(async (event) => {
   try {
-    const passagesDir = join(process.cwd(), 'public', 'data', 'passages')
+    // Get storage adapter (R2 in production, filesystem in dev)
+    const env = event.context.cloudflare?.env || {}
+    const storage = getPassagesStorage(env)
     
-    // Read all files in the passages directory
-    const files = await readdir(passagesDir)
+    // List all passage files
+    const files = await storage.list('passage_')
     
     // Filter for passage JSON files (exclude index/list files)
     const passageFiles = files.filter(
@@ -19,9 +20,11 @@ export default defineEventHandler(async (_event) => {
     
     for (const filename of passageFiles) {
       try {
-        const filePath = join(passagesDir, filename)
-        const fileContent = await readFile(filePath, 'utf-8')
-        const passage: Passage = JSON.parse(fileContent)
+        const passage = await storage.readJSON<Passage>(filename)
+        
+        if (!passage) {
+          continue
+        }
         
         // Ensure filename is set
         if (!passage.filename) {

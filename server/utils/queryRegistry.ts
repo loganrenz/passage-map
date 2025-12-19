@@ -1,6 +1,4 @@
-import { readFile, writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
+import { getQueriesStorage } from './storage'
 
 export interface QueryMetadata {
   id: string
@@ -12,32 +10,26 @@ export interface QueryMetadata {
   passageFilename?: string
 }
 
-const QUERIES_DIR = join(process.cwd(), 'public', 'data', 'passages')
-const QUERIES_FILE = join(QUERIES_DIR, 'queries.json')
+const QUERIES_FILE = 'queries.json'
 
 /**
- * Ensure queries directory exists
+ * Get storage adapter for queries
+ * In a real implementation, this would get the env from the event context
+ * For now, we'll use a default that falls back to filesystem
  */
-async function ensureQueriesDir(): Promise<void> {
-  if (!existsSync(QUERIES_DIR)) {
-    await mkdir(QUERIES_DIR, { recursive: true })
-  }
+function getStorage(env?: { [key: string]: unknown}) {
+  return getQueriesStorage(env)
 }
 
 /**
  * Load all queries from registry
  */
-export async function loadQueries(): Promise<QueryMetadata[]> {
-  await ensureQueriesDir()
-
-  if (!existsSync(QUERIES_FILE)) {
-    return []
-  }
+export async function loadQueries(env?: { [key: string]: unknown }): Promise<QueryMetadata[]> {
+  const storage = getStorage(env)
 
   try {
-    const content = await readFile(QUERIES_FILE, 'utf-8')
-    const data = JSON.parse(content)
-    return Array.isArray(data.queries) ? data.queries : []
+    const data = await storage.readJSON<{ queries: QueryMetadata[] }>(QUERIES_FILE)
+    return Array.isArray(data?.queries) ? data.queries : []
   } catch (error) {
     console.error('Error loading queries:', error)
     return []
@@ -47,22 +39,25 @@ export async function loadQueries(): Promise<QueryMetadata[]> {
 /**
  * Save queries to registry
  */
-export async function saveQueries(queries: QueryMetadata[]): Promise<void> {
-  await ensureQueriesDir()
+export async function saveQueries(queries: QueryMetadata[], env?: { [key: string]: unknown }): Promise<void> {
+  const storage = getStorage(env)
 
   const data = {
     queries,
     updatedAt: new Date().toISOString(),
   }
 
-  await writeFile(QUERIES_FILE, JSON.stringify(data, null, 2), 'utf-8')
+  await storage.writeJSON(QUERIES_FILE, data)
 }
 
 /**
  * Add a query to the registry
  */
-export async function addQuery(query: Omit<QueryMetadata, 'id' | 'timestamp'>): Promise<QueryMetadata> {
-  const queries = await loadQueries()
+export async function addQuery(
+  query: Omit<QueryMetadata, 'id' | 'timestamp'>,
+  env?: { [key: string]: unknown }
+): Promise<QueryMetadata> {
+  const queries = await loadQueries(env)
   
   const newQuery: QueryMetadata = {
     ...query,
@@ -71,7 +66,7 @@ export async function addQuery(query: Omit<QueryMetadata, 'id' | 'timestamp'>): 
   }
 
   queries.push(newQuery)
-  await saveQueries(queries)
+  await saveQueries(queries, env)
 
   return newQuery
 }
@@ -79,24 +74,24 @@ export async function addQuery(query: Omit<QueryMetadata, 'id' | 'timestamp'>): 
 /**
  * Get query by ID
  */
-export async function getQueryById(id: string): Promise<QueryMetadata | null> {
-  const queries = await loadQueries()
+export async function getQueryById(id: string, env?: { [key: string]: unknown }): Promise<QueryMetadata | null> {
+  const queries = await loadQueries(env)
   return queries.find((q) => q.id === id) || null
 }
 
 /**
  * Get queries by passage ID
  */
-export async function getQueriesByPassageId(passageId: string): Promise<QueryMetadata[]> {
-  const queries = await loadQueries()
+export async function getQueriesByPassageId(passageId: string, env?: { [key: string]: unknown }): Promise<QueryMetadata[]> {
+  const queries = await loadQueries(env)
   return queries.filter((q) => q.passageId === passageId)
 }
 
 /**
  * Get queries by passage filename
  */
-export async function getQueriesByFilename(filename: string): Promise<QueryMetadata[]> {
-  const queries = await loadQueries()
+export async function getQueriesByFilename(filename: string, env?: { [key: string]: unknown }): Promise<QueryMetadata[]> {
+  const queries = await loadQueries(env)
   return queries.filter((q) => q.passageFilename === filename)
 }
 
@@ -105,9 +100,10 @@ export async function getQueriesByFilename(filename: string): Promise<QueryMetad
  */
 export async function updateQuery(
   id: string,
-  updates: Partial<Omit<QueryMetadata, 'id' | 'timestamp'>>
+  updates: Partial<Omit<QueryMetadata, 'id' | 'timestamp'>>,
+  env?: { [key: string]: unknown }
 ): Promise<QueryMetadata | null> {
-  const queries = await loadQueries()
+  const queries = await loadQueries(env)
   const index = queries.findIndex((q) => q.id === id)
 
   if (index === -1) {
@@ -119,30 +115,30 @@ export async function updateQuery(
     ...updates,
   }
 
-  await saveQueries(queries)
+  await saveQueries(queries, env)
   return queries[index]
 }
 
 /**
  * Delete a query from the registry
  */
-export async function deleteQuery(id: string): Promise<boolean> {
-  const queries = await loadQueries()
+export async function deleteQuery(id: string, env?: { [key: string]: unknown }): Promise<boolean> {
+  const queries = await loadQueries(env)
   const filtered = queries.filter((q) => q.id !== id)
 
   if (filtered.length === queries.length) {
     return false // Query not found
   }
 
-  await saveQueries(filtered)
+  await saveQueries(filtered, env)
   return true
 }
 
 /**
  * Get all queries sorted by timestamp (newest first)
  */
-export async function getAllQueries(): Promise<QueryMetadata[]> {
-  const queries = await loadQueries()
+export async function getAllQueries(env?: { [key: string]: unknown }): Promise<QueryMetadata[]> {
+  const queries = await loadQueries(env)
   return queries.sort((a, b) => {
     const timeA = new Date(a.timestamp).getTime()
     const timeB = new Date(b.timestamp).getTime()

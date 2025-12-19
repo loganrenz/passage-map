@@ -11,10 +11,13 @@ export default defineEventHandler(async (event) => {
   const passageId = query.passageId as string | undefined
   const filename = query.filename as string | undefined
 
+  // Get environment for storage access
+  const env = event.context.cloudflare?.env || {}
+
   try {
     if (id) {
       // Get single query by ID
-      const queryData = await getQueryById(id)
+      const queryData = await getQueryById(id, env)
       if (!queryData) {
         throw createError({
           statusCode: 404,
@@ -26,16 +29,16 @@ export default defineEventHandler(async (event) => {
 
     if (passageId) {
       // Get queries by passage ID
-      return await getQueriesByPassageId(passageId)
+      return await getQueriesByPassageId(passageId, env)
     }
 
     if (filename) {
       // Get queries by filename
-      return await getQueriesByFilename(filename)
+      return await getQueriesByFilename(filename, env)
     }
 
     // Get all queries
-    return await getAllQueries()
+    return await getAllQueries(env)
   } catch (error: any) {
     console.error('Error fetching queries:', error)
     throw createError({

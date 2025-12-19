@@ -26,3 +26,4 @@ logs
 *.p8
 AuthKey_*.p8
 
+.vercel

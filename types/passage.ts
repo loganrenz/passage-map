@@ -7,6 +7,9 @@ export interface PassagePosition {
   _time: string
   lat: number
   lon: number
+  speed?: number // Speed in knots (optional, can be calculated)
+  heading?: number // Heading in degrees 0-360 (optional, can be calculated)
+  distance?: number // Distance from start in km (optional, can be calculated)
 }
 
 export interface QueryMetadata {

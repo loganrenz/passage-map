@@ -14,11 +14,12 @@
  * 4. Save to mmsi-to-vessel-name.json
  */
 
-import { readFileSync, writeFileSync, existsSync, createWriteStream } from 'fs'
+import { readFileSync, writeFileSync, existsSync } from 'fs'
 import { join } from 'path'
 import { execSync } from 'child_process'
 import { createGunzip } from 'zlib'
-import { pipeline } from 'stream/promises'
+import { createReadStream } from 'fs'
+import { createInterface } from 'readline'
 
 interface VesselNameMapping {
   _comment?: string
@@ -53,14 +54,15 @@ function getAISHubKey(): string | null {
 }
 
 /**
- * Download compressed AISHub data
+ * Download AISHub data (uncompressed for easier parsing)
  */
-async function downloadAISHubData(username: string): Promise<string> {
-  const url = `https://data.aishub.net/ws.php?username=${encodeURIComponent(username)}&format=1&output=json&compress=1`
-  const tempFile = '/tmp/aishub-data.json.gz'
+async function downloadAISHubData(username: string, compressed: boolean = false): Promise<string> {
+  const compressParam = compressed ? '&compress=1' : '&compress=0'
+  const url = `https://data.aishub.net/ws.php?username=${encodeURIComponent(username)}&format=1&output=json${compressParam}`
+  const tempFile = compressed ? '/tmp/aishub-data.zip' : '/tmp/aishub-data.json'
   
   console.log('📥 Downloading AISHub data (this may take a moment)...')
-  console.log(`   URL: https://data.aishub.net/ws.php?username=${username}&format=1&output=json&compress=1`)
+  console.log(`   URL: https://data.aishub.net/ws.php?username=${username}&format=1&output=json${compressParam}`)
   
   const response = await fetch(url)
   
@@ -68,12 +70,12 @@ async function downloadAISHubData(username: string): Promise<string> {
     throw new Error(`Failed to download AISHub data: ${response.status} ${response.statusText}`)
   }
   
-  // Save compressed data
+  // Save data
   const buffer = await response.arrayBuffer()
   writeFileSync(tempFile, Buffer.from(buffer))
   
   const sizeMB = (buffer.byteLength / 1024 / 1024).toFixed(2)
-  console.log(`✅ Downloaded ${sizeMB} MB (compressed)`)
+  console.log(`✅ Downloaded ${sizeMB} MB`)
   
   return tempFile
 }
@@ -84,33 +86,86 @@ async function downloadAISHubData(username: string): Promise<string> {
 async function parseAISHubData(compressedFile: string): Promise<Record<string, string>> {
   console.log('📦 Decompressing and parsing data...')
   
-  // Read and decompress
-  const compressed = readFileSync(compressedFile)
-  const decompressed = await new Promise<Buffer>((resolve, reject) => {
-    const gunzip = createGunzip()
-    const chunks: Buffer[] = []
-    
-    gunzip.on('data', (chunk) => chunks.push(chunk))
-    gunzip.on('end', () => resolve(Buffer.concat(chunks)))
-    gunzip.on('error', reject)
-    
-    gunzip.write(compressed)
-    gunzip.end()
-  })
+  // Read file
+  const fileData = readFileSync(compressedFile)
   
-  const text = decompressed.toString('utf-8')
-  console.log(`   Decompressed size: ${(text.length / 1024 / 1024).toFixed(2)} MB`)
+  // Check magic bytes to detect compression type
+  let text: string
+  const isGzip = fileData[0] === 0x1f && fileData[1] === 0x8b
+  const isZip = fileData[0] === 0x50 && fileData[1] === 0x4b // "PK" - ZIP file
+  
+  if (isZip) {
+    console.log('   Detected ZIP compression, extracting...')
+    // AISHub returns ZIP with a JSON file inside
+    // Use unzip command or Node.js zip library
+    // For simplicity, let's try using the system unzip command
+    try {
+      const tempDir = '/tmp/aishub-extract'
+      execSync(`mkdir -p ${tempDir} && cd ${tempDir} && unzip -q -o ${compressedFile} && cat *.json`, { encoding: 'utf-8' })
+      // Actually, let's just read the zip and extract the JSON
+      // For now, let's use a simpler approach - download without compression
+      throw new Error('ZIP extraction - will use uncompressed download instead')
+    } catch (error) {
+      // Fall back to uncompressed download
+      console.log('   ZIP extraction failed, will download uncompressed version')
+      throw error
+    }
+  } else if (isGzip) {
+    console.log('   Detected gzip compression, decompressing...')
+    // Decompress
+    const decompressed = await new Promise<Buffer>((resolve, reject) => {
+      const gunzip = createGunzip()
+      const chunks: Buffer[] = []
+      
+      gunzip.on('data', (chunk) => chunks.push(chunk))
+      gunzip.on('end', () => resolve(Buffer.concat(chunks)))
+      gunzip.on('error', reject)
+      
+      gunzip.write(fileData)
+      gunzip.end()
+    })
+    
+    text = decompressed.toString('utf-8')
+    console.log(`   Decompressed size: ${(text.length / 1024 / 1024).toFixed(2)} MB`)
+  } else {
+    // Not compressed, read as text
+    text = fileData.toString('utf-8')
+    console.log(`   File size: ${(text.length / 1024 / 1024).toFixed(2)} MB (not compressed)`)
+  }
   
   // Parse JSON
   // AISHub returns: [metadata, [vessel1, vessel2, ...]]
-  const data = JSON.parse(text)
+  let data: any
+  try {
+    data = JSON.parse(text)
+  } catch (parseError) {
+    console.error(`   Failed to parse JSON. First 500 chars: ${text.substring(0, 500)}`)
+    throw new Error(`JSON parse error: ${parseError}`)
+  }
   
-  if (!Array.isArray(data) || data.length < 2) {
-    throw new Error('Unexpected AISHub data format')
+  if (!Array.isArray(data)) {
+    throw new Error('Unexpected AISHub data format - expected array')
+  }
+  
+  // Check for error response
+  if (data.length > 0 && data[0].ERROR === true) {
+    const errorMsg = data[0].ERROR_MESSAGE || 'Unknown error'
+    if (errorMsg.includes('Too frequent')) {
+      throw new Error('AISHub rate limit - wait 1 minute before trying again')
+    }
+    throw new Error(`AISHub API error: ${errorMsg}`)
+  }
+  
+  if (data.length < 2) {
+    throw new Error('Unexpected AISHub data format - array too short')
   }
   
   const metadata = data[0]
   const vessels = data[1]
+  
+  if (!Array.isArray(vessels)) {
+    throw new Error('Unexpected AISHub data format - vessels not an array')
+  }
   
   console.log(`   Records: ${metadata.RECORDS || vessels.length}`)
   console.log(`   Vessels in array: ${vessels.length}`)
@@ -193,11 +248,17 @@ async function main() {
   console.log(`📋 Loaded ${existingCount} existing vessel name mappings\n`)
   
   try {
-    // Download data
-    const compressedFile = await downloadAISHubData(aishubKey)
+    // Download data (try uncompressed first for easier parsing)
+    let dataFile: string
+    try {
+      dataFile = await downloadAISHubData(aishubKey, false) // Uncompressed
+    } catch (error) {
+      console.log('   Trying compressed download...')
+      dataFile = await downloadAISHubData(aishubKey, true) // Compressed
+    }
     
     // Parse and extract mappings
-    const newMappings = await parseAISHubData(compressedFile)
+    const newMappings = await parseAISHubData(dataFile)
     
     // Merge with existing mappings (new mappings override existing ones)
     let added = 0
@@ -225,7 +286,7 @@ async function main() {
     
     // Clean up temp file
     try {
-      require('fs').unlinkSync(compressedFile)
+      require('fs').unlinkSync(dataFile)
     } catch (e) {
       // Ignore cleanup errors
     }

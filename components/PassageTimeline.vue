@@ -247,7 +247,7 @@ defineExpose({
 .timeline-speed-controls {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.375rem;
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 0.5rem;
   padding: 0.25rem;
@@ -255,9 +255,11 @@ defineExpose({
 }
 
 .timeline-speed-btn {
-  min-width: 36px;
+  min-width: 40px;
   min-height: 32px;
   font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
 .timeline-time-display {
@@ -294,6 +296,26 @@ defineExpose({
 
   .timeline-content {
     gap: 0.5rem;
+  }
+
+  .timeline-speed-controls {
+    width: 100%;
+    padding: 0.375rem;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+    justify-content: stretch;
+  }
+
+  .timeline-speed-btn {
+    min-width: 48px !important;
+    min-height: 40px !important;
+    font-size: 0.8125rem !important;
+    flex: 1;
+  }
+
+  .timeline-play-btn {
+    min-width: 40px;
+    min-height: 40px;
   }
 
   .timeline-time-display {

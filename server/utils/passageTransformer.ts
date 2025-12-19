@@ -58,12 +58,14 @@ function calculateTotalDistance(positions: InfluxPosition[]): number {
 
 /**
  * Calculate average speed from speeds array or positions
+ * Returns speed in knots
  */
 function calculateAverageSpeed(
   positions: InfluxPosition[],
   speeds?: InfluxSpeed[]
 ): number {
   if (speeds && speeds.length > 0) {
+    // Assume speeds from InfluxDB are already in knots (AIS standard)
     const sum = speeds.reduce((acc, s) => acc + s._value, 0)
     return sum / speeds.length
   }
@@ -83,9 +85,10 @@ function calculateAverageSpeed(
     const timeDiff =
       (new Date(curr._time).getTime() - new Date(prev._time).getTime()) / 1000 // seconds
     if (timeDiff > 0) {
-      const distance = calculateDistance(prev.lat, prev.lon, curr.lat, curr.lon)
-      const speed = distance / (timeDiff / 3600) // km/h
-      totalSpeed += speed
+      const distance = calculateDistance(prev.lat, prev.lon, curr.lat, curr.lon) // km
+      const speedKmh = distance / (timeDiff / 3600) // km/h
+      const speedKnots = speedKmh / 1.852 // Convert km/h to knots
+      totalSpeed += speedKnots
       count++
     }
   }
@@ -95,12 +98,14 @@ function calculateAverageSpeed(
 
 /**
  * Calculate max speed from speeds array or positions
+ * Returns speed in knots
  */
 function calculateMaxSpeed(
   positions: InfluxPosition[],
   speeds?: InfluxSpeed[]
 ): number {
   if (speeds && speeds.length > 0) {
+    // Assume speeds from InfluxDB are already in knots (AIS standard)
     return Math.max(...speeds.map((s) => s._value))
   }
 
@@ -118,9 +123,10 @@ function calculateMaxSpeed(
     const timeDiff =
       (new Date(curr._time).getTime() - new Date(prev._time).getTime()) / 1000 // seconds
     if (timeDiff > 0) {
-      const distance = calculateDistance(prev.lat, prev.lon, curr.lat, curr.lon)
-      const speed = distance / (timeDiff / 3600) // km/h
-      maxSpeed = Math.max(maxSpeed, speed)
+      const distance = calculateDistance(prev.lat, prev.lon, curr.lat, curr.lon) // km
+      const speedKmh = distance / (timeDiff / 3600) // km/h
+      const speedKnots = speedKmh / 1.852 // Convert km/h to knots
+      maxSpeed = Math.max(maxSpeed, speedKnots)
     }
   }
 
@@ -170,9 +176,13 @@ export function transformToPassage(
     (new Date(endTime).getTime() - new Date(startTime).getTime()) /
     (1000 * 60 * 60) // hours
 
-  const distance = calculateTotalDistance(sortedPositions)
-  const avgSpeed = calculateAverageSpeed(sortedPositions, speeds)
-  const maxSpeed = calculateMaxSpeed(sortedPositions, speeds)
+  const distanceKm = calculateTotalDistance(sortedPositions)
+  // Convert distance from km to nautical miles (1 nm = 1.852 km)
+  const distanceNm = distanceKm / 1.852
+  
+  // Speeds are already in knots (from calculateAverageSpeed/calculateMaxSpeed)
+  const avgSpeedKnots = calculateAverageSpeed(sortedPositions, speeds)
+  const maxSpeedKnots = calculateMaxSpeed(sortedPositions, speeds)
 
   // Generate passage ID if not provided
   const id =
@@ -204,9 +214,9 @@ export function transformToPassage(
     startTime,
     endTime,
     duration: Math.round(duration * 100) / 100, // Round to 2 decimal places
-    avgSpeed: Math.round(avgSpeed * 100) / 100,
-    maxSpeed: Math.round(maxSpeed * 100) / 100,
-    distance: Math.round(distance * 100) / 100,
+    avgSpeed: Math.round(avgSpeedKnots * 100) / 100,
+    maxSpeed: Math.round(maxSpeedKnots * 100) / 100,
+    distance: Math.round(distanceNm * 100) / 100,
     startLocation,
     endLocation,
     description,

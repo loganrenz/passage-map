@@ -215,13 +215,16 @@ async function fetchPassageFromInfluxDB() {
     const startLocation = { lat: firstPosition.lat, lon: firstPosition.lon }
     const endLocation = { lat: lastPosition.lat, lon: lastPosition.lon }
 
-    // Calculate total distance
-    let totalDistance = 0
+    // Calculate total distance in km
+    let totalDistanceKm = 0
     for (let i = 1; i < positions.length; i++) {
       const prev = positions[i - 1]
       const curr = positions[i]
-      totalDistance += calculateDistance(prev.lat, prev.lon, curr.lat, curr.lon)
+      totalDistanceKm += calculateDistance(prev.lat, prev.lon, curr.lat, curr.lon)
     }
+
+    // Convert distance from km to nautical miles (1 nm = 1.852 km)
+    const totalDistanceNm = totalDistanceKm / 1.852
 
     // Calculate duration in hours
     const startDateObj = new Date(actualStartTime)
@@ -229,20 +232,21 @@ async function fetchPassageFromInfluxDB() {
     const durationMs = endDateObj.getTime() - startDateObj.getTime()
     const durationHours = durationMs / (1000 * 60 * 60)
 
-    // Calculate speeds (km/h)
-    const avgSpeed = durationHours > 0 ? totalDistance / durationHours : 0
+    // Calculate speeds in knots (distance in nm / time in hours)
+    const avgSpeedKnots = durationHours > 0 ? totalDistanceNm / durationHours : 0
     
-    // Calculate max speed between consecutive points
-    let maxSpeed = 0
+    // Calculate max speed between consecutive points in knots
+    let maxSpeedKnots = 0
     for (let i = 1; i < positions.length; i++) {
       const prev = positions[i - 1]
       const curr = positions[i]
-      const segmentDistance = calculateDistance(prev.lat, prev.lon, curr.lat, curr.lon)
+      const segmentDistanceKm = calculateDistance(prev.lat, prev.lon, curr.lat, curr.lon)
+      const segmentDistanceNm = segmentDistanceKm / 1.852 // Convert to nautical miles
       const segmentTimeMs = new Date(curr.time).getTime() - new Date(prev.time).getTime()
       const segmentTimeHours = segmentTimeMs / (1000 * 60 * 60)
       if (segmentTimeHours > 0) {
-        const segmentSpeed = segmentDistance / segmentTimeHours
-        maxSpeed = Math.max(maxSpeed, segmentSpeed)
+        const segmentSpeedKnots = segmentDistanceNm / segmentTimeHours
+        maxSpeedKnots = Math.max(maxSpeedKnots, segmentSpeedKnots)
       }
     }
 
@@ -266,9 +270,9 @@ async function fetchPassageFromInfluxDB() {
       startTime: actualStartTime,
       endTime: actualEndTime,
       duration: durationHours,
-      avgSpeed: avgSpeed,
-      maxSpeed: maxSpeed,
-      distance: totalDistance,
+      avgSpeed: avgSpeedKnots,
+      maxSpeed: maxSpeedKnots,
+      distance: totalDistanceNm,
       startLocation,
       endLocation,
       description: `Passage data fetched from InfluxDB starting ${startDate}`,
@@ -287,9 +291,9 @@ async function fetchPassageFromInfluxDB() {
 
     console.log(`\n✅ Passage file created: ${filename}`)
     console.log(`   Duration: ${durationHours.toFixed(2)} hours`)
-    console.log(`   Distance: ${totalDistance.toFixed(2)} km`)
-    console.log(`   Avg Speed: ${avgSpeed.toFixed(2)} km/h`)
-    console.log(`   Max Speed: ${maxSpeed.toFixed(2)} km/h`)
+    console.log(`   Distance: ${totalDistanceNm.toFixed(2)} nm`)
+    console.log(`   Avg Speed: ${avgSpeedKnots.toFixed(2)} knots`)
+    console.log(`   Max Speed: ${maxSpeedKnots.toFixed(2)} knots`)
     console.log(`   Positions: ${passagePositions.length}`)
   } catch (error: any) {
     console.error('❌ Error fetching passage from InfluxDB:', error)

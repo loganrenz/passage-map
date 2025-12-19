@@ -4,17 +4,14 @@
     <div class="main-layout flex flex-1 min-h-0 overflow-hidden relative flex-col md:flex-row">
       <!-- Mobile Menu Toggle Button -->
       <UButton v-if="!isSidebarOpen" icon="i-lucide-menu" size="lg" color="neutral" variant="solid"
-        class="mobile-menu-toggle block md:hidden fixed top-4 left-4 z-[1001] shadow-lg"
-        @click="isSidebarOpen = true" @touchstart.prevent="isSidebarOpen = true" />
+        class="mobile-menu-toggle block md:hidden fixed top-4 left-4 z-[1001] shadow-lg" @click="isSidebarOpen = true"
+        @touchstart.prevent="isSidebarOpen = true" />
 
       <!-- Left Sidebar -->
-      <div class="sidebar-wrapper relative block md:w-80 md:flex-shrink-0"
-        :class="{ 'sidebar-open': isSidebarOpen }">
-        <div class="sidebar-overlay hidden md:hidden"
-          :class="{ 'block': isSidebarOpen }"
-          @click="isSidebarOpen = false" @touchstart.prevent="isSidebarOpen = false"></div>
-        <div class="sidebar-content h-full w-full md:relative"
-          :class="{ 'swiping': sidebarSwipeStart !== null }"
+      <div class="sidebar-wrapper relative block md:w-80 md:flex-shrink-0" :class="{ 'sidebar-open': isSidebarOpen }">
+        <div class="sidebar-overlay hidden md:hidden" :class="{ 'block': isSidebarOpen }" @click="isSidebarOpen = false"
+          @touchstart.prevent="isSidebarOpen = false"></div>
+        <div class="sidebar-content h-full w-full md:relative" :class="{ 'swiping': sidebarSwipeStart !== null }"
           :style="sidebarSwipeOffset !== 0 ? { transform: `translateX(${sidebarSwipeOffset}px)` } : {}"
           @touchstart="handleSidebarTouchStart" @touchmove="handleSidebarTouchMove" @touchend="handleSidebarTouchEnd">
           <div class="sidebar-header hidden md:hidden">
@@ -99,9 +96,11 @@
           <div class="location-content flex flex-col gap-4">
             <div class="location-item flex flex-col gap-1">
               <span class="location-label text-xs text-gray-500 font-medium">Start</span>
-              <span class="location-time text-sm text-gray-900 font-medium">{{ formatDateTime(passage.startTime) }}</span>
-              <span class="location-coords text-xs text-gray-400 font-mono">{{ passage.startLocation.lat.toFixed(4) }}, {{
-                passage.startLocation.lon.toFixed(4) }}</span>
+              <span class="location-time text-sm text-gray-900 font-medium">{{ formatDateTime(passage.startTime)
+                }}</span>
+              <span class="location-coords text-xs text-gray-400 font-mono">{{ passage.startLocation.lat.toFixed(4) }},
+                {{
+                  passage.startLocation.lon.toFixed(4) }}</span>
             </div>
             <div class="location-item flex flex-col gap-1">
               <span class="location-label text-xs text-gray-500 font-medium">End</span>
@@ -128,7 +127,8 @@
     </div>
 
     <!-- Timeline Strip at Bottom -->
-    <div v-if="selectedPassage" class="timeline-wrapper relative w-full" :class="{ 'timeline-hidden': !isTimelineVisible }">
+    <div v-if="selectedPassage" class="timeline-wrapper relative w-full"
+      :class="{ 'timeline-hidden': !isTimelineVisible }">
       <div class="timeline-toggle-container">
         <UButton :icon="isTimelineVisible ? 'i-lucide-chevron-down' : 'i-lucide-chevron-up'" size="xs" variant="ghost"
           color="neutral" class="timeline-toggle-btn" :title="isTimelineVisible ? 'Hide timeline' : 'Show timeline'"

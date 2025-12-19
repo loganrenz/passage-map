@@ -211,7 +211,8 @@ watch(
 
 // Cleanup on unmount
 onUnmounted(() => {
-  pausePlayback()
+  // Don't pause playback when component is unmounted (e.g., when timeline is hidden)
+  // Playback should continue even when controls are not visible
 })
 
 // Expose reset method for parent component

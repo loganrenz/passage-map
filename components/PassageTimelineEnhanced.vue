@@ -579,7 +579,8 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  pausePlayback()
+  // Don't pause playback when component is unmounted (e.g., when timeline is hidden)
+  // Playback should continue even when controls are not visible
   window.removeEventListener('resize', updateGraphWidth)
 })
 

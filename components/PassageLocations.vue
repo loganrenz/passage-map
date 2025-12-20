@@ -3,15 +3,10 @@
         <!-- Header with action button -->
         <div class="locations-header">
             <h3 class="locations-title">Locations</h3>
-            <UButton
-                v-if="!passage.locations || passage.locations.length === 0"
-                :loading="isGeocoding || isLoadingLocations"
-                :disabled="isGeocoding || isLoadingLocations"
-                size="xs"
-                icon="i-lucide-map-pin"
-                @click="handleGeocode"
-                @touchstart.prevent="!isGeocoding && !isLoadingLocations && handleGeocode()"
-            >
+            <UButton v-if="!passage.locations || passage.locations.length === 0"
+                :loading="isGeocoding || isLoadingLocations" :disabled="isGeocoding || isLoadingLocations" size="xs"
+                icon="i-lucide-map-pin" @click="handleGeocode"
+                @touchstart.prevent="!isGeocoding && !isLoadingLocations && handleGeocode()">
                 {{ isGeocoding ? 'Geocoding...' : isLoadingLocations ? 'Loading...' : 'Get Locations' }}
             </UButton>
         </div>
@@ -30,11 +25,7 @@
 
             <!-- Location List -->
             <div class="locations-list">
-                <div
-                    v-for="(location, index) in passage.locations"
-                    :key="index"
-                    class="location-item"
-                >
+                <div v-for="(location, index) in passage.locations" :key="index" class="location-item">
                     <UIcon name="i-lucide-map-pin" class="location-icon" />
                     <div class="location-content">
                         <div class="location-header">
@@ -59,17 +50,10 @@
                         <p v-if="location.formattedAddress" class="location-address">
                             {{ location.formattedAddress }}
                         </p>
-                        <div
-                            v-if="location.pointsOfInterest && location.pointsOfInterest.length > 0"
-                            class="location-pois"
-                        >
-                            <UBadge
-                                v-for="(poi, poiIndex) in location.pointsOfInterest"
-                                :key="poiIndex"
-                                size="xs"
-                                color="purple"
-                                variant="subtle"
-                            >
+                        <div v-if="location.pointsOfInterest && location.pointsOfInterest.length > 0"
+                            class="location-pois">
+                            <UBadge v-for="(poi, poiIndex) in location.pointsOfInterest" :key="poiIndex" size="xs"
+                                color="purple" variant="subtle">
                                 {{ poi }}
                             </UBadge>
                         </div>
@@ -82,8 +66,7 @@
         <div v-else class="locations-empty">
             <UIcon name="i-lucide-map" class="locations-empty-icon" />
             <p class="locations-empty-text">No location information available</p>
-            <UButton size="xs" icon="i-lucide-map-pin" @click="handleGeocode"
-                @touchstart.prevent="handleGeocode()">
+            <UButton size="xs" icon="i-lucide-map-pin" @click="handleGeocode" @touchstart.prevent="handleGeocode()">
                 Discover Locations
             </UButton>
         </div>
@@ -121,7 +104,7 @@ const tryLoadLocationsFromD1 = async () => {
         console.debug('tryLoadLocationsFromD1: No passage or passage ID')
         return
     }
-    
+
     // If locations already exist, don't reload
     if (props.passage.locations && props.passage.locations.length > 0) {
         console.log(`✓ Passage ${props.passage.id} already has ${props.passage.locations.length} locations`)
@@ -130,16 +113,16 @@ const tryLoadLocationsFromD1 = async () => {
 
     console.log(`Loading locations for passage ${props.passage.id}...`)
     isLoadingLocations.value = true
-    
+
     try {
         // Try to fetch locations from D1 via API
         const response = await $fetch<Passage>(`/api/passages/${props.passage.id}`)
-        
+
         console.log(`API response for ${props.passage.id}:`, {
             hasLocations: 'locations' in response,
             locationCount: response.locations?.length || 0
         })
-        
+
         if (response.locations && response.locations.length > 0) {
             // Update the passage with locations from D1
             emit('update:locations', response.locations)
@@ -363,4 +346,3 @@ const formatTime = (timeString: string) => {
     }
 }
 </style>
-

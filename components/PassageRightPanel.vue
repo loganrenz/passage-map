@@ -1,50 +1,32 @@
 <template>
   <!-- Collapsed state - show button to expand -->
   <div v-if="isClosed" class="passage-right-panel-collapsed">
-    <UButton
-      icon="i-lucide-chevron-left"
-      size="sm"
-      variant="solid"
-      color="primary"
-      @click="handleClose"
-      class="shadow-lg"
-    >
+    <UButton icon="i-lucide-chevron-left" size="sm" variant="solid" color="primary" @click="handleClose"
+      class="shadow-lg">
       {{ tabNames[activeTab] }}
     </UButton>
   </div>
 
   <!-- Expanded state -->
   <div v-else class="passage-right-panel" :class="{ 'has-timeline': selectedPassage }">
-    <UCard class="w-full h-full flex flex-col shadow-xl border-0" style="display: flex; flex-direction: column; height: 100%; position: relative;">
+    <UCard class="w-full h-full flex flex-col shadow-xl border-0"
+      style="display: flex; flex-direction: column; height: 100%; position: relative;">
       <!-- Disclosure Triangle in Upper Right -->
-      <UButton
-        icon="i-lucide-chevron-right"
-        size="xs"
-        variant="ghost"
-        color="gray"
-        class="absolute top-2 right-2 z-10 shrink-0"
-        @click="handleClose"
-      />
-      
+      <UButton icon="i-lucide-chevron-right" size="xs" variant="ghost" color="gray"
+        class="absolute top-2 right-2 z-10 shrink-0" @click="handleClose" />
+
       <!-- Header with Tabs -->
-      <div class="flex items-center border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 px-3 pt-4 pb-2 pr-10">
+      <div
+        class="flex items-center border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 px-3 pt-4 pb-2 pr-10">
         <div class="flex gap-1 flex-1">
-          <UButton
-            :variant="activeTab === 'passages' ? 'solid' : 'ghost'"
-            size="xs"
-            @click="activeTab = 'passages'"
+          <UButton :variant="activeTab === 'passages' ? 'solid' : 'ghost'" size="xs" @click="activeTab = 'passages'"
             class="flex-1 font-medium"
-            :class="activeTab === 'passages' ? 'bg-primary-600 text-white' : 'text-gray-600 dark:text-gray-400'"
-          >
+            :class="activeTab === 'passages' ? 'bg-primary-600 text-white' : 'text-gray-600 dark:text-gray-400'">
             Passages
           </UButton>
-          <UButton
-            :variant="activeTab === 'queries' ? 'solid' : 'ghost'"
-            size="xs"
-            @click="activeTab = 'queries'"
+          <UButton :variant="activeTab === 'queries' ? 'solid' : 'ghost'" size="xs" @click="activeTab = 'queries'"
             class="flex-1 font-medium"
-            :class="activeTab === 'queries' ? 'bg-primary-600 text-white' : 'text-gray-600 dark:text-gray-400'"
-          >
+            :class="activeTab === 'queries' ? 'bg-primary-600 text-white' : 'text-gray-600 dark:text-gray-400'">
             Queries
           </UButton>
         </div>
@@ -55,13 +37,8 @@
         <!-- Passages Tab -->
         <div v-if="activeTab === 'passages'" class="tab-content scrollable-content">
           <div class="p-3">
-            <PassageList
-              :passages="passages"
-              :selected-passage="selectedPassage"
-              :is-loading="isLoading"
-              :error="error"
-              @select="handleSelect"
-            />
+            <PassageList :passages="passages" :selected-passage="selectedPassage" :is-loading="isLoading" :error="error"
+              @select="handleSelect" />
           </div>
         </div>
 
@@ -110,7 +87,7 @@ onMounted(() => {
   if (typeof window !== 'undefined') {
     const savedClosed = localStorage.getItem(STORAGE_KEY_PANEL_CLOSED)
     const savedTab = localStorage.getItem(STORAGE_KEY_ACTIVE_TAB)
-    
+
     if (savedClosed === 'true') {
       isClosed.value = true
     }
@@ -154,15 +131,18 @@ const handleClose = () => {
   position: absolute;
   top: 4rem;
   right: 1rem;
-  bottom: 1rem; /* Default bottom margin */
+  bottom: 1rem;
+  /* Default bottom margin */
   width: 360px;
   max-width: calc(100vw - 2rem);
-  height: auto; /* Let top and bottom determine height */
+  height: auto;
+  /* Let top and bottom determine height */
   z-index: 1001;
 }
 
 .passage-right-panel.has-timeline {
-  bottom: 13rem; /* Account for timeline at bottom (~200px) + margin when timeline is visible */
+  bottom: 13rem;
+  /* Account for timeline at bottom (~200px) + margin when timeline is visible */
 }
 
 .passage-right-panel-collapsed {
@@ -192,7 +172,8 @@ const handleClose = () => {
 }
 
 .dark .tab-content-wrapper {
-  background: rgb(3 7 18); /* gray-950 */
+  background: rgb(3 7 18);
+  /* gray-950 */
 }
 
 .tab-content {
@@ -239,4 +220,3 @@ const handleClose = () => {
   }
 }
 </style>
-

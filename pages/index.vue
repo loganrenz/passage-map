@@ -21,11 +21,9 @@
           </div>
           <PassageSidebar :passage="mutableSelectedPassage" :passages="mutablePassages"
             :selected-passage="mutableSelectedPassage" :is-loading="isLoading" :error="error" :layers="layers"
-            :view-mode="viewMode"
-            @update:layers="(newLayers) => { if (newLayers) layers = newLayers }"
-            @update:view-mode="viewMode = $event"
-            @export-gpx="handleExportGPX" @export-geojson="handleExportGeoJSON" @generate-report="handleGenerateReport"
-            @select-passage="handlePassageSelect" />
+            :view-mode="viewMode" @update:layers="(newLayers) => { if (newLayers) layers = newLayers }"
+            @update:view-mode="viewMode = $event" @export-gpx="handleExportGPX" @export-geojson="handleExportGeoJSON"
+            @generate-report="handleGenerateReport" @select-passage="handlePassageSelect" />
         </div>
       </div>
 
@@ -508,16 +506,16 @@ onUnmounted(() => {
     pointer-events: auto !important;
     position: relative !important;
   }
-  
+
   .sidebar-content {
     transform: none !important;
     position: relative !important;
   }
-  
+
   .sidebar-overlay {
     display: none !important;
   }
-  
+
   .sidebar-header {
     display: none !important;
   }

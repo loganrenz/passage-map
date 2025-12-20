@@ -2,16 +2,13 @@
     <div class="relative w-full h-full">
         <div ref="mapContainer" class="w-full h-full" />
         <!-- Vessel details callout popover -->
-        <div
-            v-if="selectedVesselData"
-            ref="vesselCalloutRef"
-            class="vessel-callout-popover"
-            :style="vesselCalloutStyle"
-        >
+        <div v-if="selectedVesselData" ref="vesselCalloutRef" class="vessel-callout-popover"
+            :style="vesselCalloutStyle">
             <div class="vessel-callout-content">
                 <div class="vessel-callout-header">
                     <div class="vessel-callout-name">{{ selectedVesselData.name }}</div>
-                    <span v-if="selectedVesselData.type && selectedVesselData.type !== 'vessel'" class="vessel-callout-type">
+                    <span v-if="selectedVesselData.type && selectedVesselData.type !== 'vessel'"
+                        class="vessel-callout-type">
                         {{ selectedVesselData.type }}
                     </span>
                 </div>
@@ -97,7 +94,7 @@ const currentPolylineCoordinates = shallowRef<Array<{ coord: mapkit.Coordinate; 
 const { loadEncounters, getVisibleVessels, isVesselEntering, isVesselExiting } = useVesselEncounters()
 // Track vessel markers separately for fade animations
 // Store encounter and position data with each marker for callout display
-const vesselMarkers = shallowRef<Map<string, { 
+const vesselMarkers = shallowRef<Map<string, {
     marker: mapkit.ImageAnnotation
     opacity: number
     fadeTimeout?: number
@@ -126,7 +123,7 @@ const selectedVesselData = ref<{
     timestamp: string
 } | null>(null)
 const vesselCalloutRef = ref<HTMLElement | null>(null)
-const vesselCalloutStyle = ref<{ top: string; left: string }>({ top: '0px', left: '0px'})
+const vesselCalloutStyle = ref<{ top: string; left: string }>({ top: '0px', left: '0px' })
 
 const waitForMapKit = (): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -186,7 +183,7 @@ onMounted(async () => {
                         }
                     }
                 }
-                
+
                 // Update marker position when map region changes to keep it aligned with polyline
                 if (props.currentTime && markerImage.value && props.selectedPassage) {
                     // Small delay to ensure polyline rendering is complete
@@ -202,14 +199,14 @@ onMounted(async () => {
                 console.log('[PassageMap] Map click detected (single-tap):', event)
                 handleMapClick(event)
             })
-            
+
             // Set up annotation selection listener for vessel callouts
             mapInstance.value.addEventListener('select', (event: any) => {
                 if (event.annotation) {
                     handleAnnotationSelect(event.annotation)
                 }
             })
-            
+
             // Close callout when annotation is deselected
             mapInstance.value.addEventListener('deselect', () => {
                 closeVesselCallout()
@@ -221,13 +218,13 @@ onMounted(async () => {
         if (mapContainer.value && mapInstance.value) {
             const handleContainerClick = (e: MouseEvent) => {
                 if (!mapInstance.value || !props.selectedPassage) return
-                
+
                 // Convert page coordinates to map coordinates using MapKit JS API
                 // MapKit JS uses convertPointOnPageToCoordinate method
                 try {
                     const point = new DOMPoint(e.clientX, e.clientY)
                     const coord = mapInstance.value.convertPointOnPageToCoordinate(point)
-                    
+
                     if (coord) {
                         console.log('[PassageMap] Container click detected, converted to coordinate:', coord)
                         handleMapClick({ coordinate: coord })
@@ -236,11 +233,11 @@ onMounted(async () => {
                     console.error('[PassageMap] Error converting click to coordinate:', error)
                 }
             }
-            
+
             mapContainer.value.addEventListener('click', handleContainerClick)
-            
-            // Store handler for cleanup
-            ;(mapContainer.value as any).__clickHandler = handleContainerClick
+
+                // Store handler for cleanup
+                ; (mapContainer.value as any).__clickHandler = handleContainerClick
         }
 
         // Load custom marker image (Tideye icon)
@@ -343,7 +340,7 @@ const findClosestPointOnSegment = (
 ): { point: mapkit.Coordinate; distance: number; t: number } => {
     // For geographic coordinates, we need to use a different approach
     // We'll approximate by converting to a local coordinate system
-    
+
     // Calculate distances to both endpoints
     const distToStart = calculateDistance(point, segmentStart)
     const distToEnd = calculateDistance(point, segmentEnd)
@@ -389,7 +386,7 @@ const findClosestPointOnSegment = (
         }
     }
 
-    const t = Math.max(0, Math.min(1, 
+    const t = Math.max(0, Math.min(1,
         ((latP - lat1) * dx + (lonP - lon1) * dy) / d2
     ))
 
@@ -431,7 +428,7 @@ const handleMapClick = (event: any) => {
     }
 
     console.log('[PassageMap] Click coordinate:', clickCoord.latitude, clickCoord.longitude)
-    
+
     // Log first few polyline coordinates for comparison
     if (currentPolylineCoordinates.value.length > 0) {
         console.log('[PassageMap] First polyline coordinate:', {
@@ -456,7 +453,7 @@ const handleMapClick = (event: any) => {
         // Larger span = more zoomed out = larger threshold needed
         const latSpanDegrees = span.latitudeDelta
         const latSpanMeters = latSpanDegrees * 111000 // approximate conversion
-        
+
         // More aggressive scaling: 
         // - Very zoomed in (1km view): ~100m threshold
         // - Medium zoom (10km view): ~500m threshold  
@@ -476,11 +473,11 @@ const handleMapClick = (event: any) => {
             // Very zoomed out: 10000-20000m
             threshold = Math.min(20000, 10000 + ((latSpanMeters - 500000) / 1000000) * 10000)
         }
-        
+
         // Ensure minimum and maximum bounds
         threshold = Math.max(100, Math.min(20000, threshold))
     }
-    
+
     console.log('[PassageMap] Using threshold:', threshold, 'meters (zoom-adaptive)')
 
     let closestDistance = Infinity
@@ -491,11 +488,11 @@ const handleMapClick = (event: any) => {
     for (let i = 0; i < currentPolylineCoordinates.value.length - 1; i++) {
         const start = currentPolylineCoordinates.value[i]
         const end = currentPolylineCoordinates.value[i + 1]
-        
+
         if (!start || !end || !start.coord || !end.coord) continue
 
         const result = findClosestPointOnSegment(clickCoord, start.coord, end.coord)
-        
+
         // Debug first few segments to see what's happening
         if (i < 3) {
             console.log(`[PassageMap] Segment ${i}:`, {
@@ -506,11 +503,11 @@ const handleMapClick = (event: any) => {
                 withinThreshold: result.distance < threshold
             })
         }
-        
+
         if (result.distance < threshold && result.distance < closestDistance) {
             closestDistance = result.distance
             closestSegmentIndex = i
-            
+
             // Interpolate time between start and end points
             if (start.time && end.time) {
                 const startTime = Date.parse(start.time)
@@ -524,7 +521,7 @@ const handleMapClick = (event: any) => {
             }
         }
     }
-    
+
     // If no point found within threshold, find the absolute closest for debugging
     if (closestDistance === Infinity && currentPolylineCoordinates.value.length > 0) {
         let absoluteClosest = Infinity
@@ -936,7 +933,7 @@ const fitToPassage = (passage: Passage) => {
                 tideyeCoord,
                 currentRegion.span  // Preserve user's zoom level
             )
-            
+
             isProgrammaticRegionChange.value = true
             mapInstance.value.setRegionAnimated(region, true)
             setTimeout(() => {
@@ -1099,7 +1096,7 @@ const redrawSelectedPassage = async (passage: Passage) => {
     clearFeatureMarkers()
     removeTimeMarker()
     drawPassage(passage, '#007AFF')
-    
+
     // Create feature markers if locations are available
     if (passage.locations && passage.locations.length > 0) {
         createFeatureMarkers(passage)
@@ -1120,7 +1117,7 @@ const redrawSelectedPassage = async (passage: Passage) => {
                 // fitToPassage uses getPassageBounds which includes positions if available
                 // If locked, fitToPassage will already keep tideye centered
                 fitToPassage(passage)
-                
+
                 // After fitting to show all points, center on tideye if currentTime is set and not locked
                 // (When locked, fitToPassage already handles centering)
                 if (props.currentTime && props.lockTideye !== 'locked') {
@@ -1196,7 +1193,7 @@ watch(
                         // fitToPassage uses getPassageBounds which will now include all the loaded positions
                         // If locked, fitToPassage will already keep tideye centered
                         fitToPassage(passage)
-                        
+
                         // After fitting to show all points, center on tideye if currentTime is set and not locked
                         // (When locked, fitToPassage already handles centering)
                         if (props.currentTime && props.lockTideye !== 'locked') {
@@ -1213,7 +1210,7 @@ watch(
                         updateTimeMarker()
                     })
                 }
-                
+
                 // Create feature markers if locations are available
                 if (passage.locations && passage.locations.length > 0 && props.showFeatures) {
                     nextTick(() => {
@@ -1232,14 +1229,14 @@ watch(
  */
 const loadVesselIcon = async (iconPath: string): Promise<HTMLImageElement> => {
     // Normalize icon path - ensure it starts with /images/
-    const normalizedPath = iconPath.startsWith('/images/') 
-        ? iconPath 
+    const normalizedPath = iconPath.startsWith('/images/')
+        ? iconPath
         : iconPath.startsWith('images/')
-        ? `/${iconPath}`
-        : `/images/${iconPath}`
-    
+            ? `/${iconPath}`
+            : `/images/${iconPath}`
+
     const cacheKey = normalizedPath
-    
+
     if (vesselIconCache.has(cacheKey)) {
         const cached = vesselIconCache.get(cacheKey)!
         // Verify cached image is still valid
@@ -1257,7 +1254,7 @@ const loadVesselIcon = async (iconPath: string): Promise<HTMLImageElement> => {
         // Use a version constant that can be updated when icons change
         const version = '3' // Increment this when icons are updated
         const versionedPath = `${normalizedPath}?v=${version}`
-        
+
         img.onload = () => {
             if (img.naturalWidth === 0 || img.naturalHeight === 0) {
                 // Image loaded but has zero dimensions (likely invalid)
@@ -1269,7 +1266,7 @@ const loadVesselIcon = async (iconPath: string): Promise<HTMLImageElement> => {
                 resolve(img)
             }
         }
-        
+
         img.onerror = () => {
             console.warn(`Failed to load vessel icon with version: ${versionedPath}, trying without version`)
             // If versioned load fails, try without version
@@ -1289,7 +1286,7 @@ const loadVesselIcon = async (iconPath: string): Promise<HTMLImageElement> => {
             }
             img2.src = normalizedPath
         }
-        
+
         img.src = versionedPath
     })
 }
@@ -1310,7 +1307,7 @@ const loadFallbackIcon = (
             return
         }
     }
-    
+
     const defaultImg = new Image()
     defaultImg.onload = () => {
         vesselIconCache.set(defaultIcon, defaultImg)
@@ -1364,7 +1361,7 @@ const centerMapOnTime = (timestamp: string) => {
     if (!position) return
 
     const coord = new window.mapkit.Coordinate(position.lat, position.lon)
-    
+
     // Center the map on the position with current zoom level
     const currentRegion = mapInstance.value.region
     const region = new window.mapkit.CoordinateRegion(
@@ -1373,7 +1370,7 @@ const centerMapOnTime = (timestamp: string) => {
     )
 
     mapInstance.value.setRegionAnimated(region, true)
-    
+
     // Also update currentTime so the marker updates
     // We'll need to emit this or handle it via props
 }
@@ -1424,17 +1421,17 @@ const showVesselCallout = (
         vessel.mmsi || vessel.id,
         vessel.name
     )
-    
+
     // Format speed
-    const speed = position.speed !== undefined 
+    const speed = position.speed !== undefined
         ? `${position.speed.toFixed(1)} knots`
         : 'N/A'
-    
+
     // Format heading
     const heading = position.heading !== undefined
         ? `${Math.round(position.heading)}°`
         : 'N/A'
-    
+
     // Calculate distance to our vessel (Tideye)
     let distanceText = 'N/A'
     if (props.selectedPassage && props.currentTime) {
@@ -1444,12 +1441,12 @@ const showVesselCallout = (
             distanceText = `${distance.toFixed(2)} km`
         }
     }
-    
+
     // Format vessel type
     const vesselType = vessel.type && vessel.type !== 'vessel' && vessel.type !== 'unknown'
         ? vessel.type.charAt(0).toUpperCase() + vessel.type.slice(1)
         : undefined
-    
+
     // Format timestamp
     const time = new Date(position.timestamp)
     const timestamp = time.toLocaleString('en-US', {
@@ -1459,14 +1456,14 @@ const showVesselCallout = (
         minute: '2-digit',
         hour12: true
     })
-    
+
     // Format length
     const lengthText = vessel.length
-        ? typeof vessel.length === 'number' 
+        ? typeof vessel.length === 'number'
             ? `${vessel.length}m`
             : vessel.length
         : undefined
-    
+
     selectedVesselData.value = {
         name: vesselName,
         type: vesselType,
@@ -1478,7 +1475,7 @@ const showVesselCallout = (
         flag: vessel.flag,
         timestamp,
     }
-    
+
     // Position the callout near the annotation
     nextTick(() => {
         if (mapInstance.value && annotation && mapContainer.value) {
@@ -1490,7 +1487,7 @@ const showVesselCallout = (
                 const calloutHeight = vesselCalloutRef.value.offsetHeight || 200
                 const offsetX = point.x - calloutWidth / 2
                 const offsetY = point.y - calloutHeight - 60 // Above the marker
-                
+
                 vesselCalloutStyle.value = {
                     left: `${Math.max(10, Math.min(offsetX, window.innerWidth - calloutWidth - 10))}px`,
                     top: `${Math.max(10, offsetY)}px`,
@@ -1547,7 +1544,7 @@ const updateVesselMarkers = async () => {
 
         const visibleVessels = getVisibleVessels(processingTime)
         console.log(`[PassageMap] Updating vessel markers for time ${processingTime}: ${visibleVessels.length} vessels visible`)
-        
+
         // Check if another update has started while we were processing
         // If so, abort this update to prevent showing stale data
         if (currentVesselUpdateTime.value !== processingTime) {
@@ -1560,7 +1557,7 @@ const updateVesselMarkers = async () => {
         for (const { encounter, position, segmentIndex } of visibleVessels) {
             const vesselId = `${encounter.vessel.id}-${segmentIndex}`
             currentVesselIds.add(vesselId)
-            
+
             // If this vessel already exists, ensure no fade timeout is set
             if (vesselMarkers.value.has(vesselId)) {
                 const existing = vesselMarkers.value.get(vesselId)!
@@ -1578,18 +1575,18 @@ const updateVesselMarkers = async () => {
             const vesselId = `${encounter.vessel.id}-${segmentIndex}`
 
             const iconPath = getVesselIcon(
-                encounter.vessel.type, 
+                encounter.vessel.type,
                 encounter.vessel.name,
                 encounter.vessel.id,
                 encounter.vessel.mmsi
             )
             const iconSize = getVesselIconSize(encounter.vessel.type)
-            
+
             // Debug logging for icon selection
             if (process.dev) {
                 console.debug(`Vessel ${encounter.vessel.id} (${encounter.vessel.name}) type: "${encounter.vessel.type}" -> icon: ${iconPath}`)
             }
-            
+
             // Load icon with error handling
             let iconImg: HTMLImageElement
             try {
@@ -1625,13 +1622,13 @@ const updateVesselMarkers = async () => {
                     encounter.vessel.mmsi || encounter.vessel.id,
                     encounter.vessel.name
                 )
-                
+
                 // Verify icon image is loaded before creating annotation
                 if (!iconImg || !iconImg.src) {
                     console.warn(`Skipping vessel ${vesselId}: icon not loaded`)
                     continue
                 }
-                
+
                 const marker = new window.mapkit.ImageAnnotation(coord, {
                     url: { 1: iconImg.src },
                     size: { width: iconSize.width, height: iconSize.height },
@@ -1652,7 +1649,7 @@ const updateVesselMarkers = async () => {
                     encounter,
                     position,
                 })
-                
+
                 // Set up custom callout for vessel details
                 setupVesselCallout(rawMarker, encounter, position)
             }
@@ -1673,7 +1670,7 @@ const updateVesselMarkers = async () => {
                 fadeOutMarker(vesselId)
             }
         }
-        
+
         // Final check: make sure we're still processing the same time
         if (currentVesselUpdateTime.value !== processingTime) {
             // Another update started, clear what we just added
@@ -1744,7 +1741,7 @@ const fadeOutMarker = (vesselId: string) => {
         const currentVesselIds = new Set(
             visibleVessels.map(({ encounter, segmentIndex }) => `${encounter.vessel.id}-${segmentIndex}`)
         )
-        
+
         // Only remove if vessel is still not in the visible set
         if (!currentVesselIds.has(vesselId)) {
             mapInstance.value.removeAnnotation(data.marker)
@@ -1866,7 +1863,7 @@ onUnmounted(() => {
     clearVesselMarkers()
     clearFeatureMarkers()
     removeTimeMarker()
-    
+
     // Clean up click handler
     if (mapContainer.value && (mapContainer.value as any).__clickHandler) {
         mapContainer.value.removeEventListener('click', (mapContainer.value as any).__clickHandler)
